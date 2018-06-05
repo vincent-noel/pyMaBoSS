@@ -59,7 +59,7 @@ class Simulation(object):
         :type nt: :py:class:`Network`
         :param dict kwargs: parameters of the simulation
         """
-        self.param = _default_parameter_list
+        self.param = _default_parameter_list.copy()
         if 'palette' in kwargs:
             self.palette = kwargs.pop('palette')
         else:
