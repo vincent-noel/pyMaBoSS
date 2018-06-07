@@ -28,6 +28,7 @@ requirements:
     - pyparsing
     - python
     - matplotlib
+    - ipywidgets
 
 about:
   home: https://github.com/colomoto/pyMaBoSS
