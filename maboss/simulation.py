@@ -228,3 +228,8 @@ def copy_and_mutate(masim, nodes, mut):
         masim2.mutate(node, mut)
     return masim2
 
+def copy_and_update_parameters(sim, parameters):
+    new_sim = sim.copy()
+    new_sim.update_parameters( **parameters )
+    return new_sim
+
