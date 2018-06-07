@@ -1,5 +1,5 @@
 {% set name = "pyMaBoSS" %}
-{% set version = "0.6.1" %}
+{% set version = "0.6.2" %}
 package:
   name: '{{ name|lower }}'
   version: '{{ version }}'
@@ -30,6 +30,6 @@ requirements:
     - matplotlib
 
 about:
-  home: https://github.com/thenlevy/pyMaBoSS
-  summary: 'MaBoSS python interface'
+  home: https://github.com/colomoto/pyMaBoSS
+  summary: 'Python API for the MaBoSS simulation software'
 
