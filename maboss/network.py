@@ -188,6 +188,8 @@ class Network(dict):
     def __str__(self):
         return _strNetwork(self)
 
+    def get_istate(self):
+        return self._initState
 
     def print_istate(self, out=stdout):
         print(_str_istateList(self._initState), file=out)
