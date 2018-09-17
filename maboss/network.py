@@ -210,6 +210,8 @@ class Network(collections.OrderedDict):
             string += "\n\n".join(str(nd) for nd in ndList[1:])
         return string
 
+    def get_istate(self):
+        return self._initState
 
     def print_istate(self, out=stdout):
         print(self.str_istate(), file=out)
