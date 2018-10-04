@@ -72,6 +72,7 @@ class Simulation(object):
 
         self.network = nt
         self.mutations = []
+        self.mutationTypes = {}
         self.refstate = {}
 
     def update_parameters(self, **kwargs):
@@ -151,7 +152,7 @@ class Simulation(object):
         if not nd.is_mutant:
             self.network[node]=_make_mutant_node(nd)
             self.mutations.append(nd.name)
-
+            self.mutationTypes.update({nd.name: state})
 
 
         lowvar = "$Low_"+node
@@ -195,6 +196,8 @@ class Simulation(object):
             istate[nd] = states.pop() if len(states) == 1 else states
         return istate
 
+    def get_mutations(self):
+        return self.mutationTypes
 
 def _make_mutant_node(nd):
     """Create a new logic for mutation that can be activated from .cfg file."""
