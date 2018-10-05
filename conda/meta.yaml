@@ -1,5 +1,5 @@
 {% set name = "pyMaBoSS" %}
-{% set version = "0.6.2" %}
+{% set version = "0.6.3" %}
 package:
   name: '{{ name|lower }}'
   version: '{{ version }}'
@@ -22,7 +22,7 @@ requirements:
     - setuptools
 
   run:
-    - colomoto_jupyter
+    - colomoto_jupyter >=0.4.10
     - maboss
     - pandas
     - pyparsing
