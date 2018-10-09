@@ -2,7 +2,7 @@ from .network import *
 from .simulation import *
 from .result import *
 from .gsparser import load
-
+from .sbml import *
 
 from colomoto_jupyter import IN_IPYTHON
 if IN_IPYTHON:

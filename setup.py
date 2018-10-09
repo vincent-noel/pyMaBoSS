@@ -14,4 +14,7 @@ setup(name='maboss',
         "ipywidgets",
         "matplotlib",
         "pandas",
+        "boolean.py",
+        "python-libsbmls"
+
     ])
