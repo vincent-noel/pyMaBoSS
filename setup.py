@@ -19,4 +19,6 @@ setup(name='maboss',
         "ipywidgets",
         "matplotlib",
         "pandas",
+        "boolean.py",
+        "python-libsbml"
     ] + optional_contextlib)

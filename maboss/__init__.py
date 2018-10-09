@@ -5,6 +5,7 @@ from .gsparser import load
 from .server import MaBoSSClient
 from .upp import UpdatePopulation
 from .ensemble import EnsembleResult, Ensemble
+from .sbml import *
 
 from colomoto_jupyter import IN_IPYTHON
 if IN_IPYTHON:
