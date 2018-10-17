@@ -19,4 +19,10 @@ assert(not logic._check_logic_defined(['foo', 'bar'], ['(foo && barr)']))
 print("    light syntax")
 assert(logic._check_logic_defined(['a', 'b', 'c', 'd'], ["a & !b AND c OR a & b & !c OR !a & b & c"]))
 
+print("   conditional expression")
+assert(logic._check_logic_defined(['a', 'b', 'c'], ["a ? b : c"]))
+
+print("   other operators within conditional expression")
+assert(logic._check_logic_defined(['a', 'b', 'c', 'd', 'e', 'f', 'g'], ["a & b ^ !c ? d | !e : f ^ g"]))
+
 print("All test passed")

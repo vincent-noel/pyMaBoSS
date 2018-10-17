@@ -13,3 +13,5 @@ build
 .*.sw*
 gen
 *.log
+!test/p53_Mdm2.bnd
+!test/p53_Mdm2_runcfg.cfg
