@@ -13,3 +13,4 @@ build
 .*.sw*
 gen
 *.log
+*.pyc
