@@ -242,6 +242,28 @@ def switchToBooleanTransitions(sbml_model, sid, species):
 	dev_formula_down = getAST(species.rt_down).develop(getAST(species.logExp), internal_var)
 	inactivation.setMath(booleanToSBML(forceBooleanMath(dev_formula_down), forceBoolean=True))
 
+def findSpecies(xml_model, sid):
+
+	listOfSpecies = xml_model.getChild("listOfQualitativeSpecies")
+	i = 0
+	while i < listOfSpecies.getNumChildren():
+		species = listOfSpecies.getChild(i)
+		if species.hasAttr('id', uri_qual) and species.getAttrValue('id', uri_qual) == sid:
+			break
+		i += 1
+
+	if i < listOfSpecies.getNumChildren():
+		return listOfSpecies.getChild(i)
+	else:
+		print("Unable to find the species with the identifier == %s" % sid)
+
+def addMaBoSSInitialProbabilities(xml_model, sid, initial_state):
+
+	initial_values = list(initial_state.values())
+	initial_values = str(initial_values)[1:-1]
+	sbml_species = findSpecies(xml_model, sid)
+	sbml_species.addAttr(libsbml.XMLTriple("InitialLevelProbabilities", uri_maboss, "maboss"), initial_values)
+
 def addParameter(sbml_model, name, value):
 
 	new_param = sbml_model.createParameter()
@@ -276,13 +298,16 @@ def to_sbml(model, filename, maboss_extras=True):
 	if maboss_extras:
 		xml_doc = sbml_doc.toXMLNode()
 		xml_doc.addAttr(libsbml.XMLTriple("maboss", uri_maboss, "xmlns"), uri_maboss)
-		xml_doc.addAttr(libsbml.XMLTriple("required", uri_maboss, "maboss"), "true")
+		xml_doc.addAttr(libsbml.XMLTriple("required", uri_maboss, "maboss"), "false")
 
 		xml_model = xml_doc.getChild('model')
 
+		istate = model.network.get_istate()
 		for sid, species in model.network.items():
-			addMaBoSSMathToTransitions(xml_model, sid, species)
 
+			# Here we will have problems with initial states for groups of species
+			addMaBoSSInitialProbabilities(xml_model, sid, istate[sid])
+			addMaBoSSMathToTransitions(xml_model, sid, species)
 
 		sbml_doc = libsbml.readSBMLFromString(xml_doc.toXMLString())
 		sbml_model = sbml_doc.getModel()
