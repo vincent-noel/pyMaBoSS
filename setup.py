@@ -15,6 +15,5 @@ setup(name='maboss',
         "matplotlib",
         "pandas",
         "boolean.py",
-        "python-libsbmls"
-
+        "python-libsbml"
     ])
