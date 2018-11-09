@@ -110,7 +110,8 @@ def addQualitativeSpecies(sbml_model, sid, species, initial_state):
 	# sbml_model.getPlugin("qual").addQualitativeSpecies(new_species)
 
 def getAST(formula):
-	return logExpAST.parseString(formula).asDict()['AST']
+	if formula is not None:
+		return logExpAST.parseString(formula).asDict()['AST']
 
 def getInputs(formula, species):
 
