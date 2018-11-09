@@ -14,6 +14,9 @@ from colomoto import ModelState
 from .result import Result
 import os
 import uuid
+import subprocess
+import tempfile
+import shutil
 
 _default_parameter_list = collections.OrderedDict([
     ('time_tick', 0.1),
@@ -93,6 +96,36 @@ class Simulation(object):
             result.mutations = self.mutations.copy()
         return result
 
+    def check(self):
+
+        try:
+            path = tempfile.mkdtemp()
+            cfg_path = tempfile.mkstemp(dir=path, suffix='.cfg')[1]
+            bnd_path = tempfile.mkstemp(dir=path, suffix='.bnd')[1]
+
+            with ExitStack() as stack:
+                bnd_file = stack.enter_context(open(bnd_path, 'w'))
+                cfg_file = stack.enter_context(open(cfg_path, 'w'))
+                self.print_bnd(out=bnd_file)
+                self.print_cfg(out=cfg_file)
+
+            proc = subprocess.Popen(
+                ["MaBoSS", "--check", "-c", cfg_path, bnd_path],
+                cwd=path, stdout=subprocess.PIPE, stderr=subprocess.PIPE
+            )
+            (t_stdout, t_stderr) = proc.communicate()
+
+            shutil.rmtree(path)
+
+            messages = []
+            if len(t_stderr) != 0:
+                messages = list(set(t_stderr.decode().split("\n")))
+
+            return messages
+
+        except ValueError as e:
+            return [str(e)]
+   
     def print_bnd(self, out=stdout):
         """Produce the content of the bnd file associated to the simulation."""
         print(self.network, file=out)
