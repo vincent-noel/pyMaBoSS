@@ -133,6 +133,23 @@ class Network(collections.OrderedDict):
         # probabilities.
         self._initState = collections.OrderedDict([(l, {0: 0.5, 1: 0.5}) for l in self._attribution])
 
+    def add_node(self, name):
+
+        node = Node(name)
+        collections.OrderedDict.update(self, {name: node})
+        self.names.append(name)
+        self.logicExp.update({name: node.logExp})
+        self._attribution.update({name: name})
+        self._initState.update({name: {0: 0.5, 1: 0.5}})
+
+    def remove_node(self, name):
+
+        del self[name]
+        self.names.remove(name)
+        del self.logicExp[name]
+        del self._attribution[name]
+        del self._initState[name]
+
     def copy(self):
         new_ndList = [self[name].copy() for name in self.names]
         new_network = Network(new_ndList, self.booleanVariables)
