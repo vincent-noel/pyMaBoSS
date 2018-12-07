@@ -114,12 +114,13 @@ class Simulation(object):
             string = nd +'.refstate = ' + self.refstate[nd] + ';'
             print(string, file=out)
 
-    def run(self):
+    def run(self, command=None):
         """Run the simulation with MaBoSS and return a Result object.
 
+        :param command: specify a MaBoSS command, default to None for automatic selection
         :rtype: :py:class:`Result`
         """
-        return Result(self)
+        return Result(self, command)
 
 
     def mutate(self, node, state):

@@ -20,6 +20,7 @@ class Result(object):
     
     :param simul: The simulation object that produce the results.
     :type simul: :py:class:`Simulation`
+    :param command: specify a MaBoSS command, default to None for automatic selection
     
     When a Result object is created, two temporary files are written in ``/tmp/``
     these files are the ``.bnd`` and ``.cfg`` file represented by the associated
@@ -33,7 +34,7 @@ class Result(object):
     in the working directory.
     """
 
-    def __init__(self, simul):
+    def __init__(self, simul, command=None):
         self._path = tempfile.mkdtemp()
         self._cfg = tempfile.mkstemp(dir=self._path, suffix='.cfg')[1]
         self._bnd = tempfile.mkstemp(dir=self._path, suffix='.bnd')[1]
@@ -52,7 +53,19 @@ class Result(object):
             simul.print_bnd(out=bnd_file)
             simul.print_cfg(out=cfg_file)
 
-        self._err = subprocess.call(["MaBoSS", "-c", self._cfg, "-o",
+        maboss_cmd = "MaBoSS"
+        if command:
+            maboss_cmd = command
+        else:
+            l = len(simul.network)
+            if l <= 32:
+                pass
+            elif l <= 128:
+                maboss_cmd = "MaBoSS_128n"
+            else:
+                maboss_cmd = "MaBoSS_256n"
+
+        self._err = subprocess.call([maboss_cmd, "-c", self._cfg, "-o",
                                      self._path+'/res', self._bnd])
         if self._err:
             print("Error, MaBoSS returned non 0 value", file=stderr)
