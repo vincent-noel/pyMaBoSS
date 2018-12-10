@@ -6,6 +6,7 @@ MaBoSS file.
 """
 
 import sys
+from collections import OrderedDict
 from sys import stderr
 from os.path import isfile
 import pyparsing as pp
@@ -122,14 +123,14 @@ def load(bnd_filename, cfg_filename):
         for v in variables:
             lhs = '$'+v
             parameters[lhs] = variables[v]
-        ret = Simulation(net, **parameters)
+        ret = Simulation(net, parameters)
         ret.refstate = refstate_list
         return ret
 
 
 def _read_cfg(string):
-        variables = {}
-        parameters = {}
+        variables = OrderedDict()
+        parameters = OrderedDict()
         is_internal_list = {}
         istate_list = {}
         refstate_list = {}

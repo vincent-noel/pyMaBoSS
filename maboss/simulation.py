@@ -1,7 +1,7 @@
 """Class that handles the parameters of a MaBoSS simulation.
 """
 
-
+import collections
 from sys import stderr, stdout
 from contextlib import ExitStack
 
@@ -11,7 +11,7 @@ from .result import Result
 import os
 import uuid
 
-_default_parameter_list = {'time_tick': 0.1,
+_default_parameter_list = collections.OrderedDict({'time_tick': 0.1,
                   'max_time': 4,
                   'sample_count': 10000,
                   'discrete_time': 0,
@@ -22,7 +22,7 @@ _default_parameter_list = {'time_tick': 0.1,
                   'statdist_cluster_threshold': 1,
                   'thread_count': 1,
                   'statdist_similarity_cache_max_size': 20000
-                  }
+                  })
 
 
 class Simulation(object):
@@ -51,7 +51,7 @@ class Simulation(object):
     """
 
 
-    def __init__(self, nt, **kwargs):
+    def __init__(self, nt, parameters=None, **kwargs):
         """
         Initialize the Simulation object.
 
@@ -60,15 +60,15 @@ class Simulation(object):
         :param dict kwargs: parameters of the simulation
         """
         self.param = _default_parameter_list.copy()
-        if 'palette' in kwargs:
-            self.palette = kwargs.pop('palette')
-        else:
-            self.palette = {}
-        for p in kwargs:
-            if p in _default_parameter_list or p[0] == '$':
-                self.param[p] = kwargs[p]
-            else:
-                print("Warning: unused parameter %s" % p, file=stderr)
+        self.palette = {}
+        for cfg in (parameters, kwargs):
+            for p in cfg:
+                if p in _default_parameter_list or p[0] == '$':
+                    self.param[p] = cfg[p]
+                elif p == "palette":
+                    self.palette = kwargs[p]
+                else:
+                    print("Warning: unused parameter %s" % p, file=stderr)
 
         self.network = nt
         self.mutations = []
@@ -84,7 +84,7 @@ class Simulation(object):
 
     def copy(self):
         new_network = self.network.copy()
-        result = Simulation(new_network, **(self.param), palette=self.palette)
+        result = Simulation(new_network, self.param, palette=self.palette)
         if self.mutations:
             result.mutations = self.mutations.copy()
         return result

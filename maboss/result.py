@@ -58,7 +58,7 @@ class Result(object):
             maboss_cmd = command
         else:
             l = len(simul.network)
-            if l <= 32:
+            if l <= 64:
                 pass
             elif l <= 128:
                 maboss_cmd = "MaBoSS_128n"

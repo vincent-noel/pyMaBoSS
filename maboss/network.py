@@ -1,5 +1,6 @@
 """Definitions of the different classes provided to the user."""
 
+import collections
 from . import logic
 from sys import stderr, stdout
 
@@ -89,7 +90,7 @@ class Node(object):
                     self.is_internal, self.internal_var, self.is_mutant)
 
 
-class Network(dict):
+class Network(collections.OrderedDict):
     """
     Represent a boolean network.
 
