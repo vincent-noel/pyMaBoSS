@@ -46,6 +46,7 @@ class Result(object):
         self.fptable = None
         self.state_probtraj = None
         self.nd_probtraj = None
+        self._nd_entropytraj = None
 
         with ExitStack() as stack:
             bnd_file = stack.enter_context(open(self._bnd, 'w'))
@@ -131,6 +132,20 @@ class Result(object):
             table = table[table.index <= until]
         plot_node_prob(table, self._ndtrajax, self.palette)
 
+    def plot_entropy_trajectory(self, until=None):
+        """Plot the evolution of the (transition) entropy over time.
+
+        :param float until: plot only up to time=`until`.
+        """
+        if self._err:
+            print("Error maboss previously returned non 0 value",
+                  file=stderr)
+            return
+        table = self.get_entropy_trajectory()
+        if until:
+            table = table[table.index <= until]
+        table.plot()
+
     def get_fptable(self): 
         """Return the content of fp.csv as a pandas dataframe."""
         if self.fptable is None:
@@ -157,6 +172,11 @@ class Result(object):
             table = pd.read_csv(table_file, "\t")
             self.state_probtraj = make_trajectory_table(table)
         return self.state_probtraj
+
+    def get_entropy_trajectory(self):
+        if self._nd_entropytraj is None:
+            self._nd_entropytraj = pd.read_csv("{}/res_probtraj.csv".format(self._path), "\t", usecols=('TH','H'))
+        return self._nd_entropytraj
 
     def save(self, prefix, replace=False):
         """
