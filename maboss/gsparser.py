@@ -46,11 +46,12 @@ booleanStr = (pp.oneOf('0 1')
 
 
 def booleanStrAction(token):
-    if pp.CaselessLiteral("True").matches(token):
-        return '1'
-    elif pp.CaselessLiteral("False").matches(token):
-        return '0'
+    if pp.CaselessLiteral("True").matches(token) or pp.Word("1").matches(token):
+        return True
+    elif pp.CaselessLiteral("False").matches(token) or pp.Word("0").matches(token):
+        return False
     else:
+        print("Cannot recognize boolean value : %s" % token)
         return token
 
 
