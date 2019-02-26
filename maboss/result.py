@@ -45,6 +45,7 @@ class Result(object):
         self.palette = simul.palette
         self.fptable = None
         self.state_probtraj = None
+        self.last_states_probtraj = None
         self.nd_probtraj = None
         self._nd_entropytraj = None
 
@@ -103,7 +104,7 @@ class Result(object):
                   "returned non 0 value", file=stderr)
             return
         self._piefig, self._pieax = plt.subplots(1, 1)
-        table = self.get_states_probtraj()
+        table = self.get_last_states_probtraj()
         plot_piechart(table, self._pieax, self.palette,
                 embed_labels=embed_labels, autopct=autopct,
                 prob_cutoff=prob_cutoff)
@@ -168,6 +169,12 @@ class Result(object):
             table = pd.read_csv(self.get_probtraj_file(), "\t", dtype=self.get_probtraj_dtypes())
             self.state_probtraj = make_trajectory_table(table)
         return self.state_probtraj
+
+    def get_last_states_probtraj(self):
+        if self.last_states_probtraj is None:
+            table = pd.read_csv(self.get_probtraj_file(), "\t", dtype=self.get_probtraj_dtypes())
+            self.last_states_probtraj = make_trajectory_table(table.tail(1))
+        return self.last_states_probtraj
 
     def get_entropy_trajectory(self):
         if self._nd_entropytraj is None:
