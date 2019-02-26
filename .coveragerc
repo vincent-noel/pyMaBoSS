@@ -1,0 +1,15 @@
+[run]
+omit = 
+	*/venv/*
+	*/test/*
+	*/virtualenv/*
+	*/dist-packages/*
+    */site-packages/*
+
+[report]
+omit = 
+	*/venv/*
+	*/tests/*
+	*/virtualenv/*
+	*/dist-packages/*
+    */site-packages/*
