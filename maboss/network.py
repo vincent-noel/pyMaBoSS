@@ -198,7 +198,12 @@ class Network(collections.OrderedDict):
 
 
     def __str__(self):
-        return _strNetwork(self)
+        ndList = list(self.values())
+        string = str(ndList[0])
+        if len(ndList) > 1:
+            string += "\n"
+            string += "\n\n".join(str(nd) for nd in ndList[1:])
+        return string
 
 
     def print_istate(self, out=stdout):
@@ -250,14 +255,3 @@ def _testStateDict(stDict, nbState):
         return True
     else:
         return True
-
-
-
-def _strNetwork(nt):
-    ndList = list(nt.values())
-    string = str(ndList[0])
-    if len(ndList) > 1:
-        string += "\n"
-        string += "\n\n".join(str(nd) for nd in ndList[1:])
-    return string
-
