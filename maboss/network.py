@@ -192,7 +192,23 @@ class Network(collections.OrderedDict):
 
 
     def print_istate(self, out=stdout):
-        print(_str_istateList(self._initState), file=out)
+        print(self.str_istate(), file=out)
+
+    def str_istate(self):
+        stringList = []
+        for binding in self._initState:
+            string = ''
+            if isinstance(binding, tuple):
+                string += '[' + ", ".join(list(binding)) + '].istate = '
+                string += ' , '.join([str(self._initState[binding][t]) + ' '
+                                      + str(list(t)) for t in self._initState[binding]])
+                string += ';'
+            else:
+                string += '[' + binding + '].istate = '
+                string += str(self._initState[binding][0]) + '[0] , '
+                string += str(self._initState[binding][1]) + '[1];'
+            stringList.append(string)
+        return '\n'.join(stringList)
 
     def set_output(self, output_list):
         """Set all the nodes that are not in the output_list as internal.
@@ -248,21 +264,4 @@ def _strNetwork(nt):
         string += "\n"
         string += "\n\n".join(_strNode(nd) for nd in ndList[1:])
     return string
-
-
-def _str_istateList(isl):
-    stringList = []
-    for binding in isl:
-        string = ''
-        if isinstance(binding, tuple):
-            string += '[' + ", ".join(list(binding)) + '].istate = '
-            string += ' , '.join([str(isl[binding][t]) + ' '
-                                  + str(list(t)) for t in isl[binding]])
-            string += ';'
-        else:
-            string += '[' + binding + '].istate = '
-            string += str(isl[binding][0]) + '[0] , '
-            string += str(isl[binding][1]) + '[1];'
-        stringList.append(string)
-    return '\n'.join(stringList)
 
