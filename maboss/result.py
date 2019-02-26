@@ -149,10 +149,8 @@ class Result(object):
     def get_fptable(self): 
         """Return the content of fp.csv as a pandas dataframe."""
         if self.fptable is None:
-            table_file = "{}/res_fp.csv".format(self._path)
-
             try:
-                self.fptable = pd.read_csv(table_file, "\t", skiprows=[0])
+                self.fptable = pd.read_csv(self.get_fp_file(), "\t", skiprows=[0])
 
             except pd.errors.EmptyDataError:
                 pass
@@ -161,22 +159,26 @@ class Result(object):
 
     def get_nodes_probtraj(self):
         if self.nd_probtraj is None:
-            table_file = "{}/res_probtraj.csv".format(self._path)
-            table = pd.read_csv(table_file, "\t")
+            table = pd.read_csv(self.get_probtraj_file(), "\t")
             self.nd_probtraj = make_node_proba_table(table)
         return self.nd_probtraj
 
     def get_states_probtraj(self):
         if self.state_probtraj is None:
-            table_file = "{}/res_probtraj.csv".format(self._path)
-            table = pd.read_csv(table_file, "\t")
+            table = pd.read_csv(self.get_probtraj_file(), "\t")
             self.state_probtraj = make_trajectory_table(table)
         return self.state_probtraj
 
     def get_entropy_trajectory(self):
         if self._nd_entropytraj is None:
-            self._nd_entropytraj = pd.read_csv("{}/res_probtraj.csv".format(self._path), "\t", usecols=('TH','H'))
+            self._nd_entropytraj = pd.read_csv(self.get_probtraj_file(), "\t", usecols=('TH','H'))
         return self._nd_entropytraj
+
+    def get_fp_file(self):
+        return "{}/res_fp.csv".format(self._path)
+
+    def get_probtraj_file(self):
+        return "{}/res_probtraj.csv".format(self._path)
 
     def save(self, prefix, replace=False):
         """
