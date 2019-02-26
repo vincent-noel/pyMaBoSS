@@ -95,24 +95,29 @@ class Simulation(object):
 
     def print_cfg(self, out=stdout):
         """Produce the content of the cfg file associated to the simulation."""
-        print("$nb_mutable = " + str(len(self.mutations)) + ";", file=out)
+        print(self.str_cfg(), file=out)
+
+    def str_cfg(self):
+
+        res = "$nb_mutable = %d;\n" % len(self.mutations)
         for p in self.param:
             if p[0] == '$':
-                print(p + ' = ' + str(self.param[p]) + ';', file=out)
-        self.network.print_istate(out=out)
-        print('', file=out)
+                res += "%s = %s;\n" % (p, self.param[p])
+
+        res += self.network.str_istate() + "\n"
+        res += "\n"
 
         for p in self.param:
             if p[0] != '$':
-                print(p + ' = ' + str(self.param[p]) + ';', file=out)
+                res += "%s = %s;\n" % (p, self.param[p])
 
         for name in self.network.names:
-            string = name+'.is_internal = ' + str(int(self.network[name].is_internal)) + ';'
-            print(string, file=out)
+            res += "%s.is_internal = %s;\n" % (name, self.network[name].is_internal)
 
         for nd in self.refstate:
-            string = nd +'.refstate = ' + self.refstate[nd] + ';'
-            print(string, file=out)
+            res += "%s.refstate = %s;\n" % (nd, self.refstate[nd])
+
+        return res
 
     def run(self, command=None):
         """Run the simulation with MaBoSS and return a Result object.
