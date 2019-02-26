@@ -85,7 +85,7 @@ class Node(object):
     def __str__(self):
         rt_up_str = str(self.rt_up)
         rt_down_str = str(self.rt_down)
-        internal_var_decl = "\n".join(map(lambda v: v + " = " + self.internal_var[v],
+        internal_var_decl = "\n".join(map(lambda v: "%s = %s;" % (v, self.internal_var[v]),
                                           self.internal_var.keys()))
         string = "\n".join(["Node " + self.name + " {",
                             internal_var_decl,
