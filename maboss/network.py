@@ -83,7 +83,17 @@ class Node(object):
             self.logExp = None
 
     def __str__(self):
-        return _strNode(self)
+        rt_up_str = str(self.rt_up)
+        rt_down_str = str(self.rt_down)
+        internal_var_decl = "\n".join(map(lambda v: v + " = " + self.internal_var[v],
+                                          self.internal_var.keys()))
+        string = "\n".join(["Node " + self.name + " {",
+                            internal_var_decl,
+                            ("\tlogic = " + self.logExp + ";") if self.logExp else "",
+                            ("\trate_up = " + rt_up_str + ";"),
+                            ("\trate_down = " + rt_down_str + ";"),
+                            "}"])
+        return string
 
     def copy(self):
         return Node(self.name, self.logExp, self.rt_up, self.rt_down,
@@ -242,26 +252,12 @@ def _testStateDict(stDict, nbState):
         return True
 
 
-def _strNode(nd):
-    string = ""
-    rt_up_str = str(nd.rt_up)
-    rt_down_str = str(nd.rt_down)
-    internal_var_decl = "\n".join(map(lambda v: v+" = " + nd.internal_var[v],
-                                      nd.internal_var.keys()))
-    string = "\n".join(["Node " + nd.name + " {",
-                        internal_var_decl,
-                        ("\tlogic = " + nd.logExp + ";") if nd.logExp else "",
-                        ("\trate_up = " + rt_up_str + ";"),
-                        ("\trate_down = " + rt_down_str + ";"),
-                        "}"])
-    return string
-
 
 def _strNetwork(nt):
     ndList = list(nt.values())
-    string = _strNode(ndList[0])
+    string = str(ndList[0])
     if len(ndList) > 1:
         string += "\n"
-        string += "\n\n".join(_strNode(nd) for nd in ndList[1:])
+        string += "\n\n".join(str(nd) for nd in ndList[1:])
     return string
 
