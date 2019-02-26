@@ -159,19 +159,21 @@ class Result(object):
 
     def get_nodes_probtraj(self):
         if self.nd_probtraj is None:
-            table = pd.read_csv(self.get_probtraj_file(), "\t")
+            table = pd.read_csv(self.get_probtraj_file(), "\t", dtype=self.get_probtraj_dtypes())
             self.nd_probtraj = make_node_proba_table(table)
         return self.nd_probtraj
 
     def get_states_probtraj(self):
         if self.state_probtraj is None:
-            table = pd.read_csv(self.get_probtraj_file(), "\t")
+            table = pd.read_csv(self.get_probtraj_file(), "\t", dtype=self.get_probtraj_dtypes())
             self.state_probtraj = make_trajectory_table(table)
         return self.state_probtraj
 
     def get_entropy_trajectory(self):
         if self._nd_entropytraj is None:
-            self._nd_entropytraj = pd.read_csv(self.get_probtraj_file(), "\t", usecols=('TH','H'))
+            self._nd_entropytraj = pd.read_csv(
+                self.get_probtraj_file(), "\t", usecols=('TH', 'H'), dtype=self.get_probtraj_dtypes()
+            )
         return self._nd_entropytraj
 
     def get_fp_file(self):
@@ -179,6 +181,17 @@ class Result(object):
 
     def get_probtraj_file(self):
         return "{}/res_probtraj.csv".format(self._path)
+
+    def get_probtraj_dtypes(self):
+        with open(self.get_probtraj_file(), 'r') as probtraj:
+            cols = probtraj.readline().split("\t")
+            nb_states = int((len(cols) - 5) / 3)
+
+            dtype = {"Time": np.float64, "TH": np.float64, "ErrorTH": np.float64, "H": np.float64, "HD=0": np.float64,
+                     "State": np.str, "Proba": np.float64, "ErrorProba": np.float64}
+            for i in range(1, nb_states):
+                dtype.update({"State.%d" % i: np.str, "Proba.%d" % i: np.float64, "ErrorProba.%d" % i: np.float64})
+            return dtype
 
     def save(self, prefix, replace=False):
         """
