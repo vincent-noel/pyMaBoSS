@@ -1,3 +1,4 @@
+services: docker
 language: python
 
 python: 3.6
@@ -14,6 +15,7 @@ before_install:
 - conda info -a
 - conda install --no-update-deps -y -c colomoto maboss=2.0
 - pip install coveralls
+- docker run -p 7777:7777 --network host -d vnoel/maboss-server
 
 install:
 - pip install .
