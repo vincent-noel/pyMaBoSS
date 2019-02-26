@@ -23,8 +23,9 @@
 from __future__ import print_function
 import os, sys, time, signal, socket
 import maboss.maboss_server.atexit
-import maboss.maboss_server.result
-
+import maboss.result
+from io import StringIO
+import numpy as np
 #
 # MaBoSS Communication Layer
 #
@@ -125,12 +126,12 @@ class DataStreamer:
         return header + "\n" + data
 
     @staticmethod
-    def parseStreamData(ret_data, hints = None):
+    def parseStreamData(ret_data, simulation, hints = None):
         verbose = False
         if hints:
             verbose = "verbose" in hints and hints["verbose"]
 
-        result_data = ResultData()
+        result_data = ResultData(simulation)
         magic = RETURN + " " + MABOSS_MAGIC
         magic_len = len(magic)
         if ret_data[0:magic_len] != magic:
@@ -239,9 +240,10 @@ class ClientData:
     def setConfig(self, config):
         self._config = config
 
-class ResultData:
+class ResultData(maboss.Result):
 
-    def __init__(self):
+    def __init__(self, simulation):
+        maboss.Result.__init__(self, simulation)
         self._status = 0
         self._errmsg = ""
         self._stat_dist = None
@@ -291,6 +293,23 @@ class ResultData:
 
     def getRunLog(self):
         return self._runlog
+
+    def get_fp_file(self):
+        return StringIO(self.getFP())
+
+    def get_probtraj_file(self):
+        return StringIO(self.getProbTraj())
+
+    def get_probtraj_dtypes(self):
+
+        first_line = self.getProbTraj().split("\n", 1)[0]
+        cols = first_line.split("\t")
+        nb_states = int((len(cols) - 5)/3)
+        dtype = {"Time": np.float64, "TH": np.float64, "ErrorTH": np.float64, "H": np.float64, "HD=0": np.float64, "State": np.str, "Proba": np.float64, "ErrorProba": np.float64}
+        for i in range(1, nb_states):
+            dtype.update({"State.%d" % i: np.str, "Proba.%d" % i: np.float64, "ErrorProba.%d" % i: np.float64})
+        return dtype
+
 
 class MaBoSSClient:
     
@@ -353,7 +372,20 @@ class MaBoSSClient:
             self._socket.connect((host, port))
             
     def run(self, simulation, hints={}):
-        return maboss.maboss_server.result.Result(self, simulation, hints)
+
+        if "check" in hints and hints["check"]:
+            command = CHECK_COMMAND
+        else:
+            command = RUN_COMMAND
+
+        client_data = ClientData(str(simulation.network), simulation.str_cfg(), command)
+
+        data = DataStreamer.buildStreamData(client_data, hints)
+        data = self.send(data)
+
+        return DataStreamer.parseStreamData(data, simulation, hints )
+
+        # return maboss.maboss_server.result.Result(self, simulation, hints).getResultData()
 
     def send(self, data):
         self._socket.sendall(data.encode())
