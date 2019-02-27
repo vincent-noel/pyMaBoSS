@@ -113,9 +113,9 @@ class Network(collections.OrderedDict):
 
     def __init__(self, nodeList, booleanVariablesList):
         if version_info[0] < 3:
-            super(Network, self).__init__({nd.name: nd for nd in nodeList})
+            super(Network, self).__init__([(nd.name, nd) for nd in nodeList])
         else:
-            super().__init__({nd.name: nd for nd in nodeList})
+            super().__init__([(nd.name, nd) for nd in nodeList])
 
         self.names = [nd.name for nd in nodeList]
         self.logicExp = {nd.name: nd.logExp for nd in nodeList}
