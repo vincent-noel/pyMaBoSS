@@ -15,19 +15,19 @@ from .result import Result
 import os
 import uuid
 
-_default_parameter_list = collections.OrderedDict({'time_tick': 0.1,
-                  'max_time': 4,
-                  'sample_count': 10000,
-                  'discrete_time': 0,
-                  'use_physrandgen': 1,
-                  'seed_pseudorandom': 0,
-                  'display_traj': 0,
-                  'statdist_traj_count': 0,
-                  'statdist_cluster_threshold': 1,
-                  'thread_count': 1,
-                  'statdist_similarity_cache_max_size': 20000
-                  })
-
+_default_parameter_list = collections.OrderedDict([
+    ('time_tick', 0.1),
+    ('max_time', 4),
+    ('sample_count', 10000),
+    ('discrete_time', 0),
+    ('use_physrandgen', 1),
+    ('seed_pseudorandom', 0),
+    ('display_traj', 0),
+    ('statdist_traj_count', 0),
+    ('statdist_cluster_threshold', 1),
+    ('thread_count', 1),
+    ('statdist_similarity_cache_max_size', 20000)
+])
 
 class Simulation(object):
     """

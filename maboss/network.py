@@ -127,11 +127,11 @@ class Network(collections.OrderedDict):
 
         # _attribution gives for each node the list of node with which it is
         # binded.
-        self._attribution = {nd.name: nd.name for nd in nodeList}
+        self._attribution = collections.OrderedDict([(nd.name, nd.name) for nd in nodeList])
 
         # _initState gives for each list of binded node the initial state
         # probabilities.
-        self._initState = {l: {0: 0.5, 1: 0.5} for l in self._attribution}
+        self._initState = collections.OrderedDict([(l, {0: 0.5, 1: 0.5}) for l in self._attribution])
 
     def copy(self):
         new_ndList = [self[name].copy() for name in self.names]
