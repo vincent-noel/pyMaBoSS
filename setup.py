@@ -1,5 +1,10 @@
+from sys import version_info
 
 from setuptools import setup, find_packages
+
+optional_contextlib = []
+if version_info[0] < 3:
+    optional_contextlib.append("contextlib2")
 
 setup(name='maboss',
     version="0.6.5",
@@ -14,4 +19,4 @@ setup(name='maboss',
         "ipywidgets",
         "matplotlib",
         "pandas",
-    ])
+    ] + optional_contextlib)

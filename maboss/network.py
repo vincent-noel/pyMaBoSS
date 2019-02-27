@@ -1,8 +1,9 @@
 """Definitions of the different classes provided to the user."""
 
+from __future__ import print_function
 import collections
 from . import logic
-from sys import stderr, stdout
+from sys import stderr, stdout, version_info
 
 
 class Node(object):
@@ -111,7 +112,11 @@ class Network(collections.OrderedDict):
     """
 
     def __init__(self, nodeList, booleanVariablesList):
-        super().__init__({nd.name: nd for nd in nodeList})
+        if version_info[0] < 3:
+            super(Network, self).__init__({nd.name: nd for nd in nodeList})
+        else:
+            super().__init__({nd.name: nd for nd in nodeList})
+
         self.names = [nd.name for nd in nodeList]
         self.logicExp = {nd.name: nd.logExp for nd in nodeList}
         self.booleanVariables = booleanVariablesList

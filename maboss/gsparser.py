@@ -5,13 +5,17 @@ the very specific structure of the ginsim output and not able to parse every
 MaBoSS file.
 """
 
+from __future__ import print_function
 import sys
 from collections import OrderedDict
-from sys import stderr
+from sys import stderr, version_info
+if version_info[0] < 3:
+    from contextlib2 import ExitStack
+else:
+    from contextlib import ExitStack
 from os.path import isfile
 import pyparsing as pp
 from .logic import varName, logExp
-from contextlib import ExitStack
 from .network import Node, Network
 from .simulation import Simulation
 externVar = pp.Suppress('$') + ~pp.White() + varName

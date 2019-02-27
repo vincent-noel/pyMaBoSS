@@ -1,6 +1,6 @@
 """utilitary functions to manipulate boolean expressions."""
 
-
+from __future__ import print_function
 from sys import stderr
 import pyparsing as pp
 

@@ -1,9 +1,13 @@
 """Class that handles the parameters of a MaBoSS simulation.
 """
 
+from __future__ import print_function
 import collections
-from sys import stderr, stdout
-from contextlib import ExitStack
+from sys import stderr, stdout, version_info
+if version_info[0] < 3:
+    from contextlib2 import ExitStack
+else:
+    from contextlib import ExitStack
 
 from colomoto import ModelState
 
