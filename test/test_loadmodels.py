@@ -1,5 +1,9 @@
 """Test suite for loading models."""
 
+#For testing in environnement with no screen
+import matplotlib
+matplotlib.use('Agg')
+
 from unittest import TestCase
 from maboss import load
 from os.path import dirname, join

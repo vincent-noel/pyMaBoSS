@@ -1,5 +1,9 @@
 """Test suite for src/types.py."""
 
+#For testing in environnement with no screen
+import matplotlib
+matplotlib.use('Agg')
+
 from unittest import TestCase
 import sys
 sys.path.append('..')
