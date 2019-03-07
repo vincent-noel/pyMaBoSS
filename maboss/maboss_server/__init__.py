@@ -1,1 +1,1 @@
-from maboss.maboss_server.comm import MaBoSSClient
+from .client import MaBoSSClient
