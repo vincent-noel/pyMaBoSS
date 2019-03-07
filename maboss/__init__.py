@@ -2,6 +2,7 @@ from .network import *
 from .simulation import *
 from .result import *
 from .gsparser import load
+from .maboss_server import MaBoSSClient
 
 
 from colomoto_jupyter import IN_IPYTHON
