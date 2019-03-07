@@ -126,7 +126,22 @@ class Simulation(object):
 
         except ValueError as e:
             return [str(e)]
-   
+
+    def get_maboss_cmd(self):
+
+        maboss_cmd = "MaBoSS"
+
+        l = len(self.network)
+        if l <= 64:
+            pass
+        elif l <= 128:
+            maboss_cmd = "MaBoSS_128n"
+        else:
+            maboss_cmd = "MaBoSS_256n"
+
+        return maboss_cmd
+
+
     def print_bnd(self, out=stdout):
         """Produce the content of the bnd file associated to the simulation."""
         print(self.network, file=out)

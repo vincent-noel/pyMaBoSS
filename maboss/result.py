@@ -59,17 +59,9 @@ class Result(object):
             simul.print_bnd(out=bnd_file)
             simul.print_cfg(out=cfg_file)
 
-        maboss_cmd = "MaBoSS"
+        maboss_cmd = simul.get_maboss_cmd()
         if command:
             maboss_cmd = command
-        else:
-            l = len(simul.network)
-            if l <= 64:
-                pass
-            elif l <= 128:
-                maboss_cmd = "MaBoSS_128n"
-            else:
-                maboss_cmd = "MaBoSS_256n"
 
         self._err = subprocess.call([maboss_cmd, "-c", self._cfg, "-o",
                                      self._path+'/res', self._bnd])
