@@ -172,6 +172,33 @@ class Simulation(object):
 
         return res
 
+    def get_logical_rules(self):
+
+        path = tempfile.mkdtemp()
+        cfg_path = tempfile.mkstemp(dir=path, suffix='.cfg')[1]
+        bnd_path = tempfile.mkstemp(dir=path, suffix='.bnd')[1]
+
+        with ExitStack() as stack:
+            bnd_file = stack.enter_context(open(bnd_path, 'w'))
+            cfg_file = stack.enter_context(open(cfg_path, 'w'))
+            self.print_bnd(out=bnd_file)
+            self.print_cfg(out=cfg_file)
+
+        proc = subprocess.Popen(
+            [self.get_maboss_cmd(), "-c", cfg_path, "-l", bnd_path],
+            stdout=subprocess.PIPE, stderr=subprocess.PIPE
+        )
+        out, err = proc.communicate()
+        rules = {}
+        for line in out.decode().split("\n"):
+            if ":" in line:
+                node, rule = line.split(" : ", 1)
+                rules.update({node.strip(): rule.strip()})
+
+        return rules
+
+
+
     def run(self, command=None):
         """Run the simulation with MaBoSS and return a Result object.
 
