@@ -53,6 +53,8 @@ class Result(object):
         self.nd_probtraj = None
         self._nd_entropytraj = None
 
+        self.raw_probtraj = None
+        
         with ExitStack() as stack:
             bnd_file = stack.enter_context(open(self._bnd, 'w'))
             cfg_file = stack.enter_context(open(self._cfg, 'w'))
@@ -162,13 +164,13 @@ class Result(object):
 
     def get_states_probtraj(self):
         if self.state_probtraj is None:
-            table = pd.read_csv(self.get_probtraj_file(), "\t", dtype=self.get_probtraj_dtypes())
+            table = self.get_raw_probtraj()
             self.state_probtraj = make_trajectory_table(table)
         return self.state_probtraj
 
     def get_last_states_probtraj(self):
         if self.last_states_probtraj is None:
-            table = pd.read_csv(self.get_probtraj_file(), "\t", dtype=self.get_probtraj_dtypes())
+            table = self.get_raw_probtraj()
             self.last_states_probtraj = make_trajectory_table(table.tail(1))
         return self.last_states_probtraj
 
@@ -178,6 +180,11 @@ class Result(object):
                 self.get_probtraj_file(), "\t", usecols=('TH', 'H'), dtype=self.get_probtraj_dtypes()
             )
         return self._nd_entropytraj
+
+    def get_raw_probtraj(self):
+        if self.raw_probtraj is None:
+            self.raw_probtraj = pd.read_csv(self.get_probtraj_file(), "\t", dtype=self.get_probtraj_dtypes())
+        return self.raw_probtraj
 
     def get_fp_file(self):
         return "{}/res_fp.csv".format(self._path)
