@@ -13,7 +13,7 @@ class MaBoSSClient:
 
     SERVER_NUM = 1 # for now
 
-    def __init__(self, host = None, port = None, maboss_server = None):
+    def __init__(self, host = None, port = None, maboss_server = None, timeout=None):
         if not maboss_server:
             maboss_server = os.getenv("MABOSS_SERVER")
             if not maboss_server:
@@ -66,9 +66,11 @@ class MaBoSSClient:
                         (MAX_TRIES *TIME_INTERVAL) + " seconds")
 
             self._socket = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+            self._socket.settimeout(timeout)
             self._socket.connect(port)
         else:
             self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            self._socket.settimeout(timeout)
             self._socket.connect((host, port))
 
         # self._socket.settimeout(5)
