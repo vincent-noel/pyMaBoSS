@@ -27,6 +27,7 @@ class UpP_MaBoSS:
         self.verbose = verbose
         
         self.pop_ratios = pd.Series()
+        self.stepwise_probability_distribution = None
         self.results = []
 
         if previous_run:
@@ -82,6 +83,16 @@ class UpP_MaBoSS:
         if name:
             self.pop_ratios.name = name
         return self.pop_ratios*self.base_ratio
+
+    def get_stepwise_probability_distribution(self):
+        if self.stepwise_probability_distribution is None:
+            tables = [result.get_last_states_probtraj() for result in self.results]
+            self.stepwise_probability_distribution = pd.concat(tables, axis=0, sort=False)
+            self.stepwise_probability_distribution.fillna(0, inplace=True)
+            self.stepwise_probability_distribution.set_index([list(range(0, len(tables)))], inplace=True)
+            self.stepwise_probability_distribution.insert(0, column='PopRatio', value=(self.pop_ratios*self.base_ratio).values)
+            
+        return self.stepwise_probability_distribution
 
     def _readUppFile(self):
 
