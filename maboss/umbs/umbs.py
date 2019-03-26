@@ -274,7 +274,7 @@ class UpP_MaBoSS:
             simulation.param.update(parameters)
             new_istate = self._initCond_Trajline(probTrajList)
             
-            simulation.network.set_istate(self.node_list, new_istate)
+            simulation.network.set_istate(self.node_list, new_istate, warnings=False)
             return simulation
 
     def _initCond_Trajline(self, proba_traj_list):
@@ -396,7 +396,7 @@ def _get_next_condition_from_trajectory(self, next_model, step=16, pickline=5):
     for state,prob in zip(states, probs):
         probDict[tuple(state)] = prob
     
-    next_model.network.set_istate(names, probDict)
+    next_model.network.set_istate(names, probDict, warnings=False)
 
 
 def _str2state(s, name2idx):
