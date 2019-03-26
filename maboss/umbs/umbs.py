@@ -18,7 +18,7 @@ class UpP_MaBoSS:
         self.time_shift = 0.0
         self.base_ratio = 1
 
-        self.node_list = []
+        self.node_list = list(model.network.keys())
         self.division_node = ""
         self.death_node = ""
         self.MaBoSS_exec = ""
@@ -38,22 +38,13 @@ class UpP_MaBoSS:
             self.base_ratio = prev_pop_ratios.iloc[-1]
             self.model = model.copy()
         
-        if not os.path.exists(workdir):
             # Load the previous run final state
-            if previous_run: _get_next_condition_from_trajectory(previous_run, self.model)
+            _get_next_condition_from_trajectory(previous_run, self.model)
             
-            # Prepare the new run
-            os.makedirs(workdir)
-            with open( self.bndfile, 'w' ) as out:
-                self.model.print_bnd(out)
-            with open( self.cfgfile, 'w' ) as out:
-                self.model.print_cfg(out)
-            
-            self._run()
+        self._run()
 
     def _run(self):
 
-        self._getNodeList()
         self._readUppFile()
         
         self.pop_ratios = pd.Series()
@@ -101,19 +92,6 @@ class UpP_MaBoSS:
         if name:
             self.pop_ratios.name = name
         return self.pop_ratios*self.base_ratio
-
-    def _getNodeList(self):
-
-        try:
-            with open(self.bndfile, 'r') as BND:
-                for line in BND.readlines():
-                    if "node" in line or "Node" in line:
-                        tokens = line.split()
-                        self.node_list.append(tokens[1])
-
-        except FileNotFoundError:
-            print("Cannot find .bnd file", file=sys.stderr)
-            exit()
 
     def _readUppFile(self):
 
