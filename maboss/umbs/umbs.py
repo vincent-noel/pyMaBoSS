@@ -7,13 +7,11 @@ import subprocess
 import pandas as pd
 
 class UpP_MaBoSS:
-    def __init__(self, model, uppfile, workdir, previous_run=None, verbose=False):
+    def __init__(self, model, uppfile, workdir=None, previous_run=None, verbose=False):
 
-        self.workdir = workdir
         self.model = model
         self.uppfile = uppfile
-        self.bndfile = os.path.join(workdir, 'model.bnd')
-        self.cfgfile = os.path.join(workdir, 'model.cfg')
+        
         self.time_step = model.param['max_time']
         self.time_shift = 0.0
         self.base_ratio = 1
@@ -21,14 +19,14 @@ class UpP_MaBoSS:
         self.node_list = list(model.network.keys())
         self.division_node = ""
         self.death_node = ""
-        self.MaBoSS_exec = ""
+
         self.update_var = {}
         self.pop_ratio = 1.0
         self.step_number = -1
 
         self.verbose = verbose
         
-        self.pop_ratios = None
+        self.pop_ratios = pd.Series()
         self.results = []
 
         if previous_run:
@@ -47,13 +45,6 @@ class UpP_MaBoSS:
 
         self._readUppFile()
         
-        self.pop_ratios = pd.Series()
-
-        if self.MaBoSS_exec == "":
-            self.MaBoSS_exec = "./MaBoSS"
-
-        outName = os.path.splitext(self.cfgfile)[0]
-
         if self.verbose:
             print("Run MaBoSS step 0")
 
@@ -61,7 +52,6 @@ class UpP_MaBoSS:
         self.results.append(result)
         self.pop_ratios[self.time_shift] = self.pop_ratio
     
-        cfgFileStep = self.cfgfile
         modelStep = self.model.copy()
 
         for stepIndex in range(1, self.step_number+1):
@@ -134,18 +124,6 @@ class UpP_MaBoSS:
                         
                         if self.verbose:
                             print("Number of steps : %s" % self.step_number)
-            
-                    if line.startswith("MaBoSS"):
-                        
-                        if self.MaBoSS_exec != "":
-                            print("Multiple definition of MaBoSS executable", file=sys.stderr)
-                            exit()
-
-                        self.MaBoSS_exec = line.split("=")[1]
-                        self.MaBoSS_exec = self.MaBoSS_exec.replace(";", "").strip()
-                        
-                        if self.verbose:
-                            print("MaBoSS executable : %s" % self.MaBoSS_exec)
             
                     if line.startswith("$"):
 
