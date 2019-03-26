@@ -63,48 +63,39 @@ class UpP_MaBoSS:
 
         outName = os.path.splitext(self.cfgfile)[0]
 
-        with open(outName+"_PopProbTraj.csv", "w") as ResumeFile:
+        if self.verbose:
+            print("Run MaBoSS step 0")
 
-            if self.verbose:
-                print("Run MaBoSS step 0")
+        result = self.model.run()
+        self.results.append(result)
+        self.pop_ratios[self.time_shift] = self.pop_ratio
+    
+        cfgFileStep = self.cfgfile
+        modelStep = self.model.copy()
 
-            result = self.model.run()
-            self.results.append(result)
+        for stepIndex in range(1, self.step_number+1):
 
-            self.pop_ratios[self.time_shift] = self.pop_ratio
-        
-            with open(result.get_probtraj_file(), "r") as FirstPTrjF:
-                line = FirstPTrjF.readline().split("\t", 1)[1]
-                ResumeFile.write("Step\tPopRatio\t%s\n" % line)
+            LastLinePrevTraj = ""                
+            with open(result.get_probtraj_file(), 'r') as PrStepTrajF:
+                LastLinePrevTraj = PrStepTrajF.readlines()[-1]
+            
+            self.pop_ratio *= self._updatePopRatio(LastLinePrevTraj)
+            self.pop_ratios[self.time_shift + self.time_step*stepIndex] = self.pop_ratio
+            
+            modelStep = self._buildUpdateCfg(modelStep, LastLinePrevTraj)
+            
+            if modelStep is None:
+                if self.verbose:
+                    print("No cells left")
 
-            cfgFileStep = self.cfgfile
-            modelStep = self.model.copy()
+                break
 
-            for stepIndex in range(1, self.step_number+1):
+            else:
+                if self.verbose:
+                    print("Running MaBoSS for step %d" % stepIndex)
 
-                LastLinePrevTraj = ""
-                with open(result.get_probtraj_file(), 'r') as PrStepTrajF:
-                    LastLinePrevTraj = PrStepTrajF.readlines()[-1]
-
-                self.pop_ratio *= self._updatePopRatio(LastLinePrevTraj)
-                self.pop_ratios[self.time_shift + self.time_step*stepIndex] = self.pop_ratio
-
-                line4ResFile = LastLinePrevTraj.split("\t", 1)[1]
-                ResumeFile.write("%d\t%g\t%s" % (stepIndex, self.pop_ratio, line4ResFile))
-
-                modelStep = self._buildUpdateCfg(modelStep, LastLinePrevTraj)
-                if modelStep is None:
-                    if self.verbose:
-                        print("No cells left")
-
-                    break
-
-                else:
-                    if self.verbose:
-                        print("Running MaBoSS for step %d" % stepIndex)
-
-                    result = modelStep.run()
-                    self.results.append(result)
+                result = modelStep.run()
+                self.results.append(result)
 
     def get_population_ratios(self, name=None):
         if name:
