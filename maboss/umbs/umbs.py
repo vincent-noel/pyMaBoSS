@@ -15,7 +15,7 @@ class UpP_MaBoSS:
         self.bndfile = os.path.join(workdir, 'model.bnd')
         self.cfgfile = os.path.join(workdir, 'model.cfg')
         self.time_step = model.param['max_time']
-        self.time_shift = 0
+        self.time_shift = 0.0
         self.base_ratio = 1
 
         self.node_list = []
@@ -55,22 +55,24 @@ class UpP_MaBoSS:
 
         self._getNodeList()
         self._readUppFile()
+        
+        self.pop_ratios = pd.Series()
 
         if self.MaBoSS_exec == "":
             self.MaBoSS_exec = "./MaBoSS"
 
         outName = os.path.splitext(self.cfgfile)[0]
 
-        with open(outName+"_PopR.csv", "w") as PopRatioF, open(outName+"_PopProbTraj.csv", "w") as ResumeFile:
-            PopRatioF.write("Step\tPopRatio\n")
+        with open(outName+"_PopProbTraj.csv", "w") as ResumeFile:
+
             if self.verbose:
                 print("Run MaBoSS step 0")
 
             result = self.model.run()
             self.results.append(result)
 
-            PopRatioF.write("0\t%g\n" % self.pop_ratio)
-
+            self.pop_ratios[self.time_shift] = self.pop_ratio
+        
             with open(result.get_probtraj_file(), "r") as FirstPTrjF:
                 line = FirstPTrjF.readline().split("\t", 1)[1]
                 ResumeFile.write("Step\tPopRatio\t%s\n" % line)
@@ -85,7 +87,7 @@ class UpP_MaBoSS:
                     LastLinePrevTraj = PrStepTrajF.readlines()[-1]
 
                 self.pop_ratio *= self._updatePopRatio(LastLinePrevTraj)
-                PopRatioF.write("%d\t%g\n" % (stepIndex, self.pop_ratio))
+                self.pop_ratios[self.time_shift + self.time_step*stepIndex] = self.pop_ratio
 
                 line4ResFile = LastLinePrevTraj.split("\t", 1)[1]
                 ResumeFile.write("%d\t%g\t%s" % (stepIndex, self.pop_ratio, line4ResFile))
@@ -105,17 +107,9 @@ class UpP_MaBoSS:
                     self.results.append(result)
 
     def get_population_ratios(self, name=None):
-        if self.pop_ratios is None:
-            raw_pop_ratios = []
-            with open(self.cfgfile.replace(".cfg","_PopR.csv")) as f:
-                f.readline()
-                for line in f:
-                    data = line.strip('\n').split("\t")
-                    raw_pop_ratios.append(self.base_ratio * float(data[1]))
-            time_steps = [ self.time_shift + self.time_step*t for t in range(len(raw_pop_ratios)) ]
-            self.pop_ratios = pd.Series(raw_pop_ratios, index=time_steps)
-        if name: self.pop_ratios.name = name
-        return self.pop_ratios
+        if name:
+            self.pop_ratios.name = name
+        return self.pop_ratios*self.base_ratio
 
     def _getNodeList(self):
 
