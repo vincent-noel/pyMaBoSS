@@ -273,7 +273,7 @@ def _testStateDict(stDict, nbState):
         print("Error, the given values must be nonegative",
               file=stderr)
         return False
-    elif not sum(stDict.values()) == 1:
+    elif (1.0-sum(stDict.values())) > 1e-8:
         print("Warning: the given values should sum up to 1",
               file=stderr)
         return True
