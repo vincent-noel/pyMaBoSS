@@ -157,7 +157,7 @@ class Network(collections.OrderedDict):
         new_network._initState = self._initState.copy()
         return new_network
 
-    def set_istate(self, nodes, probDict):
+    def set_istate(self, nodes, probDict, warnings=True):
         """
         Change the inital states probability of one or several nodes.
 
@@ -197,10 +197,11 @@ class Network(collections.OrderedDict):
                     self._erase_binding(nodes)
                 self._initState[nodes] = {0: probDict[0], 1: probDict[1]}
 
-        elif _testStateDict(probDict, len(nodes)):
+        elif _testStateDict(probDict, len(nodes), warnings):
             for node in nodes:
                 if isinstance(self._attribution[node], tuple):
-                    print("Warning, node %s was previously bound to other"
+                    if warnings:
+                        print("Warning, node %s was previously bound to other"
                           "nodes" % node, file=stderr)
                     self._erase_binding(node)
 
@@ -259,7 +260,7 @@ class Network(collections.OrderedDict):
             self[nd].is_internal = nd not in output_list
 
 
-def _testStateDict(stDict, nbState):
+def _testStateDict(stDict, nbState, warnings=True):
     """Check if stateDict is a good parameter for set_istate."""
     def goodTuple(t):
         return len(t) == nbState and all(x == 0 or x == 1 for x in t)
@@ -274,7 +275,8 @@ def _testStateDict(stDict, nbState):
               file=stderr)
         return False
     elif (1.0-sum(stDict.values())) > 1e-8:
-        print("Warning: the given values should sum up to 1",
+        if warnings:
+            print("Warning: the given values should sum up to 1",
               file=stderr)
         return True
     else:
