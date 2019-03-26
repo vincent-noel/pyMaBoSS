@@ -3,6 +3,7 @@ from .simulation import *
 from .result import *
 from .gsparser import load
 from .maboss_server import MaBoSSClient
+from .umbs import UpP_MaBoSS
 
 
 from colomoto_jupyter import IN_IPYTHON
