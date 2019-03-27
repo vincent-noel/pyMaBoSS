@@ -5,6 +5,11 @@ import re
 import random
 import subprocess
 import pandas as pd
+if sys.version_info[0] < 3:
+    from contextlib2 import ExitStack
+else:
+    from contextlib import ExitStack
+
 
 class UpP_MaBoSS:
     def __init__(self, model, uppfile, workdir=None, previous_run=None, verbose=False):
@@ -93,6 +98,27 @@ class UpP_MaBoSS:
             self.stepwise_probability_distribution.insert(0, column='PopRatio', value=(self.pop_ratios*self.base_ratio).values)
             
         return self.stepwise_probability_distribution
+
+    def save(self, path):
+        if not os.path.exists(path):
+            os.mkdir(path)
+
+        self.save_model(path)
+        self.save_population_ratios(os.path.join(path, "PopRatios.csv"))
+        self.save_stepwise_probability_distribution(os.path.join(path, "PopProbTraj.csv"))
+
+    def save_model(self, path):
+        with ExitStack() as stack:
+            cfg_file = stack.enter_context(open(os.path.join(path, "model.cfg"), 'w'))
+            bnd_file = stack.enter_context(open(os.path.join(path, "model.bnd"), 'w'))
+            self.model.print_cfg(cfg_file)
+            self.model.print_bnd(bnd_file)
+
+    def save_population_ratios(self, path):
+        (self.pop_ratios*self.base_ratio).to_csv(path, header=["PopRatio"], index_label="Step")
+
+    def save_stepwise_probability_distribution(self, path):
+        self.get_stepwise_probability_distribution().to_csv(path, index_label="Step")
 
     def _readUppFile(self):
 
