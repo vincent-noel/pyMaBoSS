@@ -9,7 +9,7 @@ if sys.version_info[0] < 3:
     from contextlib2 import ExitStack
 else:
     from contextlib import ExitStack
-import pathlib
+import glob
 import shutil
 from ..result import StoredResult
 
@@ -55,8 +55,8 @@ class UpP_MaBoSS:
             # Restoring
             self.results = [None]*(self.step_number+1)
 
-            for folder in sorted(pathlib.Path(self.workdir).glob("Step_*/")):
-                step = os.path.basename(folder).split("_")[-1]
+            for folder in sorted(glob.glob("%s/Step_*/" % self.workdir)):
+                step = os.path.basename(folder[0:-1]).split("_")[-1]
                 self.results[int(step)] = StoredResult(folder)
 
             self.pop_ratios = pd.read_csv(
