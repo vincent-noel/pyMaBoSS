@@ -20,14 +20,14 @@
 # Authors: Eric Viara <viara@sysra.com>, Vincent Noel <contact@vincent-noel.fr>
 # Date: May 2018 - February 2019
 
-from ..result import Result as MaBoSSResult
+from ..result import BaseResult
 from io import StringIO
 import numpy as np
 
-class Result(MaBoSSResult):
+class Result(BaseResult):
 
     def __init__(self, simulation):
-        MaBoSSResult.__init__(self, simulation)
+        BaseResult.__init__(self, simulation)
         self._status = 0
         self._errmsg = ""
         self._stat_dist = None

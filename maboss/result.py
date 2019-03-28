@@ -18,7 +18,8 @@ import tempfile
 import os
 import subprocess
 
-class Result(object):
+
+class BaseResult(object):
     """
     Class that handles the results of MaBoSS simulation.
     
@@ -39,17 +40,12 @@ class Result(object):
     """
 
     def __init__(self, simul, command=None):
-        self._path = tempfile.mkdtemp()
-        cfg_fd, self._cfg = tempfile.mkstemp(dir=self._path, suffix='.cfg')
-        os.close(cfg_fd)
         
-        bnd_fd, self._bnd = tempfile.mkstemp(dir=self._path, suffix='.bnd')
-        os.close(bnd_fd)
-
         self._trajfig = None
         self._piefig = None
         self._fpfig = None
         self._ndtraj = None
+        self._err = False
         self.palette = simul.palette
         self.fptable = None
         self.state_probtraj = None
@@ -58,21 +54,6 @@ class Result(object):
         self._nd_entropytraj = None
 
         self.raw_probtraj = None
-        
-        with ExitStack() as stack:
-            bnd_file = stack.enter_context(open(self._bnd, 'w'))
-            cfg_file = stack.enter_context(open(self._cfg, 'w'))
-            simul.print_bnd(out=bnd_file)
-            simul.print_cfg(out=cfg_file)
-
-        maboss_cmd = simul.get_maboss_cmd()
-        if command:
-            maboss_cmd = command
-
-        self._err = subprocess.call([maboss_cmd, "-c", self._cfg, "-o",
-                                     self._path+'/res', self._bnd])
-        if self._err:
-            print("Error, MaBoSS returned non 0 value", file=stderr)
 
     def plot_trajectory(self, legend=True, until=None):
         """Plot the graph state probability vs time.
@@ -190,12 +171,6 @@ class Result(object):
             self.raw_probtraj = pd.read_csv(self.get_probtraj_file(), "\t", dtype=self.get_probtraj_dtypes())
         return self.raw_probtraj
 
-    def get_fp_file(self):
-        return "{}/res_fp.csv".format(self._path)
-
-    def get_probtraj_file(self):
-        return "{}/res_probtraj.csv".format(self._path)
-
     def get_probtraj_dtypes(self):
         with open(self.get_probtraj_file(), 'r') as probtraj:
             cols = probtraj.readline().split("\t")
@@ -207,6 +182,39 @@ class Result(object):
                 dtype.update({"State.%d" % i: np.str, "Proba.%d" % i: np.float64, "ErrorProba.%d" % i: np.float64})
             return dtype
 
+
+class Result(BaseResult):
+
+    def __init__(self, simul, command=None):
+        BaseResult.__init__(self, simul, command)
+        self._path = tempfile.mkdtemp()
+        cfg_fd, self._cfg = tempfile.mkstemp(dir=self._path, suffix='.cfg')
+        os.close(cfg_fd)
+        
+        bnd_fd, self._bnd = tempfile.mkstemp(dir=self._path, suffix='.bnd')
+        os.close(bnd_fd)
+        
+        with ExitStack() as stack:
+            bnd_file = stack.enter_context(open(self._bnd, 'w'))
+            cfg_file = stack.enter_context(open(self._cfg, 'w'))
+            simul.print_bnd(out=bnd_file)
+            simul.print_cfg(out=cfg_file)
+
+        maboss_cmd = simul.get_maboss_cmd()
+        if command:
+            maboss_cmd = command
+
+        self._err = subprocess.call([maboss_cmd, "-c", self._cfg, "-o",
+                                     self._path+'/res', self._bnd])
+        if self._err:
+            print("Error, MaBoSS returned non 0 value", file=stderr)
+
+    def get_fp_file(self):
+        return "{}/res_fp.csv".format(self._path)
+
+    def get_probtraj_file(self):
+        return "{}/res_probtraj.csv".format(self._path)
+    
     def save(self, prefix, replace=False):
         """
         Write the cfg, bnd and all results in working dir.
@@ -245,6 +253,7 @@ class Result(object):
 
     def __del__(self):
         shutil.rmtree(self._path)
+
 
 
 def _check_prefix(prefix):
