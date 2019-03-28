@@ -9,6 +9,8 @@ if sys.version_info[0] < 3:
     from contextlib2 import ExitStack
 else:
     from contextlib import ExitStack
+import pathlib
+from ..result import StoredResult
 
 
 class UpP_MaBoSS:
@@ -16,10 +18,11 @@ class UpP_MaBoSS:
 
         self.model = model
         self.uppfile = uppfile
-        
+        self.workdir = workdir
+
         self.time_step = model.param['max_time']
         self.time_shift = 0.0
-        self.base_ratio = 1
+        self.base_ratio = 1.0
 
         self.node_list = list(model.network.keys())
         self.division_node = ""
@@ -41,20 +44,43 @@ class UpP_MaBoSS:
             self.time_shift = prev_pop_ratios.last_valid_index()
             self.base_ratio = prev_pop_ratios.iloc[-1]
             self.model = model.copy()
-        
-            # Load the previous run final state
-            _get_next_condition_from_trajectory(previous_run, self.model)
-            
-        self._run()
-
-    def _run(self):
 
         self._readUppFile()
+
+        if os.path.exists(workdir):
+            # Restoring
+            self.results = [None]*(self.step_number+1)
+
+            for folder in sorted(pathlib.Path(self.workdir).glob("Step_*/")):
+                step = os.path.basename(folder).split("_")[-1]
+                self.results[int(step)] = StoredResult(folder)
+
+            self.pop_ratios = pd.read_csv(
+                os.path.join(self.workdir, "PopRatios.csv"), 
+                index_col=0, squeeze=True
+            )/self.base_ratio
+            
+            if previous_run:
+                # Load the previous run final state
+                _get_next_condition_from_trajectory(previous_run, self.model)
+            
+        else: 
+            os.makedirs(workdir)
+            if previous_run:
+                # Load the previous run final state
+                _get_next_condition_from_trajectory(previous_run, self.model)
+                
+            self._run()
+
+    def _run(self):
         
         if self.verbose:
             print("Run MaBoSS step 0")
 
         result = self.model.run()
+        if self.workdir is not None:
+            result.save(os.path.join(self.workdir, "Step_0"))
+
         self.results.append(result)
         self.pop_ratios[self.time_shift] = self.pop_ratio
     
@@ -82,7 +108,13 @@ class UpP_MaBoSS:
                     print("Running MaBoSS for step %d" % stepIndex)
 
                 result = modelStep.run()
+                if self.workdir is not None:
+                    result.save(os.path.join(self.workdir, "Step_%d" % stepIndex))
+
                 self.results.append(result)
+
+        if self.workdir is not None:
+            self.save_population_ratios(os.path.join(self.workdir, "PopRatios.csv"))
 
     def get_population_ratios(self, name=None):
         if name:
