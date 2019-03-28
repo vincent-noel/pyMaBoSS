@@ -10,11 +10,12 @@ if sys.version_info[0] < 3:
 else:
     from contextlib import ExitStack
 import pathlib
+import shutil
 from ..result import StoredResult
 
 
 class UpP_MaBoSS:
-    def __init__(self, model, uppfile, workdir=None, previous_run=None, verbose=False):
+    def __init__(self, model, uppfile, workdir=None, previous_run=None, verbose=False, overwrite=False):
 
         self.model = model
         self.uppfile = uppfile
@@ -46,6 +47,9 @@ class UpP_MaBoSS:
             self.model = model.copy()
 
         self._readUppFile()
+
+        if overwrite:
+            shutil.rmtree(self.workdir)
 
         if os.path.exists(workdir):
             # Restoring
