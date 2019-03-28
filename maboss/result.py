@@ -230,23 +230,23 @@ class Result(BaseResult):
 
         # Create the results directory
         try:
-            os.mkdir(prefix)
-        except FileExistsError:
+            os.makedirs(prefix)
+        except OSError:
             if not replace:
                 print('Error directory already exists: %s' % prefix,
                       file=stderr)
                 return
             elif prefix.startswith('rpl_'):
                 shutil.rmtree(prefix)
-                os.mkdir(prefix)
+                os.makedirs(prefix)
             else:
                 print('Error only directries begining with "rpl_" can be'
                       'replaced', file=stderr)
                 return
 
         # Moves all the files into it
-        shutil.copy(self._bnd, prefix+'/%s.bnd' % prefix)
-        shutil.copy(self._cfg, prefix+'/%s.cfg' % prefix)
+        shutil.copy(self._bnd, prefix+'/%s.bnd' % os.path.basename(prefix))
+        shutil.copy(self._cfg, prefix+'/%s.cfg' % os.path.basename(prefix))
 
         maboss_files = filter(lambda x: x.startswith('res'),
                               os.listdir(self._path))
@@ -275,10 +275,7 @@ def _check_prefix(prefix):
     if type(prefix) is not str:
         print('Error save method expected string')
         return False
-    else:
-        prefix_grammar = pp.Word(pp.alphanums + '_-')
-        return prefix_grammar.matches(prefix)
-
+    return True
 
 def make_trajectory_table(df):
     """Creates a table giving the probablilty of each state a every moment.
