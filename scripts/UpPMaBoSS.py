@@ -1,8 +1,7 @@
 #!/usr/bin/env python
 
 from sys import argv
-from umbs import UpP_MaBoSS
-from maboss import load
+from maboss import load, UpP_MaBoSS
 from os.path import exists, splitext
 
 if __name__ == "__main__":
