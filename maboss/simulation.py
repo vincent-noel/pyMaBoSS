@@ -101,8 +101,10 @@ class Simulation(object):
 
         try:
             path = tempfile.mkdtemp()
-            cfg_path = tempfile.mkstemp(dir=path, suffix='.cfg')[1]
-            bnd_path = tempfile.mkstemp(dir=path, suffix='.bnd')[1]
+            cfg_fd, cfg_path = tempfile.mkstemp(dir=path, suffix='.cfg')
+            os.close(cfg_fd)
+            bnd_fg, bnd_path = tempfile.mkstemp(dir=path, suffix='.bnd')
+            os.close(bnd_fg)
 
             with ExitStack() as stack:
                 bnd_file = stack.enter_context(open(bnd_path, 'w'))
@@ -175,9 +177,11 @@ class Simulation(object):
     def get_logical_rules(self):
 
         path = tempfile.mkdtemp()
-        cfg_path = tempfile.mkstemp(dir=path, suffix='.cfg')[1]
-        bnd_path = tempfile.mkstemp(dir=path, suffix='.bnd')[1]
-
+        cfg_fd, cfg_path = tempfile.mkstemp(dir=path, suffix='.cfg')
+        os.close(cfg_fd)
+        bnd_fd, bnd_path = tempfile.mkstemp(dir=path, suffix='.bnd')
+        os.close(bnd_fd)
+        
         with ExitStack() as stack:
             bnd_file = stack.enter_context(open(bnd_path, 'w'))
             cfg_file = stack.enter_context(open(cfg_path, 'w'))

@@ -40,8 +40,12 @@ class Result(object):
 
     def __init__(self, simul, command=None):
         self._path = tempfile.mkdtemp()
-        self._cfg = tempfile.mkstemp(dir=self._path, suffix='.cfg')[1]
-        self._bnd = tempfile.mkstemp(dir=self._path, suffix='.bnd')[1]
+        cfg_fd, self._cfg = tempfile.mkstemp(dir=self._path, suffix='.cfg')
+        os.close(cfg_fd)
+        
+        bnd_fd, self._bnd = tempfile.mkstemp(dir=self._path, suffix='.bnd')
+        os.close(bnd_fd)
+
         self._trajfig = None
         self._piefig = None
         self._fpfig = None
