@@ -39,14 +39,16 @@ class BaseResult(object):
     in the working directory.
     """
 
-    def __init__(self, simul, command=None):
+    def __init__(self, simul=None, command=None):
         
         self._trajfig = None
         self._piefig = None
         self._fpfig = None
         self._ndtraj = None
         self._err = False
-        self.palette = simul.palette
+        self.palette = {}
+        if simul is not None:
+            self.palette = simul.palette
         self.fptable = None
         self.state_probtraj = None
         self.last_states_probtraj = None
@@ -256,6 +258,19 @@ class Result(BaseResult):
 
 
 
+class StoredResult(BaseResult):
+
+    def __init__(self, path):
+        
+        self._path = path
+        BaseResult.__init__(self)
+     
+    def get_fp_file(self):
+        return os.path.join(self._path, "res_fp.csv")
+
+    def get_probtraj_file(self):
+        return os.path.join(self._path, "res_probtraj.csv")
+
 def _check_prefix(prefix):
     if type(prefix) is not str:
         print('Error save method expected string')
@@ -332,4 +347,4 @@ def get_states(df):
                 states.add(df[c][i])
     return states
 
-__all__ = ["Result"]
+__all__ = ["Result", "StoredResult"]
