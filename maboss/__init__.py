@@ -4,7 +4,7 @@ from .result import *
 from .gsparser import load
 from .maboss_server import MaBoSSClient
 from .umbs import UpP_MaBoSS
-
+from .ensemble import EnsembleResult
 
 from colomoto_jupyter import IN_IPYTHON
 if IN_IPYTHON:
