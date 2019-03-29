@@ -51,13 +51,14 @@ class BaseResult(object):
             self.palette = simul.palette
         self.fptable = None
         self.state_probtraj = None
+        self.state_probtraj_errors = None
         self.last_states_probtraj = None
         self.nd_probtraj = None
         self._nd_entropytraj = None
 
         self.raw_probtraj = None
 
-    def plot_trajectory(self, legend=True, until=None):
+    def plot_trajectory(self, legend=True, until=None, error=False):
         """Plot the graph state probability vs time.
 
         :param float until: plot only up to time=`until`
@@ -68,10 +69,17 @@ class BaseResult(object):
                   "returned non 0 value", file=stderr)
             return
         table = self.get_states_probtraj()
+        table_error = None
+        if error:
+            table_error = self.get_states_probtraj_errors()
         if until:
             table = table[table.index <= until]
+            if error:
+                table_error = table_error[table_error.index <= until]
+
         _, ax = plt.subplots(1,1)
-        make_plot_trajectory(table, ax, self.palette, legend=legend)
+      
+        make_plot_trajectory(table, ax, self.palette, legend=legend, error_table=table_error)
 
     def plot_piechart(self, embed_labels=False, autopct=4, prob_cutoff=0.01):
         """Plot the states probability distribution of last time point.
@@ -154,6 +162,12 @@ class BaseResult(object):
             table = self.get_raw_probtraj()
             self.state_probtraj = make_trajectory_table(table)
         return self.state_probtraj
+
+    def get_states_probtraj_errors(self):
+        if self.state_probtraj_errors is None:
+            table = self.get_raw_probtraj()
+            self.state_probtraj_errors = make_trajectory_error_table(table)
+        return self.state_probtraj_errors
 
     def get_last_states_probtraj(self):
         if self.last_states_probtraj is None:
@@ -301,6 +315,30 @@ def make_trajectory_table(df):
     time_table.sort_index(axis=1, inplace=True)
     return time_table
 
+
+def make_trajectory_error_table(df):
+    """Creates a table giving the probablilty of each state a every moment.
+
+        The rows are indexed by time points and the columns are indexed by
+        state name.
+    """
+    states = get_states(df)
+    nb_sates = len(states)
+    time_points = np.asarray(df['Time'])
+    time_table = pd.DataFrame(np.zeros((len(time_points), nb_sates)),
+                              index=time_points, columns=states)
+
+    cols = list(filter(lambda s: s.startswith("State"), df.columns))
+    for i in df.index:
+        tp = df["Time"][i]
+        for c in cols:
+            prob_col = c.replace("State", "ErrorProba")
+            if type(df[c][i]) is str:  # Otherwise it is nan
+                state = df[c][i]
+                time_table[state][tp] = df[prob_col][i]
+
+    time_table.sort_index(axis=1, inplace=True)
+    return time_table
 
 def make_node_proba_table(df):
     """Same as make_trajectory_table but with nodes instead of states."""
