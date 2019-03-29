@@ -84,6 +84,9 @@ class Result(BaseResult):
     def get_probtraj_file(self):
         return StringIO(self.getProbTraj())
 
+    def get_statdist_file(self):
+        return StringIO(self.getStatDist())
+
     def get_probtraj_dtypes(self):
 
         first_line = self.getProbTraj().split("\n", 1)[0]

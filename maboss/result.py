@@ -239,6 +239,9 @@ class Result(BaseResult):
     def get_probtraj_file(self):
         return "{}/res_probtraj.csv".format(self._path)
     
+    def get_statdist_file(self):
+        return "{}/res_statdist.csv".format(self._path)
+    
     def save(self, prefix, replace=False):
         """
         Write the cfg, bnd and all results in working dir.
@@ -292,6 +295,9 @@ class StoredResult(BaseResult):
 
     def get_probtraj_file(self):
         return os.path.join(self._path, "res_probtraj.csv")
+
+    def get_statdist_file(self):
+        return os.path.join(self._path, "res_statdist.csv")
 
 def _check_prefix(prefix):
     if type(prefix) is not str:

@@ -41,4 +41,6 @@ class EnsembleResult(BaseResult):
     def get_probtraj_file(self):
         return os.path.join(self._path, "res_probtraj.csv")
         
+    def get_statdist_file(self):
+        return os.path.join(self._path, "res_statdist.csv")
         
