@@ -220,7 +220,7 @@ class UpP_MaBoSS:
     def _buildUpdateCfg(self, simulation, prob_traj_line): 
 
         probTrajListFull = prob_traj_line.split("\t")
-        probTrajList = probTrajListFull.copy()
+        probTrajList = list(probTrajListFull)
 
         for prob_traj in probTrajListFull:
             if prob_traj[0].isalpha() or prob_traj == "<nil>":
