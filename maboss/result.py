@@ -58,7 +58,7 @@ class BaseResult(object):
 
         self.raw_probtraj = None
 
-    def plot_trajectory(self, legend=True, until=None, error=False):
+    def plot_trajectory(self, legend=True, until=None, error=False, prob_cutoff=0.01):
         """Plot the graph state probability vs time.
 
         :param float until: plot only up to time=`until`
@@ -68,10 +68,13 @@ class BaseResult(object):
             print("Error, plot_trajectory cannot be called because MaBoSS"
                   "returned non 0 value", file=stderr)
             return
-        table = self.get_states_probtraj()
+        table = self.get_states_probtraj(prob_cutoff=prob_cutoff)
         table_error = None
         if error:
             table_error = self.get_states_probtraj_errors()
+            if prob_cutoff is not None:
+                table_error = table_error[table.columns]
+
         if until:
             table = table[table.index <= until]
             if error:
@@ -157,10 +160,15 @@ class BaseResult(object):
             self.nd_probtraj = make_node_proba_table(table)
         return self.nd_probtraj
 
-    def get_states_probtraj(self):
+    def get_states_probtraj(self, prob_cutoff=None):
         if self.state_probtraj is None:
             table = self.get_raw_probtraj()
             self.state_probtraj = make_trajectory_table(table)
+        
+        if prob_cutoff is not None:
+            maxs = self.state_probtraj.max(axis=0)
+            self.state_probtraj = self.state_probtraj[maxs[maxs>prob_cutoff].index]
+            
         return self.state_probtraj
 
     def get_states_probtraj_errors(self):
