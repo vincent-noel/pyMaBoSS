@@ -20,9 +20,10 @@
 # Authors: Eric Viara <viara@sysra.com>, Vincent Noel <contact@vincent-noel.fr>
 # Date: May 2018 - February 2019
 
-from ..result import BaseResult
+from ..baseresult import BaseResult
 from io import StringIO
 import numpy as np
+
 
 class Result(BaseResult):
 

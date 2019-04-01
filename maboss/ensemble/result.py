@@ -1,6 +1,6 @@
 from __future__ import print_function
 
-from ..result import BaseResult
+from ..baseresult import BaseResult
 from ..simulation import _default_parameter_list
 import os
 import tempfile
