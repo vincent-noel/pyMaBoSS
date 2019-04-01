@@ -5,8 +5,7 @@ import matplotlib
 matplotlib.use('Agg')
 
 from unittest import TestCase
-from maboss import load
-from maboss.maboss_server import MaBoSSClient
+from maboss import load, MaBoSSClient
 from os.path import dirname, join
 
 

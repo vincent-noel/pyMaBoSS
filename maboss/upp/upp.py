@@ -14,7 +14,7 @@ import shutil
 from ..result import StoredResult
 
 
-class UpP_MaBoSS:
+class UpdatePopulation:
     def __init__(self, model, uppfile, workdir=None, previous_run=None, verbose=False, overwrite=False):
 
         self.model = model

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 from sys import argv
-from maboss import load, UpP_MaBoSS
+from maboss import load, UpdatePopulation
 from os.path import exists, splitext
 
 if __name__ == "__main__":
@@ -29,5 +29,5 @@ if __name__ == "__main__":
 
     workdir = splitext(cfg_file)[0]
     maboss_model = load(bnd_file, cfg_file)
-    simulation = UpP_MaBoSS(maboss_model, upp_file, workdir, verbose=True)
+    simulation = UpdatePopulation(maboss_model, upp_file, workdir, verbose=True)
     simulation.save(workdir)

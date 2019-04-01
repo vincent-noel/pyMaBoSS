@@ -5,7 +5,7 @@ import matplotlib
 matplotlib.use('Agg')
 
 from unittest import TestCase
-from maboss import load, UpP_MaBoSS
+from maboss import load, UpdatePopulation
 from os.path import dirname, join
 
 
@@ -14,7 +14,7 @@ class TestUpPMaBoSS(TestCase):
 	def test_uppmaboss(self):
 
 		sim = load(join(dirname(__file__), "CellFateModel.bnd"), join(dirname(__file__), "CellFateModel_1h.cfg"))
-		uppmaboss_sim = UpP_MaBoSS(sim, join(dirname(__file__), "CellFate_1h.upp"), "WT")
+		uppmaboss_sim = UpdatePopulation(sim, join(dirname(__file__), "CellFate_1h.upp"), "WT")
 
 		pop_ratios = uppmaboss_sim.get_population_ratios('WT').values.tolist()
 		expected_pop_ratios = [
@@ -27,7 +27,7 @@ class TestUpPMaBoSS(TestCase):
 			self.assertAlmostEqual(pop_ratio, expected_pop_ratios[i], delta=pop_ratio/1e-6)
 		
 		# Now again, but with save results
-		uppmaboss_sim = UpP_MaBoSS(sim, join(dirname(__file__), "CellFate_1h.upp"), "WT")
+		uppmaboss_sim = UpdatePopulation(sim, join(dirname(__file__), "CellFate_1h.upp"), "WT")
 		pop_ratios = uppmaboss_sim.get_population_ratios('WT').values.tolist()
 		
 		for i, pop_ratio in enumerate(pop_ratios):
