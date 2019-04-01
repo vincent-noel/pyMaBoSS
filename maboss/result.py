@@ -17,6 +17,7 @@ import shutil
 import tempfile
 import os
 import subprocess
+from multiprocessing import Pool
 
 class BaseResult(object):
     """
@@ -179,10 +180,13 @@ class BaseResult(object):
             self.nd_probtraj_error = self.make_node_proba_error_table(table)
         return self.nd_probtraj_error
 
-    def get_states_probtraj(self, prob_cutoff=None):
+    def get_states_probtraj(self, prob_cutoff=None, nb_cores=1):
         if self.state_probtraj is None:
             table = self.get_raw_probtraj()
-            self.state_probtraj = self.make_trajectory_table(table)
+            if nb_cores > 1:
+                self.state_probtraj = self.make_trajectory_table_parallel(table, nb_cores)
+            else:
+                self.state_probtraj = self.make_trajectory_table(table)
         
         if prob_cutoff is not None:
             maxs = self.state_probtraj.max(axis=0)
@@ -224,6 +228,16 @@ class BaseResult(object):
             for i in range(1, nb_states):
                 dtype.update({"State.%d" % i: np.str, "Proba.%d" % i: np.float64, "ErrorProba.%d" % i: np.float64})
             return dtype
+
+    def get_states_parallel(self, df, nb_cores):
+        if self.states is None:
+            self.states = set()
+            with Pool(processes=nb_cores) as pool:
+                self.states = self.states.union(*(pool.map(
+                    get_state_from_line, 
+                    [df.iloc[i, :] for i in df.index]
+                )))
+        return self.states
 
     def get_states(self, df, cols):
         if self.states is None:
@@ -280,6 +294,25 @@ class BaseResult(object):
         time_table.apply(make_trajectory_error_line, args=(df, cols), axis=1)        
         time_table.sort_index(axis=1, inplace=True) 
 
+        return time_table
+
+    def make_trajectory_table_parallel(self, df, nb_cores):
+        # TODO : Here we should parallelize all these functions
+        """Creates a table giving the probablilty of each state a every moment.
+
+            The rows are indexed by time points and the columns are indexed by
+            state name.
+        """
+        cols = range(5, len(df.columns), 3)
+        states = self.get_states_parallel(df, nb_cores)
+    
+        with Pool(processes=nb_cores) as pool:
+            time_table = pd.concat(pool.starmap(
+                make_trajectory_line_parallel, 
+                [(df.iloc[i, :], states, cols) for i in df.index]
+            ))
+        
+        time_table.sort_index(axis=1, inplace=True) 
         return time_table
 
     def make_node_proba_table(self, df):
@@ -420,6 +453,14 @@ def make_trajectory_error_line(row, df, cols):
         if type(df.iloc[index, c]) is str:  # Otherwise it is nan
             state = df.iloc[index, c]
             row[state] = df.iloc[index, c+2]
+
+def make_trajectory_line_parallel(row, states, cols):
+    df = pd.DataFrame(np.zeros((1, len(states))), index=[row["Time"]], columns=states)
+    for c in cols:
+        if type(row[c]) is str:  # Otherwise it is nan
+            state = row[c]
+            df[state][row["Time"]] = row[c+1]
+    return df
 
 def get_state_from_line(line):
     t_states = set()
