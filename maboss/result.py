@@ -18,7 +18,6 @@ import tempfile
 import os
 import subprocess
 
-
 class BaseResult(object):
     """
     Class that handles the results of MaBoSS simulation.
@@ -50,10 +49,13 @@ class BaseResult(object):
         if simul is not None:
             self.palette = simul.palette
         self.fptable = None
+        self.states = None
+        self.nodes = None
         self.state_probtraj = None
         self.state_probtraj_errors = None
         self.last_states_probtraj = None
         self.nd_probtraj = None
+        self.nd_probtraj_error = None
         self._nd_entropytraj = None
 
         self.raw_probtraj = None
@@ -114,7 +116,7 @@ class BaseResult(object):
         self._fpfig, self._fpax = plt.subplots(1, 1)
         plot_fix_point(self.get_fptable(), self._fpax, self.palette)
 
-    def plot_node_trajectory(self, until=None):
+    def plot_node_trajectory(self, until=None, legend=True, error=False, prob_cutoff=0.01):
         """Plot the probability of each node being up over time.
 
         :param float until: plot only up to time=`until`.
@@ -124,10 +126,16 @@ class BaseResult(object):
                   file=stderr)
             return
         self._ndtraj, self._ndtrajax = plt.subplots(1, 1)
-        table = self.get_nodes_probtraj()
+        table = self.get_nodes_probtraj(prob_cutoff=prob_cutoff)
+        table_error = None
+        if error:
+            table_error = self.get_nodes_probtraj_error()
         if until:
             table = table[table.index <= until]
-        plot_node_prob(table, self._ndtrajax, self.palette)
+            if error:
+                table_error = table_error[table_error.index <= until]
+
+        plot_node_prob(table, self._ndtrajax, self.palette, legend=legend, error_table=table_error)
 
     def plot_entropy_trajectory(self, until=None):
         """Plot the evolution of the (transition) entropy over time.
@@ -154,33 +162,44 @@ class BaseResult(object):
 
         return self.fptable
 
-    def get_nodes_probtraj(self):
+    def get_nodes_probtraj(self, prob_cutoff=None):
         if self.nd_probtraj is None:
-            table = pd.read_csv(self.get_probtraj_file(), "\t", dtype=self.get_probtraj_dtypes())
-            self.nd_probtraj = make_node_proba_table(table)
+            table = self.get_raw_probtraj()
+            self.nd_probtraj = self.make_node_proba_table(table)
+        
+        if prob_cutoff is not None:
+            maxs = self.nd_probtraj.max(axis=0)
+            return self.nd_probtraj[maxs[maxs>prob_cutoff].index]
+     
         return self.nd_probtraj
+
+    def get_nodes_probtraj_error(self):
+        if self.nd_probtraj_error is None:
+            table = self.get_raw_probtraj()
+            self.nd_probtraj_error = self.make_node_proba_error_table(table)
+        return self.nd_probtraj_error
 
     def get_states_probtraj(self, prob_cutoff=None):
         if self.state_probtraj is None:
             table = self.get_raw_probtraj()
-            self.state_probtraj = make_trajectory_table(table)
+            self.state_probtraj = self.make_trajectory_table(table)
         
         if prob_cutoff is not None:
             maxs = self.state_probtraj.max(axis=0)
-            self.state_probtraj = self.state_probtraj[maxs[maxs>prob_cutoff].index]
+            return self.state_probtraj[maxs[maxs>prob_cutoff].index]
             
         return self.state_probtraj
 
     def get_states_probtraj_errors(self):
         if self.state_probtraj_errors is None:
             table = self.get_raw_probtraj()
-            self.state_probtraj_errors = make_trajectory_error_table(table)
+            self.state_probtraj_errors = self.make_trajectory_error_table(table)
         return self.state_probtraj_errors
 
     def get_last_states_probtraj(self):
         if self.last_states_probtraj is None:
             table = self.get_raw_probtraj()
-            self.last_states_probtraj = make_trajectory_table(table.tail(1))
+            self.last_states_probtraj = self.make_trajectory_table(table.tail(1))
         return self.last_states_probtraj
 
     def get_entropy_trajectory(self):
@@ -205,6 +224,89 @@ class BaseResult(object):
             for i in range(1, nb_states):
                 dtype.update({"State.%d" % i: np.str, "Proba.%d" % i: np.float64, "ErrorProba.%d" % i: np.float64})
             return dtype
+
+    def get_states(self, df, cols):
+        if self.states is None:
+            self.states = set()
+            for i in range(len(df.index)):
+                for c in cols:
+                    if type(df.iloc[i, c]) is str:  # Otherwise it is nan
+                        self.states.add(df.iloc[i, c])
+        return self.states
+        
+    def get_nodes(self, df, cols):
+        if self.nodes is None:
+            states = self.get_states(df, cols)
+            self.nodes = set()
+            for s in states:
+                nds = s.split(' -- ')
+                for nd in nds:
+                    self.nodes.add(nd)
+        return self.nodes
+
+    def make_trajectory_table(self, df):
+        """Creates a table giving the probablilty of each state a every moment.
+
+            The rows are indexed by time points and the columns are indexed by
+            state name.
+        """
+        cols = range(5, len(df.columns), 3)
+        states = self.get_states(df, cols)
+        time_points = np.asarray(df['Time'])
+        time_table = pd.DataFrame(
+            np.zeros((len(time_points), len(states))),
+            index=time_points, columns=states
+        )
+
+        time_table.apply(make_trajectory_line, args=(df, cols), axis=1)        
+        time_table.sort_index(axis=1, inplace=True) 
+
+        return time_table
+
+    def make_trajectory_error_table(self, df):
+        """Creates a table giving the probablilty of each state a every moment.
+
+            The rows are indexed by time points and the columns are indexed by
+            state name.
+        """
+        cols = range(5, len(df.columns), 3)
+        states = self.get_states(df, cols)
+        time_points = np.asarray(df['Time'])
+        time_table = pd.DataFrame(
+            np.zeros((len(time_points), len(states))),
+            index=time_points, columns=states
+        )
+
+        time_table.apply(make_trajectory_error_line, args=(df, cols), axis=1)        
+        time_table.sort_index(axis=1, inplace=True) 
+
+        return time_table
+
+    def make_node_proba_table(self, df):
+        """Same as make_trajectory_table but with nodes instead of states."""
+        cols = range(5, len(df.columns), 3)
+        nodes = self.get_nodes(df, cols)
+        time_points = np.asarray(df['Time'])
+        time_table = pd.DataFrame(
+            np.zeros((len(time_points), len(nodes))),
+            index=time_points, columns=nodes
+        )
+        time_table.apply(make_node_proba_line, args=(df, cols), axis=1)
+        time_table.sort_index(axis=1, inplace=True)
+        return time_table
+
+    def make_node_proba_error_table(self, df):
+        """Same as make_trajectory_table but with nodes instead of states."""
+        cols = range(5, len(df.columns), 3)
+        nodes = self.get_nodes(df, cols)
+        time_points = np.asarray(df['Time'])
+        time_table = pd.DataFrame(
+            np.zeros((len(time_points), len(nodes))),
+            index=time_points, columns=nodes
+        )
+        time_table.apply(make_node_proba_error_line, args=(df, cols), axis=1)
+        time_table.sort_index(axis=1, inplace=True)
+        return time_table
 
 
 class Result(BaseResult):
@@ -305,95 +407,43 @@ def _check_prefix(prefix):
         return False
     return True
 
-def make_trajectory_table(df):
-    """Creates a table giving the probablilty of each state a every moment.
+def make_trajectory_line(row, df, cols):
+    for c in cols:
+        index = df.index.get_loc(row.name)
+        if type(df.iloc[index, c]) is str:  # Otherwise it is nan
+            state = df.iloc[index, c]
+            row[state] = df.iloc[index, c+1]
 
-        The rows are indexed by time points and the columns are indexed by
-        state name.
-    """
-    states = get_states(df)
-    nb_sates = len(states)
-    time_points = np.asarray(df['Time'])
-    time_table = pd.DataFrame(np.zeros((len(time_points), nb_sates)),
-                              index=time_points, columns=states)
+def make_trajectory_error_line(row, df, cols):
+    for c in cols:
+        index = df.index.get_loc(row.name)
+        if type(df.iloc[index, c]) is str:  # Otherwise it is nan
+            state = df.iloc[index, c]
+            row[state] = df.iloc[index, c+2]
 
-    cols = list(filter(lambda s: s.startswith("State"), df.columns))
-    for i in df.index:
-        tp = df["Time"][i]
-        for c in cols:
-            prob_col = c.replace("State", "Proba")
-            if type(df[c][i]) is str:  # Otherwise it is nan
-                state = df[c][i]
-                time_table[state][tp] = df[prob_col][i]
+def get_state_from_line(line):
+    t_states = set()
+    for c in range(5, len(line), 3):
+        if type(line[c]) is str:  # Otherwise it is nan
+            t_states.add(line[c])
+    return t_states
 
-    time_table.sort_index(axis=1, inplace=True)
-    return time_table
+def make_node_proba_line(row, df, cols):
+    for c in cols:
+        index = df.index.get_loc(row.name)
+        if type(df.iloc[index, c]) is str:
+            state = df.iloc[index, c]
+            nodes = state.split(' -- ')
+            for nd in nodes:
+                row[nd] += df.iloc[index, c+1]
 
-
-def make_trajectory_error_table(df):
-    """Creates a table giving the probablilty of each state a every moment.
-
-        The rows are indexed by time points and the columns are indexed by
-        state name.
-    """
-    states = get_states(df)
-    nb_sates = len(states)
-    time_points = np.asarray(df['Time'])
-    time_table = pd.DataFrame(np.zeros((len(time_points), nb_sates)),
-                              index=time_points, columns=states)
-
-    cols = list(filter(lambda s: s.startswith("State"), df.columns))
-    for i in df.index:
-        tp = df["Time"][i]
-        for c in cols:
-            prob_col = c.replace("State", "ErrorProba")
-            if type(df[c][i]) is str:  # Otherwise it is nan
-                state = df[c][i]
-                time_table[state][tp] = df[prob_col][i]
-
-    time_table.sort_index(axis=1, inplace=True)
-    return time_table
-
-def make_node_proba_table(df):
-    """Same as make_trajectory_table but with nodes instead of states."""
-    nodes = get_nodes(df)
-    nb_nodes = len(nodes)
-    time_points = np.asarray(df['Time'])
-    time_table = pd.DataFrame(np.zeros((len(time_points), nb_nodes)),
-                              index=time_points, columns=nodes)
-    cols = list(filter(lambda s: s.startswith("State"), df.columns))
-    for i in df.index:
-        tp = df["Time"][i]
-        for c in cols:
-            prob_col = c.replace("State", "Proba")
-            if type(df[c][i]) is str:
-                state = df[c][i]
-                if ' -- ' in state:
-                    nodes = state.split(' -- ')
-                else:
-                    nodes = [state]
-                for nd in nodes:
-                    time_table[nd][tp] += df[prob_col][i]
-
-    time_table.sort_index(axis=1, inplace=True)
-    return time_table
-    
-def get_nodes(df):
-    states = get_states(df)
-    nodes = set()
-    for s in states:
-        nds = s.split(' -- ')
-        for nd in nds:
-            nodes.add(nd)
-    return nodes
-        
-def get_states(df):
-    cols = list(filter(lambda s: s.startswith("State"), df.columns))
-    states = set()
-    for i in df.index:
-        for c in cols:
-            if type(df[c][i]) is str:  # Otherwise it is nan
-                states.add(df[c][i])
-    return states
+def make_node_proba_error_line(row, df, cols):
+    for c in cols:
+        index = df.index.get_loc(row.name)
+        if type(df.iloc[index, c]) is str:
+            state = df.iloc[index, c]
+            nodes = state.split(' -- ')
+            for nd in nodes:
+                row[nd] += df.iloc[index, c+2]
 
 __all__ = ["Result", "StoredResult"]
