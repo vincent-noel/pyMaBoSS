@@ -156,6 +156,7 @@ class BaseResult(object):
 
     def get_nodes_probtraj(self, prob_cutoff=None):
         if self.nd_probtraj is None:
+            
             table = self.get_raw_probtraj()
             self.nd_probtraj = self.make_node_proba_table(table)
         
@@ -244,9 +245,10 @@ class BaseResult(object):
             states = self.get_states(df, cols)
             self.nodes = set()
             for s in states:
-                nds = s.split(' -- ')
-                for nd in nds:
-                    self.nodes.add(nd)
+                if s != '<nil>':
+                    nds = s.split(' -- ')
+                    for nd in nds:
+                        self.nodes.add(nd)
         return self.nodes
 
     def make_trajectory_table(self, df):
@@ -263,7 +265,9 @@ class BaseResult(object):
             index=time_points, columns=states
         )
 
-        time_table.apply(make_trajectory_line, args=(df, cols), axis=1)        
+        for index, (_, row) in enumerate(time_table.iterrows()):
+            make_trajectory_line(row, df, cols, index)
+
         time_table.sort_index(axis=1, inplace=True) 
 
         return time_table
@@ -281,8 +285,9 @@ class BaseResult(object):
             np.zeros((len(time_points), len(states))),
             index=time_points, columns=states
         )
+        for index, (_, row) in enumerate(time_table.iterrows()):
+            make_trajectory_error_line(row, df, cols, index)
 
-        time_table.apply(make_trajectory_error_line, args=(df, cols), axis=1)        
         time_table.sort_index(axis=1, inplace=True) 
 
         return time_table
@@ -315,7 +320,10 @@ class BaseResult(object):
             np.zeros((len(time_points), len(nodes))),
             index=time_points, columns=nodes
         )
-        time_table.apply(make_node_proba_line, args=(df, cols), axis=1)
+
+        for index, (_, row) in enumerate(time_table.iterrows()):
+            make_node_proba_line(row, df, cols, index)
+
         time_table.sort_index(axis=1, inplace=True)
         return time_table
 
@@ -328,20 +336,20 @@ class BaseResult(object):
             np.zeros((len(time_points), len(nodes))),
             index=time_points, columns=nodes
         )
-        time_table.apply(make_node_proba_error_line, args=(df, cols), axis=1)
+        for index, (_, row) in enumerate(time_table.iterrows()):
+            make_node_proba_error_line(row, df, cols, index)
+
         time_table.sort_index(axis=1, inplace=True)
         return time_table
 
-def make_trajectory_line(row, df, cols):
+def make_trajectory_line(row, df, cols, index):
     for c in cols:
-        index = df.index.get_loc(row.name)
         if type(df.iloc[index, c]) is str:  # Otherwise it is nan
             state = df.iloc[index, c]
             row[state] = df.iloc[index, c+1]
 
-def make_trajectory_error_line(row, df, cols):
+def make_trajectory_error_line(row, df, cols, index):
     for c in cols:
-        index = df.index.get_loc(row.name)
         if type(df.iloc[index, c]) is str:  # Otherwise it is nan
             state = df.iloc[index, c]
             row[state] = df.iloc[index, c+2]
@@ -361,22 +369,23 @@ def get_state_from_line(line):
             t_states.add(line[c])
     return t_states
 
-def make_node_proba_line(row, df, cols):
+def make_node_proba_line(row, df, cols, index):
     for c in cols:
-        index = df.index.get_loc(row.name)
         if type(df.iloc[index, c]) is str:
             state = df.iloc[index, c]
-            nodes = state.split(' -- ')
-            for nd in nodes:
-                row[nd] += df.iloc[index, c+1]
+            if state != '<nil>':
+                nodes = state.split(' -- ')
+                for nd in nodes:
+                    value = df.iloc[index, c+1]
+                    row[nd] += value
 
-def make_node_proba_error_line(row, df, cols):
+def make_node_proba_error_line(row, df, cols, index):
     for c in cols:
-        index = df.index.get_loc(row.name)
         if type(df.iloc[index, c]) is str:
             state = df.iloc[index, c]
-            nodes = state.split(' -- ')
-            for nd in nodes:
-                row[nd] += df.iloc[index, c+2]
+            if state != '<nil>':
+                nodes = state.split(' -- ')
+                for nd in nodes:
+                    row[nd] += df.iloc[index, c+2]
 
 __all__ = ["Result", "StoredResult"]
