@@ -1,8 +1,9 @@
 """Definitions of the different classes provided to the user."""
 
+from __future__ import print_function
 import collections
 from . import logic
-from sys import stderr, stdout
+from sys import stderr, stdout, version_info
 
 
 class Node(object):
@@ -83,7 +84,17 @@ class Node(object):
             self.logExp = None
 
     def __str__(self):
-        return _strNode(self)
+        rt_up_str = str(self.rt_up)
+        rt_down_str = str(self.rt_down)
+        internal_var_decl = "\n".join(map(lambda v: "%s = %s;" % (v, self.internal_var[v]),
+                                          self.internal_var.keys()))
+        string = "\n".join(["Node " + self.name + " {",
+                            internal_var_decl,
+                            ("\tlogic = " + self.logExp + ";") if self.logExp else "",
+                            ("\trate_up = " + rt_up_str + ";"),
+                            ("\trate_down = " + rt_down_str + ";"),
+                            "}"])
+        return string
 
     def copy(self):
         return Node(self.name, self.logExp, self.rt_up, self.rt_down,
@@ -101,7 +112,11 @@ class Network(collections.OrderedDict):
     """
 
     def __init__(self, nodeList, booleanVariablesList):
-        super().__init__({nd.name: nd for nd in nodeList})
+        if version_info[0] < 3:
+            super(Network, self).__init__([(nd.name, nd) for nd in nodeList])
+        else:
+            super().__init__([(nd.name, nd) for nd in nodeList])
+
         self.names = [nd.name for nd in nodeList]
         self.logicExp = {nd.name: nd.logExp for nd in nodeList}
         self.booleanVariables = booleanVariablesList
@@ -112,11 +127,28 @@ class Network(collections.OrderedDict):
 
         # _attribution gives for each node the list of node with which it is
         # binded.
-        self._attribution = {nd.name: nd.name for nd in nodeList}
+        self._attribution = collections.OrderedDict([(nd.name, nd.name) for nd in nodeList])
 
         # _initState gives for each list of binded node the initial state
         # probabilities.
-        self._initState = {l: {0: 0.5, 1: 0.5} for l in self._attribution}
+        self._initState = collections.OrderedDict([(l, {0: 0.5, 1: 0.5}) for l in self._attribution])
+
+    def add_node(self, name):
+
+        node = Node(name)
+        collections.OrderedDict.update(self, {name: node})
+        self.names.append(name)
+        self.logicExp.update({name: node.logExp})
+        self._attribution.update({name: name})
+        self._initState.update({name: {0: 0.5, 1: 0.5}})
+
+    def remove_node(self, name):
+
+        del self[name]
+        self.names.remove(name)
+        del self.logicExp[name]
+        del self._attribution[name]
+        del self._initState[name]
 
     def copy(self):
         new_ndList = [self[name].copy() for name in self.names]
@@ -125,7 +157,7 @@ class Network(collections.OrderedDict):
         new_network._initState = self._initState.copy()
         return new_network
 
-    def set_istate(self, nodes, probDict):
+    def set_istate(self, nodes, probDict, warnings=True):
         """
         Change the inital states probability of one or several nodes.
 
@@ -165,10 +197,11 @@ class Network(collections.OrderedDict):
                     self._erase_binding(nodes)
                 self._initState[nodes] = {0: probDict[0], 1: probDict[1]}
 
-        elif _testStateDict(probDict, len(nodes)):
+        elif _testStateDict(probDict, len(nodes), warnings):
             for node in nodes:
                 if isinstance(self._attribution[node], tuple):
-                    print("Warning, node %s was previously bound to other"
+                    if warnings:
+                        print("Warning, node %s was previously bound to other"
                           "nodes" % node, file=stderr)
                     self._erase_binding(node)
 
@@ -188,11 +221,34 @@ class Network(collections.OrderedDict):
 
 
     def __str__(self):
-        return _strNetwork(self)
+        ndList = list(self.values())
+        string = str(ndList[0])
+        if len(ndList) > 1:
+            string += "\n"
+            string += "\n\n".join(str(nd) for nd in ndList[1:])
+        return string
 
+    def get_istate(self):
+        return self._initState
 
     def print_istate(self, out=stdout):
-        print(_str_istateList(self._initState), file=out)
+        print(self.str_istate(), file=out)
+
+    def str_istate(self):
+        stringList = []
+        for binding in self._initState:
+            string = ''
+            if isinstance(binding, tuple):
+                string += '[' + ", ".join(list(binding)) + '].istate = '
+                string += ' , '.join([str(self._initState[binding][t]) + ' '
+                                      + str(list(t)) for t in self._initState[binding]])
+                string += ';'
+            else:
+                string += '[' + binding + '].istate = '
+                string += str(self._initState[binding][0]) + '[0] , '
+                string += str(self._initState[binding][1]) + '[1];'
+            stringList.append(string)
+        return '\n'.join(stringList)
 
     def set_output(self, output_list):
         """Set all the nodes that are not in the output_list as internal.
@@ -204,7 +260,7 @@ class Network(collections.OrderedDict):
             self[nd].is_internal = nd not in output_list
 
 
-def _testStateDict(stDict, nbState):
+def _testStateDict(stDict, nbState, warnings=True):
     """Check if stateDict is a good parameter for set_istate."""
     def goodTuple(t):
         return len(t) == nbState and all(x == 0 or x == 1 for x in t)
@@ -218,51 +274,10 @@ def _testStateDict(stDict, nbState):
         print("Error, the given values must be nonegative",
               file=stderr)
         return False
-    elif not sum(stDict.values()) == 1:
-        print("Warning: the given values should sum up to 1",
+    elif (1.0-sum(stDict.values())) > 1e-8:
+        if warnings:
+            print("Warning: the given values should sum up to 1",
               file=stderr)
         return True
     else:
         return True
-
-
-def _strNode(nd):
-    string = ""
-    rt_up_str = str(nd.rt_up)
-    rt_down_str = str(nd.rt_down)
-    internal_var_decl = "\n".join(map(lambda v: v+" = " + nd.internal_var[v],
-                                      nd.internal_var.keys()))
-    string = "\n".join(["Node " + nd.name + " {",
-                        internal_var_decl,
-                        ("\tlogic = " + nd.logExp + ";") if nd.logExp else "",
-                        ("\trate_up = " + rt_up_str + ";"),
-                        ("\trate_down = " + rt_down_str + ";"),
-                        "}"])
-    return string
-
-
-def _strNetwork(nt):
-    ndList = list(nt.values())
-    string = _strNode(ndList[0])
-    if len(ndList) > 1:
-        string += "\n"
-        string += "\n\n".join(_strNode(nd) for nd in ndList[1:])
-    return string
-
-
-def _str_istateList(isl):
-    stringList = []
-    for binding in isl:
-        string = ''
-        if isinstance(binding, tuple):
-            string += '[' + ", ".join(list(binding)) + '].istate = '
-            string += ' , '.join([str(isl[binding][t]) + ' '
-                                  + str(list(t)) for t in isl[binding]])
-            string += ';'
-        else:
-            string += '[' + binding + '].istate = '
-            string += str(isl[binding][0]) + '[0] , '
-            string += str(isl[binding][1]) + '[1];'
-        stringList.append(string)
-    return '\n'.join(stringList)
-

@@ -1,29 +1,36 @@
 """Class that handles the parameters of a MaBoSS simulation.
 """
 
+from __future__ import print_function
 import collections
-from sys import stderr, stdout
-from contextlib import ExitStack
+from sys import stderr, stdout, version_info
+if version_info[0] < 3:
+    from contextlib2 import ExitStack
+else:
+    from contextlib import ExitStack
 
 from colomoto import ModelState
 
 from .result import Result
 import os
 import uuid
+import subprocess
+import tempfile
+import shutil
 
-_default_parameter_list = collections.OrderedDict({'time_tick': 0.1,
-                  'max_time': 4,
-                  'sample_count': 10000,
-                  'discrete_time': 0,
-                  'use_physrandgen': 1,
-                  'seed_pseudorandom': 0,
-                  'display_traj': 0,
-                  'statdist_traj_count': 0,
-                  'statdist_cluster_threshold': 1,
-                  'thread_count': 1,
-                  'statdist_similarity_cache_max_size': 20000
-                  })
-
+_default_parameter_list = collections.OrderedDict([
+    ('time_tick', 0.1),
+    ('max_time', 4),
+    ('sample_count', 10000),
+    ('discrete_time', 0),
+    ('use_physrandgen', 1),
+    ('seed_pseudorandom', 0),
+    ('display_traj', 0),
+    ('statdist_traj_count', 0),
+    ('statdist_cluster_threshold', 1),
+    ('thread_count', 1),
+    ('statdist_similarity_cache_max_size', 20000)
+])
 
 class Simulation(object):
     """
@@ -72,6 +79,7 @@ class Simulation(object):
 
         self.network = nt
         self.mutations = []
+        self.mutationTypes = {}
         self.refstate = {}
 
     def update_parameters(self, **kwargs):
@@ -89,30 +97,111 @@ class Simulation(object):
             result.mutations = self.mutations.copy()
         return result
 
+    def check(self):
+
+        try:
+            path = tempfile.mkdtemp()
+            cfg_fd, cfg_path = tempfile.mkstemp(dir=path, suffix='.cfg')
+            os.close(cfg_fd)
+            bnd_fg, bnd_path = tempfile.mkstemp(dir=path, suffix='.bnd')
+            os.close(bnd_fg)
+
+            with ExitStack() as stack:
+                bnd_file = stack.enter_context(open(bnd_path, 'w'))
+                cfg_file = stack.enter_context(open(cfg_path, 'w'))
+                self.print_bnd(out=bnd_file)
+                self.print_cfg(out=cfg_file)
+
+            proc = subprocess.Popen(
+                ["MaBoSS", "--check", "-c", cfg_path, bnd_path],
+                cwd=path, stdout=subprocess.PIPE, stderr=subprocess.PIPE
+            )
+            (t_stdout, t_stderr) = proc.communicate()
+
+            shutil.rmtree(path)
+
+            messages = []
+            if len(t_stderr) != 0:
+                messages = list(set(t_stderr.decode().split("\n")))
+
+            return messages
+
+        except ValueError as e:
+            return [str(e)]
+
+    def get_maboss_cmd(self):
+
+        maboss_cmd = "MaBoSS"
+
+        l = len(self.network)
+        if l <= 64:
+            pass
+        elif l <= 128:
+            maboss_cmd = "MaBoSS_128n"
+        else:
+            maboss_cmd = "MaBoSS_256n"
+
+        return maboss_cmd
+
+
     def print_bnd(self, out=stdout):
         """Produce the content of the bnd file associated to the simulation."""
         print(self.network, file=out)
 
     def print_cfg(self, out=stdout):
         """Produce the content of the cfg file associated to the simulation."""
-        print("$nb_mutable = " + str(len(self.mutations)) + ";", file=out)
+        print(self.str_cfg(), file=out)
+
+    def str_cfg(self):
+
+        res = "$nb_mutable = %d;\n" % len(self.mutations)
         for p in self.param:
             if p[0] == '$':
-                print(p + ' = ' + str(self.param[p]) + ';', file=out)
-        self.network.print_istate(out=out)
-        print('', file=out)
+                res += "%s = %s;\n" % (p, self.param[p])
+
+        res += self.network.str_istate() + "\n"
+        res += "\n"
 
         for p in self.param:
             if p[0] != '$':
-                print(p + ' = ' + str(self.param[p]) + ';', file=out)
+                res += "%s = %s;\n" % (p, self.param[p])
 
         for name in self.network.names:
-            string = name+'.is_internal = ' + str(int(self.network[name].is_internal)) + ';'
-            print(string, file=out)
+            res += "%s.is_internal = %s;\n" % (name, self.network[name].is_internal)
 
         for nd in self.refstate:
-            string = nd +'.refstate = ' + self.refstate[nd] + ';'
-            print(string, file=out)
+            res += "%s.refstate = %s;\n" % (nd, self.refstate[nd])
+
+        return res
+
+    def get_logical_rules(self):
+
+        path = tempfile.mkdtemp()
+        cfg_fd, cfg_path = tempfile.mkstemp(dir=path, suffix='.cfg')
+        os.close(cfg_fd)
+        bnd_fd, bnd_path = tempfile.mkstemp(dir=path, suffix='.bnd')
+        os.close(bnd_fd)
+        
+        with ExitStack() as stack:
+            bnd_file = stack.enter_context(open(bnd_path, 'w'))
+            cfg_file = stack.enter_context(open(cfg_path, 'w'))
+            self.print_bnd(out=bnd_file)
+            self.print_cfg(out=cfg_file)
+
+        proc = subprocess.Popen(
+            [self.get_maboss_cmd(), "-c", cfg_path, "-l", bnd_path],
+            stdout=subprocess.PIPE, stderr=subprocess.PIPE
+        )
+        out, err = proc.communicate()
+        rules = {}
+        for line in out.decode().split("\n"):
+            if ":" in line:
+                node, rule = line.split(" : ", 1)
+                rules.update({node.strip(): rule.strip()})
+
+        return rules
+
+
 
     def run(self, command=None):
         """Run the simulation with MaBoSS and return a Result object.
@@ -152,7 +241,7 @@ class Simulation(object):
         if not nd.is_mutant:
             self.network[node]=_make_mutant_node(nd)
             self.mutations.append(nd.name)
-
+            self.mutationTypes.update({nd.name: state})
 
 
         lowvar = "$Low_"+node
@@ -196,6 +285,8 @@ class Simulation(object):
             istate[nd] = states.pop() if len(states) == 1 else states
         return istate
 
+    def get_mutations(self):
+        return self.mutationTypes
 
 def _make_mutant_node(nd):
     """Create a new logic for mutation that can be activated from .cfg file."""

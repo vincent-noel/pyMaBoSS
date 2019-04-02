@@ -22,22 +22,23 @@ def persistent_color(palette, state):
 def register_states_for_color(palette, collection):
     [persistent_color(palette, state) for state in collection]
 
-def make_plot_trajectory(time_table, ax, palette, legend=True):
+def make_plot_trajectory(time_table, ax, palette, legend=True, error_table=None):
     register_states_for_color(palette, time_table.columns.values)
     color_list = [persistent_color(palette, idx) \
                     for idx in time_table.columns.values]
-    time_table.plot(ax=ax, color=color_list, legend=legend)
+    time_table.plot(ax=ax, color=color_list, legend=legend, yerr=error_table)
     if legend:
         plt.legend(loc='upper right')
 
 
-def plot_node_prob(time_table, ax, palette):
+def plot_node_prob(time_table, ax, palette, legend=True, error_table=None):
     """Plot the probability of each node being up over time."""
     register_states_for_color(palette, time_table.columns.values)
     color_list = [persistent_color(palette, idx) \
                     for idx in time_table.columns.values]
-    time_table.plot(ax=ax, color=color_list)
-    plt.legend(loc='upper right')
+    time_table.plot(ax=ax, color=color_list, legend=legend, yerr=error_table)
+    if legend:
+        plt.legend(loc='upper right')
 
 
 def plot_piechart(plot_table, ax, palette, embed_labels=False, autopct=4, \
