@@ -21,7 +21,7 @@ class UpdatePopulation:
         self.uppfile = uppfile
         self.workdir = workdir
 
-        self.time_step = model.param['max_time']
+        self.time_step = float(model.param['max_time'])
         self.time_shift = 0.0
         self.base_ratio = 1.0
 
