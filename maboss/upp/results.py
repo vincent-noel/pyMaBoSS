@@ -124,11 +124,23 @@ class UpdatePopulationResults:
             self.save_population_ratios(os.path.join(self.workdir, "PopRatios.csv"))
 
     def get_population_ratios(self, name=None):
+        """
+            .. py:method:: Returns the population ratios timeserie
+
+            :param name: Optional name for the pandas series object
+
+            :return: Pandas series object, with the population ratios according to time
+        """
         if name:
             self.pop_ratios.name = name
         return self.pop_ratios*self.uppModel.base_ratio
 
     def get_stepwise_probability_distribution(self, nb_cores=1, include=None, exclude=None):
+        """
+            .. py:method:: Returns the stepwise probability distribution
+
+            :return: Pandas dataframe object, representing the probability distribution of the different states, as a timeserie
+        """
         if self.stepwise_probability_distribution is None:
             if nb_cores > 1:
                 tables = []
@@ -193,6 +205,11 @@ class UpdatePopulationResults:
         return self.nodes_stepwise_probability_distribution
 
     def save(self, path):
+        """
+            .. py:method:: Saves the maboss model, the population ratios timeserie, and the probility distribution timeseries in the specified path
+            
+            :param path: The location in which to save the results
+        """
         if not os.path.exists(path):
             os.mkdir(path)
 

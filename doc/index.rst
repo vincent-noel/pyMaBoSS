@@ -13,13 +13,20 @@ Tutorial
    :maxdepth: 2
 
    Tutorial.ipynb
+   CellFateModel_uppmaboss.ipynb
+   Ensemble_MaBoSS_simulations.ipynb
+   Server.ipynb
 
+   
 API
 ---
 .. toctree::
    :maxdepth: 2
 
    api.rst
+   maboss-server.rst
+   uppmaboss-api.rst
+   ensemblemaboss-api.rst
 
 
 

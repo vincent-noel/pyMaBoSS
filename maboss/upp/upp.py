@@ -6,7 +6,9 @@ from .cmaboss_results import CMaBoSSUpdatePopulationResults
 class UpdatePopulation:
     def __init__(self, model, uppfile=None, previous_run=None, 
                  nodes_init=None, verbose=False):
-        """Construct an UppMaBoss simulation
+        """
+        .. py:class:: construct a simulation for Update Population MaBoSS.
+
         :param model: MaBoSS model
         :param uppfile: upp file, default to None 
         :param previous_run: previous run to start from, default to None 
@@ -52,6 +54,17 @@ class UpdatePopulation:
             self._readUppFile()
 
     def run(self, workdir=None, overwrite=None, verbose=False, host=None, port=7777, cmaboss=False, only_final_state=False):
+        """
+        .. py:method:: Runs the simulation
+
+        :param workdir: (optional) Working directory in which to save result files
+        :param overwrite: (optional) Boolean to indicate if you want to overwrite existing results in the working directory
+        :param verbose: (optional) Boolean to indicate if you want debugging information
+        :param host: (optional) Host to use when simulating on a MaBoSS server
+        :param port: (optional) Port to use when simulating on a MaBoSS server
+        :return: The Update Population results object.
+        """
+        
         if cmaboss:
             return CMaBoSSUpdatePopulationResults(self, verbose, workdir, overwrite, self.previous_run, nodes_init=self.nodes_init, only_final_state=only_final_state)
         else:
@@ -131,15 +144,37 @@ class UpdatePopulation:
             exit()
 
     def setStepNumber(self, step_number):
+        """
+            .. py:method:: Modifies the number of step of the simulation
+
+            :param step_number: The number of steps of the simulation
+        """
         self.step_number = step_number
 
     def setDeathNode(self, death_node):
+        """
+            .. py:method:: Modifies the identifier of the node used to represent cellular death
+
+            :param death_node: The identifier of the node to be used to represent death
+        """
         self.death_node = death_node
 
     def setDivisionNode(self, division_node):
+        """
+            .. py:method:: Modifies the identifier of the node used to represent cellular division
+            
+            :param division_node: The identifier of the node to be used to represent division
+        """
         self.division_node = division_node
 
     def setExternalVariable(self, name, formula, overwrite=False):
+        """
+            .. py:method:: Creates a rule to update the external variable at each step
+            
+            :param name: The identifier of the variable to be updated
+            :param formula: The formula for the variable's update
+            :param overwrite: (optional) Overwrite the rule if one already exists for the given name
+        """
         if name in self.update_var.keys() and not overwrite:
             print("External variable %s already exists !" % name, file=sys.stderr)
             return
