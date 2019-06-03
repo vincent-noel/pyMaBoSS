@@ -14,6 +14,10 @@ class MaBoSSClient:
     SERVER_NUM = 1 # for now
 
     def __init__(self, host = None, port = None, maboss_server = None, timeout=None):
+        """
+            Creates a connection to the MaBoSS Server specified by the host/port
+
+        """
         if not maboss_server:
             maboss_server = os.getenv("MABOSS_SERVER")
             if not maboss_server:
@@ -76,6 +80,10 @@ class MaBoSSClient:
         # self._socket.settimeout(5)
 
     def run(self, simulation, hints={}):
+        """
+            Runs a simulation in the server
+        """
+
 
         if "check" in hints and hints["check"]:
             command = CHECK_COMMAND
