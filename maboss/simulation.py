@@ -216,7 +216,7 @@ class Simulation(object):
 
 
 
-    def run(self, command=None, workdir=None, overwrite=False):
+    def run(self, command=None, workdir=None, overwrite=False, prefix="res"):
         """Run the simulation with MaBoSS and return a Result object.
 
         :param command: specify a MaBoSS command, default to None for automatic selection
@@ -229,7 +229,7 @@ class Simulation(object):
         if overwrite:
             self.overwrite = overwrite
             
-        return Result(self, command, workdir, overwrite)
+        return Result(self, command, self.workdir, self.overwrite, prefix)
 
 
     def mutate(self, node, state):
