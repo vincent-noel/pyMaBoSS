@@ -46,6 +46,7 @@ class BaseResult(object):
         self.nodes = None
         self.state_probtraj = None
         self.state_probtraj_errors = None
+        self.state_probtraj_full = None
         self.last_states_probtraj = None
         self.nd_probtraj = None
         self.nd_probtraj_error = None
@@ -202,6 +203,32 @@ class BaseResult(object):
             self.state_probtraj_errors = self.make_trajectory_error_table(table, self.states, cols)
         return self.state_probtraj_errors
 
+    def get_states_probtraj_full(self, prob_cutoff=None):
+        if self.state_probtraj_full is None:
+            table = self.get_raw_probtraj()
+            cols = self.get_states_cols(table)
+            full_cols = ["TH", "ErrorTH", "H"]
+
+            for col in self.get_states(table, cols):
+                full_cols.append("Prob[%s]" % col)
+                full_cols.append("ErrProb[%s]" % col)
+
+            self.state_probtraj_full = self.make_trajectory_full_table(table, full_cols, cols)
+
+        if prob_cutoff is not None:
+            maxs = self.state_probtraj_full.max(axis=0)
+            cols = ["TH", "ErrorTH", "H"]
+
+            for state in maxs[maxs > prob_cutoff].index:
+                if state.startswith("Prob["):
+                    cols.append(state)
+                    cols.append("Err%s" % state)
+
+            return self.state_probtraj_full[cols]            
+      
+        return self.state_probtraj_full
+
+
     def get_last_states_probtraj(self):
         if self.last_states_probtraj is None:
             last_table = self.get_raw_probtraj().tail(1).copy().dropna(axis='columns')
@@ -337,6 +364,26 @@ class BaseResult(object):
 
         return time_table
 
+    def make_trajectory_full_table(self, df, states, cols): 
+        """
+        Creates a table with the format used in the original script MBSS_FormatTable.pl
+
+        """
+        time_points = df["Time"]
+        time_table = pd.DataFrame(
+            np.zeros((len(time_points), len(states))),
+            index=time_points, columns=states
+        )
+
+        time_table['TH'] = df['TH'].values
+        time_table['ErrorTH'] = df['ErrorTH'].values
+        time_table['H'] = df['H'].values
+
+        for index, (_, row) in enumerate(time_table.iterrows()):
+            make_trajectory_full_line(row, df, cols, index)
+
+        return time_table
+
     def make_trajectory_table_parallel(self, df, states, cols, nb_cores):
         # TODO : Here we should parallelize all these functions
         """Creates a table giving the probablilty of each state a every moment.
@@ -408,6 +455,13 @@ def make_trajectory_error_line(row, df, cols, index):
         if type(df.iloc[index, c]) is str:  # Otherwise it is nan
             state = df.iloc[index, c]
             row[state] = df.iloc[index, c+2]
+
+def make_trajectory_full_line(row, df, cols, index):
+    for c in cols:
+        if type(df.iloc[index, c]) is str:# Otherwise it's NaN
+            state = df.iloc[index, c]
+            row["Prob[%s]" % state] = df.iloc[index, c+1]
+            row["ErrProb[%s]" % state] = df.iloc[index, c+2]
 
 def make_trajectory_line_parallel(row, states, cols):
     df = pd.DataFrame(np.zeros((1, len(states))), index=[row["Time"]], columns=states)
