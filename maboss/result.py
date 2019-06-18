@@ -19,10 +19,11 @@ import subprocess
 
 class Result(BaseResult):
 
-    def __init__(self, simul, command=None, workdir=None, overwrite=False):
+    def __init__(self, simul, command=None, workdir=None, overwrite=False, prefix="res"):
         BaseResult.__init__(self, simul, command)
 
         self.workdir = workdir
+        self.prefix = prefix
         if workdir is None:
             self._path = tempfile.mkdtemp()
         else:
@@ -53,18 +54,18 @@ class Result(BaseResult):
                 maboss_cmd = command
 
             self._err = subprocess.call([maboss_cmd, "-c", self._cfg, "-o",
-                                        self._path+'/res', self._bnd])
+                                        os.path.join(self._path, self.prefix), self._bnd])
             if self._err:
                 print("Error, MaBoSS returned non 0 value", file=stderr)
 
     def get_fp_file(self):
-        return "{}/res_fp.csv".format(self._path)
+        return "{}/{}_fp.csv".format(self._path, self.prefix)
 
     def get_probtraj_file(self):
-        return "{}/res_probtraj.csv".format(self._path)
+        return "{}/{}_probtraj.csv".format(self._path, self.prefix)
     
     def get_statdist_file(self):
-        return "{}/res_statdist.csv".format(self._path)
+        return "{}/{}_statdist.csv".format(self._path, self.prefix)
     
     def save(self, prefix, replace=False):
         """
@@ -97,7 +98,7 @@ class Result(BaseResult):
         shutil.copy(self._bnd, prefix+'/%s.bnd' % os.path.basename(prefix))
         shutil.copy(self._cfg, prefix+'/%s.cfg' % os.path.basename(prefix))
 
-        maboss_files = filter(lambda x: x.startswith('res'),
+        maboss_files = filter(lambda x: x.startswith(self.prefix),
                               os.listdir(self._path))
         for f in maboss_files:
             shutil.copy(self._path + '/' + f, prefix)
