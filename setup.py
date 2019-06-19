@@ -19,4 +19,6 @@ setup(name='maboss',
         "ipywidgets",
         "matplotlib",
         "pandas",
-    ] + optional_contextlib)
+    ] + optional_contextlib,
+    scripts=['scripts/MBSS_FormatTable.py', 'scripts/UpPMaBoSS.py']
+)
