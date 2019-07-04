@@ -35,6 +35,7 @@ script:
     coverage run -m unittest discover -v;
   elif [ $TEST = "script" ]; then
     MBSS_FormatTable.py test/p53_Mdm2.bnd test/p53_Mdm2_runcfg.cfg;
+    UpPMaBoSS.py test/CellFateModel.bnd test/CellFateModel_1h.cfg test/CellFate_1h.upp;
   fi
 
 after_script:
