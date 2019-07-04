@@ -4,6 +4,7 @@ import sys
 import re
 import random
 import pandas as pd
+import numpy as np
 if sys.version_info[0] < 3:
     from contextlib2 import ExitStack
 else:
@@ -11,12 +12,15 @@ else:
 import glob
 from ..result import StoredResult
 import shutil
+from multiprocessing import Pool
+
 
 class UpdatePopulationResults:
     def __init__(self, uppModel, verbose=False, workdir=None, overwrite=False, previous_run=None):
         self.uppModel = uppModel
         self.pop_ratios = pd.Series()
         self.stepwise_probability_distribution = None
+        self.nodes_stepwise_probability_distribution = None
         self.results = []
         self.verbose = verbose
         self.workdir = workdir
@@ -99,15 +103,62 @@ class UpdatePopulationResults:
             self.pop_ratios.name = name
         return self.pop_ratios*self.uppModel.base_ratio
 
-    def get_stepwise_probability_distribution(self):
+    def get_stepwise_probability_distribution(self, nb_cores=1):
         if self.stepwise_probability_distribution is None:
-            tables = [result.get_last_states_probtraj() for result in self.results]
-            self.stepwise_probability_distribution = pd.concat(tables, axis=0, sort=False)
-            self.stepwise_probability_distribution.fillna(0, inplace=True)
-            self.stepwise_probability_distribution.set_index([list(range(0, len(tables)))], inplace=True)
-            self.stepwise_probability_distribution.insert(0, column='PopRatio', value=(self.pop_ratios*self.uppModel.base_ratio).values)
+            if nb_cores > 1:
+                tables = []
+                with Pool(processes=nb_cores) as pool:
+                    tables = pool.map(
+                        make_stepwise_probability_distribution_line, self.results
+                    )
+
+                            # tables = [result.get_last_states_probtraj() for result in self.results]
+                self.stepwise_probability_distribution = pd.concat(tables, axis=0, sort=False)
+                self.stepwise_probability_distribution.fillna(0, inplace=True)
+                self.stepwise_probability_distribution.set_index([list(range(0, len(tables)))], inplace=True)
+                self.stepwise_probability_distribution.insert(
+                    0, column='PopRatio', value=(self.pop_ratios * self.uppModel.base_ratio).values
+                )
+
+            else:
+                tables = [result.get_last_states_probtraj() for result in self.results]
+                self.stepwise_probability_distribution = pd.concat(tables, axis=0, sort=False)
+                self.stepwise_probability_distribution.fillna(0, inplace=True)
+                self.stepwise_probability_distribution.set_index([list(range(0, len(tables)))], inplace=True)
+                self.stepwise_probability_distribution.insert(0, column='PopRatio', value=(self.pop_ratios*self.uppModel.base_ratio).values)
             
         return self.stepwise_probability_distribution
+
+    def get_nodes_stepwise_probability_distribution(self, nodes=None, nb_cores=1):
+        if self.nodes_stepwise_probability_distribution is None:
+            table = self.get_stepwise_probability_distribution()
+            states = table.columns.values[1:].tolist()
+            if "<nil>" in states:
+                states.remove("<nil>")
+
+            if nodes is None:
+                nodes = get_nodes(states)
+            else:
+                nodes = set(nodes)
+
+            node_dict = {}
+            for state in states:
+                t_nodes = state.split(" -- ")
+                t_nodes = [node for node in t_nodes if node in nodes]
+                node_dict.update({state: t_nodes})
+
+            table_cols = table.columns[1:]
+            if "<nil>" in table_cols:
+                table_cols.drop(["<nil>"])   
+
+
+            if nb_cores > 1:
+                self.nodes_stepwise_probability_distribution = make_nodes_table_parallel(table, nodes, node_dict, table_cols, nb_cores)
+            else:
+                self.nodes_stepwise_probability_distribution = make_nodes_table(table, nodes, node_dict, table_cols)
+            self.nodes_stepwise_probability_distribution.insert(0, column='PopRatio', value=(self.pop_ratios*self.uppModel.base_ratio).values)
+
+        return self.nodes_stepwise_probability_distribution
 
     def save(self, path):
         if not os.path.exists(path):
@@ -334,3 +385,55 @@ def _str2state(s, name2idx):
     return state
 
 
+def make_stepwise_probability_distribution_line(result):
+    return result.get_last_states_probtraj()
+
+def get_nodes(states):
+    nodes = set()
+    for s in states:
+        if s != '<nil>':
+            nds = s.split(' -- ')
+            for nd in nds:
+                nodes.add(nd)
+    return nodes
+
+def make_node_line(row, states_table, index, node_dict, table_cols):
+    for state in table_cols:
+        for nd in node_dict[state]:
+            row[nd] += states_table.iloc[index, states_table.columns.get_loc(state)]
+
+def make_nodes_table(spd, nodes, node_dict, table_cols):
+    table = pd.DataFrame(
+        np.zeros((len(spd.index), len(nodes))),
+        index=spd.index.values, columns=nodes
+    )
+
+    for index, (_, row) in enumerate(table.iterrows()):
+        make_node_line(row, spd, index, node_dict, table_cols)
+        
+    return table
+
+def make_node_line_parallel(spd,  nodes, node_dict, table_cols, row, index):
+    
+    table = pd.DataFrame(
+        np.zeros((1, len(nodes))),
+        index=[row], columns=nodes
+    )
+
+    for state in table_cols:
+        for nd in node_dict[state]:
+            val = spd.iloc[index, spd.columns.get_loc(state)]
+            table.loc[row, nd] += val
+    return table
+
+def make_nodes_table_parallel(spd, nodes, node_dict, table_cols, nb_cores):
+    
+    with Pool(processes=nb_cores) as pool:
+        tables = pool.starmap(
+            make_node_line_parallel, 
+            [(spd, nodes, node_dict, table_cols, row, index) for index, row in enumerate(spd.index)]
+        )
+   
+    table = pd.concat(tables, axis=0, sort=False)
+        
+    return table
