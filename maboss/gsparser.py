@@ -96,7 +96,7 @@ cfg_grammar = pp.ZeroOrMore(cfg_decl)
 cfg_grammar.ignore('//' + pp.restOfLine)
 
 
-def load(bnd_filename, *cfg_filenames):
+def load(bnd_filename, *cfg_filenames, **extra_args):
     """Loads a network from a MaBoSS format file.
 
     :param str bnd_filename: Network file
@@ -116,6 +116,8 @@ def load(bnd_filename, *cfg_filenames):
     elif "://" in " ".join(cfg_filenames):
         from colomoto_jupyter.io import ensure_localfile
         cfg_filenames = [ensure_localfile(cfg_filename) if "://" in cfg_filename else cfg_filename for cfg_filename in cfg_filenames]
+    
+    command = extra_args.get("command")
 
     with ExitStack() as stack:
         bnd_file = stack.enter_context(open(bnd_filename, 'r'))
@@ -137,7 +139,7 @@ def load(bnd_filename, *cfg_filenames):
         for v in variables:
             lhs = '$'+v
             parameters[lhs] = variables[v]
-        ret = Simulation(net, parameters)
+        ret = Simulation(net, parameters, command=command)
         ret.refstate = refstate_list
         return ret
 
