@@ -60,7 +60,7 @@ class Simulation(object):
     """
 
 
-    def __init__(self, nt, parameters=collections.OrderedDict({}), **kwargs):
+    def __init__(self, nt, parameters=collections.OrderedDict({}), command=None, **kwargs):
         """
         Initialize the Simulation object.
 
@@ -87,7 +87,7 @@ class Simulation(object):
         self.workdir = None
         self.overwrite = False
 
-        errors = self.check()
+        errors = self.check(command=command)
         if len(errors) > 0:
             print(errors)
 
@@ -106,7 +106,7 @@ class Simulation(object):
             result.mutations = self.mutations.copy()
         return result
 
-    def check(self):
+    def check(self, command=None):
 
         try:
             path = tempfile.mkdtemp()
@@ -121,8 +121,12 @@ class Simulation(object):
                 self.print_bnd(out=bnd_file)
                 self.print_cfg(out=cfg_file)
 
+            maboss_cmd = self.get_maboss_cmd()
+            if command is not None:
+                maboss_cmd = command
+
             proc = subprocess.Popen(
-                [self.get_maboss_cmd(), "--check", "-c", cfg_path, bnd_path],
+                [maboss_cmd, "--check", "-c", cfg_path, bnd_path],
                 cwd=path, stdout=subprocess.PIPE, stderr=subprocess.PIPE
             )
             (t_stdout, t_stderr) = proc.communicate()

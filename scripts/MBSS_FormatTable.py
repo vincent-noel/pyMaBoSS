@@ -29,7 +29,7 @@ def main(argv):
 
 	simulationName = os.path.splitext(os.path.basename(argv[2]))[0]
 	
-	simulation = maboss.load(bndFile, cfgFile)
+	simulation = maboss.load(bndFile, cfgFile, command=mabossCommand)
 	result = simulation.run(command=mabossCommand, prefix=simulationName)
 	
 	result.save(simulationName)
