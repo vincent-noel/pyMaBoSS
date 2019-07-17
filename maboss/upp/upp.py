@@ -103,3 +103,10 @@ class UpdatePopulation:
 
     def setDivisionNode(self, division_node):
         self.division_node = division_node
+
+    def setExternalVariable(self, name, formula, overwrite=False):
+        if name in self.update_var.keys() and not overwrite:
+            print("External variable %s already exists !" % name, file=sys.stderr)
+            return
+
+        self.update_var.update({name: formula})
