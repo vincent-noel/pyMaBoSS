@@ -42,7 +42,6 @@ class BaseResult(object):
             self.palette = simul.palette
         self.fptable = None
         self.first_state_index = None
-        self.last_states = None
         self.states = None
         self.nodes = None
         self.state_probtraj = None
@@ -205,11 +204,11 @@ class BaseResult(object):
 
     def get_last_states_probtraj(self):
         if self.last_states_probtraj is None:
-            table = self.get_raw_probtraj()
-            cols = self.get_states_cols(table.tail(1))
-            if self.last_states is None:
-                self.last_states = self.get_states(table, cols)
-            self.last_states_probtraj = self.make_trajectory_table(table.tail(1), self.last_states, cols)
+            last_table = self.get_raw_probtraj().tail(1).copy().dropna(axis='columns')
+            cols = self.get_states_cols(last_table)
+            last_states = self.get_states(last_table, cols, nona=True)
+            self.last_states_probtraj = self.make_trajectory_table(last_table, last_states, cols, nona=True)
+
         return self.last_states_probtraj
 
     def get_entropy_trajectory(self):
@@ -255,12 +254,18 @@ class BaseResult(object):
             )))
         return states
 
-    def get_states(self, df, cols):
+    def get_states(self, df, cols, nona=False):
         states = set()
-        for i in range(len(df.index)):
-            for c in cols:
-                if type(df.iloc[i, c]) is str:  # Otherwise it is nan
+        if nona:
+            for i in range(len(df.index)):
+                for c in cols:
                     states.add(df.iloc[i, c])
+        else:
+            for i in range(len(df.index)):
+                for c in cols:
+                    if type(df.iloc[i, c]) is str:  # Otherwise it is nan
+                        states.add(df.iloc[i, c])
+
         return states
         
     def get_nodes(self, df, cols):
@@ -284,26 +289,34 @@ class BaseResult(object):
                 if df.columns[i].startswith("State"):
                     self.first_state_index = i
                     break
+
         return self.first_state_index
 
-    def make_trajectory_table(self, df, states, cols):
+    def make_trajectory_table(self, df, states, cols, nona=False):
         """Creates a table giving the probablilty of each state a every moment.
 
             The rows are indexed by time points and the columns are indexed by
             state name.
         """
+
         time_points = np.asarray(df['Time'])
+        
         time_table = pd.DataFrame(
             np.zeros((len(time_points), len(states))),
             index=time_points, columns=states
         )
 
-        for index, (_, row) in enumerate(time_table.iterrows()):
-            make_trajectory_line(row, df, cols, index)
-
-        time_table.sort_index(axis=1, inplace=True) 
+        if len(time_points) > 1:
+            for index, (_, row) in enumerate(time_table.iterrows()):
+                make_trajectory_line(row, df, cols, index, nona)
+        
+            time_table.sort_index(axis=1, inplace=True) 
+        else:
+            make_trajectory_line(time_table.iloc[0, :], df, cols, 0, nona)
+            time_table.sort_index(axis=1, inplace=True) 
 
         return time_table
+
 
     def make_trajectory_error_table(self, df, states, cols):
         """Creates a table giving the probablilty of each state a every moment.
@@ -373,14 +386,23 @@ class BaseResult(object):
         return time_table
 
     def get_states_cols(self, df):
-        return range(self.get_first_state_index(df), len(df.columns), 3)
+        if isinstance(df, pd.DataFrame):
+            return range(self.get_first_state_index(df), len(df.columns), 3)
+        else:
+            return range(self.get_first_state_index(df), len(df), 3)
 
-def make_trajectory_line(row, df, cols, index):
-    for c in cols:
-        if type(df.iloc[index, c]) is str:  # Otherwise it is nan
+
+def make_trajectory_line(row, df, cols, index, nona=False):
+    if nona:
+        for c in cols:
             state = df.iloc[index, c]
             row[state] = df.iloc[index, c+1]
-
+    else:
+        for c in cols:
+            if type(df.iloc[index, c]) is str:  # Otherwise it is nan
+                state = df.iloc[index, c]
+                row[state] = df.iloc[index, c+1]
+   
 def make_trajectory_error_line(row, df, cols, index):
     for c in cols:
         if type(df.iloc[index, c]) is str:  # Otherwise it is nan
