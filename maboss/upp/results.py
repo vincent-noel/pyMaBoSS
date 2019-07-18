@@ -21,6 +21,8 @@ class UpdatePopulationResults:
         self.pop_ratios = pd.Series()
         self.stepwise_probability_distribution = None
         self.nodes_stepwise_probability_distribution = None
+        self.nodes_list_stepwise_probability_distribution = None
+
         self.results = []
         self.verbose = verbose
         self.workdir = workdir
@@ -112,26 +114,24 @@ class UpdatePopulationResults:
                         make_stepwise_probability_distribution_line, self.results
                     )
 
-                            # tables = [result.get_last_states_probtraj() for result in self.results]
-                self.stepwise_probability_distribution = pd.concat(tables, axis=0, sort=False)
-                self.stepwise_probability_distribution.fillna(0, inplace=True)
-                self.stepwise_probability_distribution.set_index([list(range(0, len(tables)))], inplace=True)
-                self.stepwise_probability_distribution.insert(
-                    0, column='PopRatio', value=(self.pop_ratios * self.uppModel.base_ratio).values
-                )
-
             else:
                 tables = [result.get_last_states_probtraj() for result in self.results]
-                self.stepwise_probability_distribution = pd.concat(tables, axis=0, sort=False)
-                self.stepwise_probability_distribution.fillna(0, inplace=True)
-                self.stepwise_probability_distribution.set_index([list(range(0, len(tables)))], inplace=True)
-                self.stepwise_probability_distribution.insert(0, column='PopRatio', value=(self.pop_ratios*self.uppModel.base_ratio).values)
+            
+            self.stepwise_probability_distribution = pd.concat(tables, axis=0, sort=False)
+            self.stepwise_probability_distribution.fillna(0, inplace=True)
+            self.stepwise_probability_distribution.set_index([list(range(0, len(tables)))], inplace=True)
+            self.stepwise_probability_distribution.insert(
+                0, column='PopRatio', value=(self.pop_ratios*self.uppModel.base_ratio).values
+            )
             
         return self.stepwise_probability_distribution
 
     def get_nodes_stepwise_probability_distribution(self, nodes=None, nb_cores=1):
-        if self.nodes_stepwise_probability_distribution is None:
-            table = self.get_stepwise_probability_distribution()
+        if self.nodes_stepwise_probability_distribution is None or set(nodes) != self.nodes_list_stepwise_probability_distribution:
+            
+            self.nodes_list_stepwise_probability_distribution = set(nodes)
+            table = self.get_stepwise_probability_distribution(nb_cores=nb_cores)
+            
             states = table.columns.values[1:].tolist()
             if "<nil>" in states:
                 states.remove("<nil>")
@@ -145,17 +145,14 @@ class UpdatePopulationResults:
             for state in states:
                 t_nodes = state.split(" -- ")
                 t_nodes = [node for node in t_nodes if node in nodes]
-                node_dict.update({state: t_nodes})
-
-            table_cols = table.columns[1:]
-            if "<nil>" in table_cols:
-                table_cols.drop(["<nil>"])   
-
+                if len(t_nodes) > 0:
+                    node_dict.update({state: t_nodes})
 
             if nb_cores > 1:
-                self.nodes_stepwise_probability_distribution = make_nodes_table_parallel(table, nodes, node_dict, table_cols, nb_cores)
+                self.nodes_stepwise_probability_distribution = make_nodes_table_parallel(table, nodes, node_dict, nb_cores)
             else:
-                self.nodes_stepwise_probability_distribution = make_nodes_table(table, nodes, node_dict, table_cols)
+                self.nodes_stepwise_probability_distribution = make_nodes_table(table, nodes, node_dict)
+
             self.nodes_stepwise_probability_distribution.insert(0, column='PopRatio', value=(self.pop_ratios*self.uppModel.base_ratio).values)
 
         return self.nodes_stepwise_probability_distribution
@@ -397,43 +394,45 @@ def get_nodes(states):
                 nodes.add(nd)
     return nodes
 
-def make_node_line(row, states_table, index, node_dict, table_cols):
-    for state in table_cols:
-        for nd in node_dict[state]:
+def make_node_line(row, states_table, index, node_dict):
+    for state, nd_state in node_dict.items():
+        for nd in nd_state:
             row[nd] += states_table.iloc[index, states_table.columns.get_loc(state)]
 
-def make_nodes_table(spd, nodes, node_dict, table_cols):
+def make_nodes_table(spd, nodes, node_dict):
     table = pd.DataFrame(
         np.zeros((len(spd.index), len(nodes))),
         index=spd.index.values, columns=nodes
     )
 
     for index, (_, row) in enumerate(table.iterrows()):
-        make_node_line(row, spd, index, node_dict, table_cols)
+        make_node_line(row, spd, index, node_dict)
         
     return table
 
-def make_node_line_parallel(spd,  nodes, node_dict, table_cols, row, index):
+def make_node_line_parallel(states_row, nodes, node_dict, row):
     
     table = pd.DataFrame(
         np.zeros((1, len(nodes))),
         index=[row], columns=nodes
     )
-
-    for state in table_cols:
-        for nd in node_dict[state]:
-            val = spd.iloc[index, spd.columns.get_loc(state)]
-            table.loc[row, nd] += val
+    
+    for row_index, row_state in states_row.iteritems():
+        if row_index in node_dict.keys() and row_state > 0.0:
+            for nd in node_dict[row_index]:
+                table.loc[row, nd] += row_state
+    
     return table
 
-def make_nodes_table_parallel(spd, nodes, node_dict, table_cols, nb_cores):
+def make_nodes_table_parallel(spd, nodes, node_dict, nb_cores):
     
-    with Pool(processes=nb_cores) as pool:
+    tables = []
+    with Pool(processes=6) as pool:
         tables = pool.starmap(
             make_node_line_parallel, 
-            [(spd, nodes, node_dict, table_cols, row, index) for index, row in enumerate(spd.index)]
+            [(spd.iloc[index, :], nodes, node_dict, row) for index, row in enumerate(spd.index)]
         )
-   
+
     table = pd.concat(tables, axis=0, sort=False)
-        
+
     return table
