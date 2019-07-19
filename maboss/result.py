@@ -103,7 +103,7 @@ class Result(BaseResult):
             shutil.copy(self._path + '/' + f, prefix)
 
     def __del__(self):
-        if self.workdir is None:
+        if self.workdir is None and os.path.exists(self._path):
             shutil.rmtree(self._path)
 
 
