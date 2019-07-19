@@ -187,7 +187,8 @@ class UpdatePopulationResults:
         (self.pop_ratios*self.uppModel.base_ratio).to_csv(path, header=["PopRatio"], index_label="Step")
 
     def save_stepwise_probability_distribution(self, path):
-        self.get_stepwise_probability_distribution().to_csv(path, index_label="Step")
+        nb_cores = int(self.uppModel.model.param["thread_count"])
+        self.get_stepwise_probability_distribution(nb_cores=nb_cores).to_csv(path, index_label="Step")
 
     def _buildUpdateCfg(self, simulation, prob_traj_line): 
 
