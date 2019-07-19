@@ -69,3 +69,22 @@ class TestUpPMaBoSSRestore(TestCase):
 
 		uppmaboss_sim.save('results')
 		uppmaboss_sim.results[0].plot_piechart()
+
+		expected_state_tnf = [3.3e-05, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 9e-06, 0.0, 0.0]
+		for i, val in enumerate(uppmaboss_sim.get_stepwise_probability_distribution().loc[:, "TNF"].values):
+			self.assertAlmostEqual(val, expected_state_tnf[i], delta=val*0.1+0.001)
+		
+		expected_node_tnf = [
+			0.7333250000000001, 0.5427929999999654, 0.5098009999999867, 0.538743999999904, 0.5516239999999077, 
+			0.5621409999999166, 0.57624599999992, 0.5933839999999224, 0.6157929999999221, 0.6406789999999194, 
+			0.662301999999913, 0.6821709999999142, 0.7047099999999183
+		]
+		for i, val in enumerate(uppmaboss_sim.get_nodes_stepwise_probability_distribution(nodes=["TNF"]).loc[:, "TNF"].values):
+			self.assertAlmostEqual(val, expected_node_tnf[i], delta=val*0.1+0.001)
+
+		expected_sum = [
+			0.716549, 0.449612, 0.37714000000000003, 0.406091, 0.42429, 0.421415, 0.4167240000000001, 0.412299, 
+			0.41253199999999995, 0.41279499999999997, 0.406957, 0.39759399999999995, 0.384875
+		]
+		for i, val in enumerate(uppmaboss_sim.get_stepwise_probability_distribution(include=["TNF"], exclude=["NFkB"]).sum(axis=1).values):
+			self.assertAlmostEqual(val, expected_sum[i], delta=val*0.1+0.001)
