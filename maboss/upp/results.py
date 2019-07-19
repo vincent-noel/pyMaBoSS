@@ -105,7 +105,7 @@ class UpdatePopulationResults:
             self.pop_ratios.name = name
         return self.pop_ratios*self.uppModel.base_ratio
 
-    def get_stepwise_probability_distribution(self, nb_cores=1):
+    def get_stepwise_probability_distribution(self, nb_cores=1, include=None, exclude=None):
         if self.stepwise_probability_distribution is None:
             if nb_cores > 1:
                 tables = []
@@ -124,7 +124,18 @@ class UpdatePopulationResults:
                 0, column='PopRatio', value=(self.pop_ratios*self.uppModel.base_ratio).values
             )
             
-        return self.stepwise_probability_distribution
+        if include is None and include is None:
+            return self.stepwise_probability_distribution
+        else:
+            states_filtered = self.stepwise_probability_distribution.columns
+            
+            if include is not None:
+                states_filtered = [state for state in states_filtered if set(include).issubset(set(state.split(" -- ")))]
+    
+            if exclude is not None:
+                states_filtered = [state for state in states_filtered if set(exclude).isdisjoint(set(state.split(" -- ")))]
+           
+            return self.stepwise_probability_distribution.loc[:, states_filtered]
 
     def get_nodes_stepwise_probability_distribution(self, nodes=None, nb_cores=1):
         if self.nodes_stepwise_probability_distribution is None or set(nodes) != self.nodes_list_stepwise_probability_distribution:
