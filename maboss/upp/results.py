@@ -29,7 +29,7 @@ class UpdatePopulationResults:
         self.overwrite = overwrite
         self.pop_ratio = uppModel.pop_ratio
 
-        if os.path.exists(workdir) and not self.overwrite:
+        if workdir is not None and os.path.exists(workdir) and not self.overwrite:
             # Restoring
             self.results = [None] * (self.uppModel.step_number + 1)
 
@@ -47,9 +47,11 @@ class UpdatePopulationResults:
                 _get_next_condition_from_trajectory(previous_run, self.uppModel.model)
 
         else:
-            if self.overwrite and os.path.exists(workdir):
-                shutil.rmtree(workdir)
-            os.makedirs(workdir)
+            if workdir is not None:
+                if os.path.exists(workdir):
+                    shutil.rmtree(workdir)
+                os.makedirs(workdir)
+
             if previous_run:
                 # Load the previous run final state
                 _get_next_condition_from_trajectory(previous_run, self.uppModel.model)
@@ -61,9 +63,8 @@ class UpdatePopulationResults:
         if self.verbose:
             print("Run MaBoSS step 0")
 
-        result = self.uppModel.model.run()
-        if self.workdir is not None:
-            result.save(os.path.join(self.workdir, "Step_0"))
+        sim_workdir = os.path.join(self.workdir, "Step_0") if self.workdir is not None else None
+        result = self.uppModel.model.run(workdir=sim_workdir)
 
         self.results.append(result)
         self.pop_ratios[self.uppModel.time_shift] = self.pop_ratio
@@ -91,9 +92,8 @@ class UpdatePopulationResults:
                 if self.verbose:
                     print("Running MaBoSS for step %d" % stepIndex)
 
-                result = modelStep.run()
-                if self.workdir is not None:
-                    result.save(os.path.join(self.workdir, "Step_%d" % stepIndex))
+                sim_workdir = os.path.join(self.workdir, "Step_%d" % stepIndex) if self.workdir is not None else None
+                result = modelStep.run(workdir=sim_workdir)
 
                 self.results.append(result)
 
