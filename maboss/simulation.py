@@ -216,13 +216,20 @@ class Simulation(object):
 
 
 
-    def run(self, command=None):
+    def run(self, command=None, workdir=None, overwrite=False):
         """Run the simulation with MaBoSS and return a Result object.
 
         :param command: specify a MaBoSS command, default to None for automatic selection
         :rtype: :py:class:`Result`
         """
-        return Result(self, command, self.workdir, self.overwrite)
+
+        if workdir is not None:
+            self.workdir = workdir
+
+        if overwrite:
+            self.overwrite = overwrite
+            
+        return Result(self, command, workdir, overwrite)
 
 
     def mutate(self, node, state):

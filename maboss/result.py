@@ -34,7 +34,7 @@ class Result(BaseResult):
             elif not os.path.exists(self._path):
                 os.mkdir(self._path)
 
-        if workdir is None or overwrite:
+        if workdir is None or len(os.listdir(workdir)) == 0 or overwrite:
 
             cfg_fd, self._cfg = tempfile.mkstemp(dir=self._path, suffix='.cfg')
             os.close(cfg_fd)
