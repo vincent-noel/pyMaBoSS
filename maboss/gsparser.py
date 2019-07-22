@@ -106,8 +106,16 @@ def load(bnd_filename, *cfg_filenames):
     """
     assert bnd_filename.lower().endswith(".bnd"), "wrong extension for bnd file"
 
+    if "://" in bnd_filename:
+        from colomoto_jupyter.io import ensure_localfile
+        bnd_filename = ensure_localfile(bnd_filename)
+
     if not cfg_filenames: 
         cfg_filenames = [".".join([".".join(bnd_filename.split(".")[:-1]), "cfg"])]
+
+    elif "://" in " ".join(cfg_filenames):
+        from colomoto_jupyter.io import ensure_localfile
+        cfg_filenames = [ensure_localfile(cfg_filename) if "://" in cfg_filename else cfg_filename for cfg_filename in cfg_filenames]
 
     with ExitStack() as stack:
         bnd_file = stack.enter_context(open(bnd_filename, 'r'))

@@ -30,6 +30,10 @@ class UpdatePopulation:
             self.base_ratio = prev_pop_ratios.iloc[-1]
             self.model = model.copy()
 
+        if "://" in self.uppfile:
+            from colomoto_jupyter.io import ensure_localfile
+            self.uppfile = ensure_localfile(self.uppfile)
+
         self._readUppFile()
 
     def run(self, workdir=None, overwrite=None, verbose=False):
