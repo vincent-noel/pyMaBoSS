@@ -3,7 +3,7 @@ import sys
 from .results import UpdatePopulationResults
 
 class UpdatePopulation:
-    def __init__(self, model, uppfile, previous_run=None, verbose=False):
+    def __init__(self, model, uppfile=None, previous_run=None, verbose=False):
 
         self.model = model
         self.uppfile = uppfile
@@ -30,11 +30,12 @@ class UpdatePopulation:
             self.base_ratio = prev_pop_ratios.iloc[-1]
             self.model = model.copy()
 
-        if "://" in self.uppfile:
-            from colomoto_jupyter.io import ensure_localfile
-            self.uppfile = ensure_localfile(self.uppfile)
+        if self.uppfile is not None:
+            if "://" in self.uppfile:
+                from colomoto_jupyter.io import ensure_localfile
+                self.uppfile = ensure_localfile(self.uppfile)
 
-        self._readUppFile()
+            self._readUppFile()
 
     def run(self, workdir=None, overwrite=None, verbose=False):
         return UpdatePopulationResults(self, verbose, workdir, overwrite, self.previous_run)
