@@ -88,3 +88,10 @@ class TestUpPMaBoSSRestore(TestCase):
 		]
 		for i, val in enumerate(uppmaboss_sim.get_stepwise_probability_distribution(include=["TNF"], exclude=["NFkB"]).sum(axis=1).values):
 			self.assertAlmostEqual(val, expected_sum[i], delta=val*0.1+0.001)
+
+		following_sim = UpdatePopulation(
+			sim, 
+			join(dirname(__file__), "CellFate_1h.upp"), 
+			previous_run=uppmaboss_sim
+		)
+		following_sim.run()
