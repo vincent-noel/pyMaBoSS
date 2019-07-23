@@ -16,7 +16,7 @@ from multiprocessing import Pool
 
 
 class UpdatePopulationResults:
-    def __init__(self, uppModel, verbose=False, workdir=None, overwrite=False, previous_run=None):
+    def __init__(self, uppModel, verbose=False, workdir=None, overwrite=False, previous_run=None, previous_run_step=-1):
         self.uppModel = uppModel
         self.pop_ratios = pd.Series()
         self.stepwise_probability_distribution = None
@@ -44,7 +44,7 @@ class UpdatePopulationResults:
 
             if previous_run:
                 # Load the previous run final state
-                _get_next_condition_from_trajectory(previous_run, self.uppModel.model)
+                _get_next_condition_from_trajectory(previous_run, self.uppModel.model, step=previous_run_step)
 
         else:
             if workdir is not None:
@@ -54,7 +54,7 @@ class UpdatePopulationResults:
 
             if previous_run:
                 # Load the previous run final state
-                _get_next_condition_from_trajectory(previous_run, self.uppModel.model)
+                _get_next_condition_from_trajectory(previous_run, self.uppModel.model, step=previous_run_step)
 
             self._run()
 
@@ -368,17 +368,19 @@ def varDef_Upp(update_line, prob_traj_list):
 	update_line += ";"
 	return update_line
 	
-def _get_next_condition_from_trajectory(self, next_model, step=16, pickline=5):
+def _get_next_condition_from_trajectory(self, next_model, step=-1):
     names = [ n for n in self.uppModel.model.network.names ]
     name2idx = {}
     for i in range(len(names)): name2idx[ names[i] ] = i
 
     trajfile = self.results[step].get_probtraj_file()
     with open(trajfile) as f:
+        first_line = f.readline()
+        first_col = next(i for i, col in enumerate(first_line.strip("\n").split("\t")) if col == "State")
         last_line = f.readlines()[-1]
         data = last_line.strip("\n").split("\t")
-        states = [ _str2state(s,name2idx) for s in data[5::3] ]
-        probs = [float(v) for v in data[6::3]]
+        states = [ _str2state(s,name2idx) for s in data[first_col::3] ]
+        probs = [float(v) for v in data[first_col+1::3]]
     probDict = {}
     for state,prob in zip(states, probs):
         probDict[tuple(state)] = prob
