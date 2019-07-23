@@ -110,3 +110,29 @@ class TestUpPMaBoSSRemote(TestCase):
 		)
 		uppmaboss_sim = uppmaboss_model.run('remote')
 	
+class TestUpPMaBoSSWrite(TestCase):
+	def test_uppmaboss_write(self):
+
+		sim = load(
+			"https://raw.githubusercontent.com/sysbio-curie/UpPMaBoSS-docker/master/CellFateModel_uppmaboss.bnd",
+			"https://raw.githubusercontent.com/sysbio-curie/UpPMaBoSS-docker/master/CellFateModel_uppmaboss.cfg"
+		)
+		uppmaboss_model = UpdatePopulation(sim)
+
+		uppmaboss_model.setDivisionNode("Division")
+		uppmaboss_model.setDeathNode("Death")
+		uppmaboss_model.setExternalVariable("$TNF_induc", "$ProdTNF_NFkB*p[(NFkB,Death) = (1,0)]")
+		uppmaboss_model.setStepNumber(12)
+		uppmaboss_sim = uppmaboss_model.run('defined')
+
+		expected_pop_ratios = [
+			1.0, 0.6284629999999846, 0.5871421862129369, 0.5177736854805769, 0.4238583410870101, 0.34499186727759734,
+			0.29076190567646526, 0.2539398179415862, 0.2271176786113088, 0.20601231409098322, 0.18811025602109335,
+			0.1740761022603733, 0.16198947625212115
+		]
+		pop_ratios = uppmaboss_sim.get_population_ratios('WT').values.tolist()
+
+		for i, pop_ratio in enumerate(pop_ratios):
+			self.assertAlmostEqual(pop_ratio, expected_pop_ratios[i], delta=pop_ratio / 1e-6)
+
+
