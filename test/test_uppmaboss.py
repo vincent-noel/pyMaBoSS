@@ -95,3 +95,18 @@ class TestUpPMaBoSSRestore(TestCase):
 			previous_run=uppmaboss_sim
 		)
 		following_sim.run()
+
+
+class TestUpPMaBoSSRemote(TestCase):
+
+	def test_uppmaboss_remote(self):
+
+		sim = load(
+			"https://raw.githubusercontent.com/sysbio-curie/UpPMaBoSS-docker/master/CellFateModel_uppmaboss.bnd",
+			"https://raw.githubusercontent.com/sysbio-curie/UpPMaBoSS-docker/master/CellFateModel_uppmaboss.cfg"
+		)
+		uppmaboss_model = UpdatePopulation(sim, 
+			"https://github.com/sysbio-curie/UpPMaBoSS-docker/blob/master/CellFateModel_uppmaboss.upp"
+		)
+		uppmaboss_sim = uppmaboss_model.run('remote')
+	
