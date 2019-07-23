@@ -6,7 +6,7 @@ matplotlib.use('Agg')
 
 from unittest import TestCase
 from maboss import load, set_nodes_istate
-from os.path import dirname, join
+from os.path import dirname, join, exists
 
 
 class TestLoadModels(TestCase):
@@ -52,6 +52,14 @@ class TestLoadModels(TestCase):
 		for i, proba in enumerate(probas):
 			self.assertAlmostEqual(proba, expected_probas[i], delta=proba*1e-6)
 			
+		res.save("saved_sim")
+		self.assertTrue(exists("saved_sim"))
+		self.assertTrue(exists("saved_sim/saved_sim.bnd"))
+		self.assertTrue(exists("saved_sim/saved_sim.cfg"))
+		self.assertTrue(exists("saved_sim/res_probtraj.csv"))
+		self.assertTrue(exists("saved_sim/res_fp.csv"))
+		self.assertTrue(exists("saved_sim/res_statdist.csv"))
+
 	def test_load_multiple_cfgs(self):
 
 		sim = load(join(dirname(__file__), "reprod_all.bnd"))
