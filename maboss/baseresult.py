@@ -42,9 +42,14 @@ class BaseResult(object):
         self._ndtraj = None
         self._err = False
         self.palette = {}
-        self.simul = simul
+        self.statdist_traj_count = None
+        self.thread_count = 1
+    
         if simul is not None:
             self.palette = simul.palette
+            self.statdist_traj_count = simul.param['statdist_traj_count']
+            self.thread_count = simul.param['thread_count']
+    
         self.fptable = None
         self.first_state_index = None
         self.states = None
@@ -282,16 +287,13 @@ class BaseResult(object):
         return self.raw_statdist
 
     def get_statdist_trajcount(self):
-        statdist_traj_count = 0
-        if self.simul is not None and 'statdist_traj_count' in self.simul.param.keys():
-            statdist_traj_count = self.simul.param['statdist_traj_count']
-        else:
+        if self.statdist_traj_count is None:
             with open(self.get_statdist_file(), 'r') as t_file:
                 for i, line in enumerate(t_file):
                     if len(line) == 0:
-                        statdist_traj_count = i - 2
+                        self.statdist_traj_count = i - 2
                         break
-        return statdist_traj_count
+        return self.statdist_traj_count
 
     def get_raw_statdist_clusters(self):
         if self.raw_statdist_clusters is None:
