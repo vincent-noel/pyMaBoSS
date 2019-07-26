@@ -34,7 +34,9 @@ types
 * **Result**
 
 .. autoclass:: maboss.result.Result
-
+    :members:
+    :inherited-members:
+    
 parser
 ------
 
