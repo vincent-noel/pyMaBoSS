@@ -59,6 +59,9 @@ class BaseResult(object):
         self.state_probtraj_full = None
         self.last_states_probtraj = None
         self.state_statdist = None
+        self.statdist_clusters = None
+        self.statdist_clusters_summary = None
+        self.statdist_clusters_summary_error = None
 
         self.nd_probtraj = None
         self.nd_probtraj_error = None
@@ -335,6 +338,32 @@ class BaseResult(object):
                     self.raw_statdist_clusters.append(df)
         return self.raw_statdist_clusters
 
+    def get_statdist_clusters(self):
+        if self.statdist_clusters is None:
+            self.statdist_clusters = []
+
+            # Getting all states
+            all_states = set()
+            for cluster in self.get_raw_statdist_clusters():
+                for i_row, (index_row, row) in enumerate(cluster.iterrows()): 
+                    t_states = [val for _, val in row[0::2].iteritems() if type(val) is str]
+                    all_states.update(t_states)
+
+                t_statdist_cluster = pd.DataFrame(
+                    np.zeros((len(cluster.index), len(all_states))), 
+                    index=cluster.index, columns=all_states
+                )
+
+                for index_row, row in cluster.iterrows():
+                    for i_col, (_, state) in enumerate(row[0::2].iteritems()):
+                        if type(state) is str:
+                            val = row.iloc[(i_col*2)+1]
+                            t_statdist_cluster.loc[index_row, state] = val
+
+                self.statdist_clusters.append(t_statdist_cluster)
+
+        return self.statdist_clusters
+
     def get_raw_statdist_clusters_summary(self):
         if self.raw_statdist_clusters_summary is None:
             start = 0
@@ -357,6 +386,58 @@ class BaseResult(object):
             self.raw_statdist_clusters_summary = pd.read_csv(StringIO("".join(lines)), sep="\t", index_col=0)
 
         return self.raw_statdist_clusters_summary
+
+    def get_statdist_clusters_summary(self):
+        if self.statdist_clusters_summary is None:
+            raw = self.get_raw_statdist_clusters_summary()
+
+            # Getting all states
+            all_states = set()
+            for i_row, (index_row, row) in enumerate(raw.iterrows()): 
+                t_states = [val for _, val in row[0::3].iteritems() if type(val) is str]
+                all_states.update(t_states)
+
+            self.statdist_clusters_summary = pd.DataFrame(
+                np.zeros((len(raw.index), len(all_states))), 
+                index=raw.index, columns=all_states
+            )
+
+            for index_row, row in raw.iterrows():
+                for i_col, (_, state) in enumerate(row[0::3].iteritems()):
+                    if type(state) is str:
+                        val = row.iloc[(i_col*3)+1]
+                        self.statdist_clusters_summary.loc[index_row, state] = val
+
+            
+
+        return self.statdist_clusters_summary
+
+
+    def get_statdist_clusters_summary_error(self):
+        if self.statdist_clusters_summary_error is None:
+            raw = self.get_raw_statdist_clusters_summary()
+
+            # Getting all states
+            all_states = set()
+            for i_row, (index_row, row) in enumerate(raw.iterrows()): 
+                t_states = [val for _, val in row[0::3].iteritems() if type(val) is str]
+                all_states.update(t_states)
+
+            self.statdist_clusters_summary_error = pd.DataFrame(
+                np.zeros((len(raw.index), len(all_states))), 
+                index=raw.index, columns=all_states
+            )
+
+            for index_row, row in raw.iterrows():
+                for i_col, (_, state) in enumerate(row[0::3].iteritems()):
+                    if type(state) is str:
+                        val = row.iloc[(i_col*3)+2]
+                        self.statdist_clusters_summary_error.loc[index_row, state] = val
+
+            
+
+        return self.statdist_clusters_summary_error
+
 
     def get_probtraj_dtypes(self):
         with open(self.get_probtraj_file(), 'r') as probtraj:
