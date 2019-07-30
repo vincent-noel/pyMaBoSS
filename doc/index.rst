@@ -4,13 +4,14 @@ pyMaBoSS
 pyMaBoSS is a python API for the `MaBoSS <https://maboss.curie.fr/>`_ software.
 It can be used inside the `Colomoto docker <https://hub.docker.com/r/colomoto/colomoto-docker/>`_.
 The API is loaded by running the following line in Python::
-    import maboss
+   
+   import maboss
+    
 
-
-Tutorial
---------
+Tutorials
+---------
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
 
    Tutorial.ipynb
    CellFateModel_uppmaboss.ipynb
@@ -21,7 +22,7 @@ Tutorial
 API
 ---
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
 
    api.rst
    maboss-server.rst
