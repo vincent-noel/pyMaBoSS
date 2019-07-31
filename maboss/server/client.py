@@ -11,13 +11,19 @@ from .comm import RUN_COMMAND, CHECK_COMMAND, DataStreamer
 
 class MaBoSSClient:
 
+    """
+        .. py:class:: Creates a connection to the MaBoSS Server specified by the host/port
+
+        :param host: Address of the server
+        :param port: (optional) Port used to communicate with the server
+        :param timeout: (optional) Timeout of the connection
+
+    """
+
     SERVER_NUM = 1 # for now
 
     def __init__(self, host = None, port = None, maboss_server = None, timeout=None):
-        """
-            Creates a connection to the MaBoSS Server specified by the host/port
 
-        """
         if not maboss_server:
             maboss_server = os.getenv("MABOSS_SERVER")
             if not maboss_server:
@@ -81,7 +87,11 @@ class MaBoSSClient:
 
     def run(self, simulation, hints={}):
         """
-            Runs a simulation in the server
+            .. py:method:: Runs a simulation in the server
+
+            :param: :any:`Simulation` object
+
+            :return: :any:`Result` object
         """
 
 
