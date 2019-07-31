@@ -8,16 +8,10 @@ The API is loaded by running the following line in Python::
    import maboss
     
 
-Tutorials
----------
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 2
 
-   Tutorial.ipynb
-   CellFateModel_uppmaboss.ipynb
-   Ensemble_MaBoSS_simulations.ipynb
-   Server.ipynb
-
+   notebooks/tutorials.rst
    
 API
 ---
