@@ -1,10 +1,10 @@
-UpPMaBoSS API
+UPMaBoSS API
 =============
 
 **UpdatePopulation**
 
-    This is the main class of the UpPMaBoSS API, used to build the Update Population simulation
-    from a MaBoSS simulation and an optional UpPMaBoSS specific file (.upp).
+    This is the main class of the UPMaBoSS API, used to build the Update Population simulation
+    from a MaBoSS simulation and an optional UPMaBoSS specific file (.upp).
 
 .. autoclass:: maboss.upp.UpdatePopulation
 	       :members:
@@ -14,7 +14,7 @@ UpPMaBoSS API
 
 **UpdatePopulationResults**
 
-    This is the results class of the UpPMaBoSS API, used to get easy access to the results
+    This is the results class of the UPMaBoSS API, used to get easy access to the results
 
 .. autoclass:: maboss.upp.UpdatePopulationResults
    :members:
