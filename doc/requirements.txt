@@ -3,3 +3,4 @@ pyparsing
 colomoto_jupyter
 pandas
 matplotlib
+ipython
