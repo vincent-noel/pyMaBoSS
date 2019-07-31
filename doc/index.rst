@@ -13,17 +13,10 @@ The API is loaded by running the following line in Python::
 
    notebooks/tutorials.rst
    
-API
----
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 2
 
-   api.rst
-   maboss-server.rst
-   uppmaboss-api.rst
-   ensemblemaboss-api.rst
-
-
+   api/index.rst
 
 Indices and tables
 ==================
