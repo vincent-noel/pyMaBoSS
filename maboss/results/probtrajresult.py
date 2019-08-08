@@ -34,6 +34,8 @@ class ProbTrajResult(object):
         self.indexes = None
         self.states = None
         self.nodes = None
+        self.states_indexes = None
+        self.nodes_indexes = None
 
     def get_states_probtraj(self, prob_cutoff=None):
         """
@@ -46,11 +48,12 @@ class ProbTrajResult(object):
             raw_states = self._get_raw_states()
             raw_probas = self._get_raw_probas()
             indexes, states = self._get_indexes()
+            states_indexes = self._get_states_indexes()
             
             new_data = np.zeros((len(raw_probas), len(states)))
             for i, t_probas in enumerate(raw_probas):
                 for j, proba in enumerate(t_probas):
-                    new_data[i, states.index(raw_states[i][j])] = proba    
+                    new_data[i, states_indexes[raw_states[i][j]]] = proba    
             
             self.state_probtraj = pd.DataFrame(
                 data=new_data,
@@ -75,11 +78,12 @@ class ProbTrajResult(object):
             raw_states = self._get_raw_states()
             raw_errors = self._get_raw_errors()
             indexes, states = self._get_indexes()
+            states_indexes = self._get_states_indexes()
 
             new_data = np.zeros((len(raw_errors), len(states)))
             for i, t_errors in enumerate(raw_errors):
                 for j, error in enumerate(t_errors):
-                    new_data[i, states.index(raw_states[i][j])] = error    
+                    new_data[i, states_indexes[raw_states[i][j]]] = error    
             
             self.state_probtraj_errors = pd.DataFrame(
                 data=new_data,
@@ -103,13 +107,14 @@ class ProbTrajResult(object):
             raw_probas = self._get_raw_probas()
             indexes, states = self._get_indexes()
             nodes = self._get_nodes()
+            nodes_indexes = self._get_nodes_indexes()
 
             new_probs = np.zeros((len(indexes), len(nodes)))
             for i, t_probas in enumerate(raw_probas):
                 for j, proba in enumerate(t_probas):
                     if raw_states[i][j] != "<nil>":
                         for node in raw_states[i][j].split(" -- "):
-                            new_probs[i, nodes.index(node)] += proba
+                            new_probs[i, nodes_indexes[node]] += proba
 
             self.nd_probtraj = pd.DataFrame(new_probs, columns=nodes, index=indexes)
             self.nd_probtraj.sort_index(axis=1, inplace=True)
@@ -130,13 +135,14 @@ class ProbTrajResult(object):
             raw_errors = self._get_raw_errors()
             indexes, states = self._get_indexes()
             nodes = self._get_nodes()
+            nodes_indexes = self._get_nodes_indexes()
             
             new_errors = np.zeros((len(indexes), len(nodes)))
             for i, t_raw_errors in enumerate(raw_errors):
                 for j, error in enumerate(t_raw_errors):
                     if raw_states[i][j] != "<nil>":
                         for node in raw_states[i][j].split(" -- "):
-                            new_errors[i, nodes.index(node)] += error
+                            new_errors[i, nodes_indexes[node]] += error
 
             self.nd_probtraj_error = pd.DataFrame(new_errors, columns=nodes, index=indexes)
             self.nd_probtraj_error.sort_index(axis=1, inplace=True)
@@ -151,6 +157,7 @@ class ProbTrajResult(object):
             raw_errors = self._get_raw_errors()
             raw_entropy = self._get_raw_entropy()
             indexes, states = self._get_indexes()
+            states_indexes = self._get_states_indexes()
 
             full_cols = ["TH", "ErrorTH", "H"]
             for col in states:
@@ -164,11 +171,11 @@ class ProbTrajResult(object):
 
             for i, t_probas in enumerate(raw_probas):
                 for j, proba in enumerate(t_probas):
-                    new_data[i, 3+(states.index(raw_states[i][j])*2)] = proba
+                    new_data[i, 3+(states_indexes[raw_states[i][j]]*2)] = proba
 
             for i, t_errors in enumerate(raw_errors):
                 for j, error in enumerate(t_errors):
-                    new_data[i, 4+(states.index(raw_states[i][j])*2)] = error
+                    new_data[i, 4+(states_indexes[raw_states[i][j]]*2)] = error
 
             self.state_probtraj_full = pd.DataFrame(new_data, columns=full_cols, index=indexes)
 
@@ -216,12 +223,13 @@ class ProbTrajResult(object):
                 if state != "<nil>":
                     nodes.update([node for node in state.split(" -- ")])
             nodes = list(nodes) 
+            nodes_indexes = {node:index for index, node in enumerate(nodes)}
 
             new_probas = np.zeros((1, len(nodes)))
             for i, proba in enumerate(raw_probs):
                 if raw_states[i] != "<nil>":
                     for node in raw_states[i].split(" -- "):
-                        new_probas[0, nodes.index(node)] += proba
+                        new_probas[0, nodes_indexes[node]] += proba
 
             self.last_nodes_probtraj = pd.DataFrame(new_probas, columns=nodes, index=[data[0]])
             self.last_nodes_probtraj.sort_index(axis=1, inplace=True)
@@ -349,3 +357,17 @@ class ProbTrajResult(object):
             self.nodes = list(self.nodes)
         
         return self.nodes
+
+    def _get_states_indexes(self):
+        if self.states_indexes is None:
+            _, states = self._get_indexes()
+            self.states_indexes = {state:index for index, state in enumerate(states)}
+        return self.states_indexes
+
+    def _get_nodes_indexes(self):
+        if self.nodes_indexes is None:
+            nodes = self._get_nodes()
+            self.nodes_indexes = {node:index for index, node in enumerate(nodes)}
+        return self.nodes_indexes
+
+        

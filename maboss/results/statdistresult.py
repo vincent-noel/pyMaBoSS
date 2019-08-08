@@ -31,13 +31,15 @@ class StatDistResult(object):
             for t_states in raw_states:
                 states.update(t_states)
             states = list(states)
+            states_indexes = {state:index for index, state in enumerate(states)}
+
 
             indexes = [vals[0] for vals in raw_values]
             new_data = np.zeros((len(raw_states), len(states)))
             
             for i, t_probas in enumerate(raw_probas):
                 for j, proba in enumerate(t_probas):
-                    new_data[i, states.index(raw_states[i][j])] = np.float64(proba)
+                    new_data[i, states_indexes[raw_states[i][j]]] = np.float64(proba)
             
             self.state_statdist = pd.DataFrame(
                 data=new_data,
@@ -63,13 +65,14 @@ class StatDistResult(object):
                 for t_states in raw_states:
                     states.update(t_states)
                 states = list(states)
+                states_indexes = {state:index for index, state in enumerate(states)}
 
                 indexes = [vals[0] for vals in raw_values]
                 new_data = np.zeros((len(raw_states), len(states)))
                 
                 for i, t_probas in enumerate(raw_probas):
                     for j, proba in enumerate(t_probas):
-                        new_data[i, states.index(raw_states[i][j])] = np.float64(proba)
+                        new_data[i, states_indexes[raw_states[i][j]]] = np.float64(proba)
                 
                 df_cluster = pd.DataFrame(
                     data=new_data,
@@ -95,13 +98,14 @@ class StatDistResult(object):
             for t_states in raw_states:
                 states.update(t_states)
             states = list(states)
+            states_indexes = {state:index for index, state in enumerate(states)}
 
             indexes = [vals[0] for vals in raw_values]
             new_data = np.zeros((len(raw_states), len(states)))
 
             for i, t_probas in enumerate(raw_probas):
                 for j, proba in enumerate(t_probas):
-                    new_data[i, states.index(raw_states[i][j])] = np.float64(proba)
+                    new_data[i, states_indexes[raw_states[i][j]]] = np.float64(proba)
 
             self.statdist_clusters_summary = pd.DataFrame(
                 data=new_data,
@@ -125,6 +129,7 @@ class StatDistResult(object):
             for t_states in raw_states:
                 states.update(t_states)
             states = list(states)
+            states_indexes = {state:index for index, state in enumerate(states)}
 
             indexes = [vals[0] for vals in raw_values]
             new_data = np.zeros((len(raw_states), len(states)))
