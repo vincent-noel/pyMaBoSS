@@ -3,11 +3,23 @@ import sys
 from .results import UpdatePopulationResults
 
 class UpdatePopulation:
-    def __init__(self, model, uppfile=None, previous_run=None, verbose=False):
+    def __init__(self, model, uppfile=None, previous_run=None, 
+                 nodes_init=None, verbose=False):
+        """Construct an UppMaBoss simulation
+        :param model: MaBoSS model
+        :param uppfile: upp file, default to None 
+        :param previous_run: previous run to start from, default to None 
+        :param nodes_init: dict in the form { "node1" : TrueProb1, "node2" : TrueProb2, ...}
+        with nodes to be initialised to a specific value at the start
+        of the simulation. These values override the previous run probabilities
+        for the specified nodes, default to None 
+        :param verbose: boolean to activate verbose mode, default to False
+        """
 
         self.model = model
         self.uppfile = uppfile
         self.previous_run = previous_run
+        self.nodes_init = nodes_init
 
         self.time_step = float(model.param['max_time'])
         self.time_shift = 0.0
@@ -18,6 +30,7 @@ class UpdatePopulation:
         self.death_node = ""
 
         self.update_var = {}
+        self.nodes_formula = {}
         self.pop_ratio = 1.0
         self.step_number = -1
 
@@ -38,7 +51,9 @@ class UpdatePopulation:
             self._readUppFile()
 
     def run(self, workdir=None, overwrite=None, verbose=False):
-        return UpdatePopulationResults(self, verbose, workdir, overwrite, self.previous_run)
+        return UpdatePopulationResults(self, verbose, workdir, overwrite, 
+                                       previous_run=self.previous_run,
+                                       nodes_init = self.nodes_init)
 
     def _readUppFile(self):
 
@@ -95,6 +110,19 @@ class UpdatePopulation:
                         
                         if self.verbose:
                             print("Var %s updated by value %s" % (varName, value))
+                            
+                    if line.startswith("@"):
+
+                        (nodeName, value) = line.split("u=", 1)
+                        nodeName = nodeName.strip()[1:] # remove starting @
+                        if nodeName in self.nodes_formula.keys():
+                            print("Multiple formula definitions for node %s" % nodeName)
+                            exit()
+
+                        value = value.replace(";", "").strip()
+                        self.nodes_formula.update({nodeName: value})
+                        if self.verbose:
+                            print("Node %s has formula %s" % (nodeName, value))
 
         except FileNotFoundError:
             print("Cannot find .upp file", file=sys.stderr)
@@ -115,3 +143,10 @@ class UpdatePopulation:
             return
 
         self.update_var.update({name: formula})
+        
+    def setNodeFormula(self, node, formula, overwrite=False):
+        if node in self.nodes_formula.keys() and not overwrite:
+            print("Formula for node %s already exists !" % node, file=sys.stderr)
+            return
+
+        self.nodes_formula.update({node: formula})

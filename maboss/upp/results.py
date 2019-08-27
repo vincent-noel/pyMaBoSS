@@ -16,7 +16,22 @@ from multiprocessing import Pool
 
 
 class UpdatePopulationResults:
-    def __init__(self, uppModel, verbose=False, workdir=None, overwrite=False, previous_run=None, previous_run_step=-1):
+    def __init__(self, uppModel, verbose=False, workdir=None, overwrite=False, 
+                 previous_run=None, previous_run_step=-1, nodes_init = None):
+        """UpdatePopulationResults class
+        :param uppModel: UppMaBoSS model
+        :param verbose: boolean to activate verbose mode, default to False        
+        :param workdir: working directoy, default to None
+        :param overwrite: overwrite previous results, default to False
+        :param previous_run: previous run used to initialize starting probability
+        distribution, default to None
+        :param previous_run_step: step used to initialize starting probability
+        distribution from previous run, default to -1 (last)
+        :param nodes_init: dict of nodes values of the form { "NODE1" : TrueValue1, "NODE2" : TrueValue2, ... }.
+        used to set the probability of specific nodes at the start of the simulation 
+        NB: nodes_init overrides probability distribution of previous_run 
+        for the specified nodes
+        """
         self.uppModel = uppModel
         self.pop_ratios = pd.Series()
         self.stepwise_probability_distribution = None
@@ -53,49 +68,50 @@ class UpdatePopulationResults:
                 os.makedirs(workdir)
 
             if previous_run:
-                # Load the previous run final state
-                _get_next_condition_from_trajectory(previous_run, self.uppModel.model, step=previous_run_step)
+                # Load the previous run final state and init some nodes if required
+                _get_next_condition_from_trajectory \
+                    (previous_run, self.uppModel.model, 
+                     step=previous_run_step, nodes_init=nodes_init)
 
             self._run()
 
     def _run(self):
-        
+        #
+        # Simulation workdir is None when self.workdir is None
+        #
+        sim_workdir = None
+        #
+        # Perform a first run
+        #            
         if self.verbose:
             print("Run MaBoSS step 0")
-
-        sim_workdir = os.path.join(self.workdir, "Step_0") if self.workdir is not None else None
+        if self.workdir is not None:
+            sim_workdir = os.path.join(self.workdir, "Step_0")
         result = self.uppModel.model.run(workdir=sim_workdir)
-
         self.results.append(result)
         self.pop_ratios[self.uppModel.time_shift] = self.pop_ratio
     
         modelStep = self.uppModel.model.copy()
 
         for stepIndex in range(1, self.uppModel.step_number+1):
-
-            LastLinePrevTraj = ""                
-            with open(result.get_probtraj_file(), 'r') as PrStepTrajF:
-                LastLinePrevTraj = PrStepTrajF.readlines()[-1]
-            
-            self.pop_ratio *= self._updatePopRatio(LastLinePrevTraj)
-            self.pop_ratios[self.uppModel.time_shift + self.uppModel.time_step*stepIndex] = self.pop_ratio
-            
-            modelStep = self._buildUpdateCfg(modelStep, LastLinePrevTraj)
-            
+            #
+            # Update pop ratio and construct the new version of model
+            #
+            modelStep = self._buildUpdateCfg \
+                (modelStep, result.get_probtraj_file(), stepIndex)
             if modelStep is None:
                 if self.verbose:
                     print("No cells left")
-
-                break
-
-            else:
-                if self.verbose:
-                    print("Running MaBoSS for step %d" % stepIndex)
-
-                sim_workdir = os.path.join(self.workdir, "Step_%d" % stepIndex) if self.workdir is not None else None
-                result = modelStep.run(workdir=sim_workdir)
-
-                self.results.append(result)
+                break        
+            #
+            # If we still have cells, run new step
+            #
+            if self.verbose:
+                print("Running MaBoSS for step %d" % stepIndex)
+            if self.workdir is not None:
+                sim_workdir = os.path.join(self.workdir, "Step_%d" % stepIndex)
+            result = modelStep.run(workdir=sim_workdir)
+            self.results.append(result)
 
         if self.workdir is not None:
             self.save_population_ratios(os.path.join(self.workdir, "PopRatios.csv"))
@@ -190,130 +206,224 @@ class UpdatePopulationResults:
         nb_cores = int(self.uppModel.model.param["thread_count"])
         self.get_stepwise_probability_distribution(nb_cores=nb_cores).to_csv(path, index_label="Step")
 
-    def _buildUpdateCfg(self, simulation, prob_traj_line): 
-
-        probTrajListFull = prob_traj_line.split("\t")
-        probTrajList = list(probTrajListFull)
-
-        for prob_traj in probTrajListFull:
-            if prob_traj[0].isalpha() or prob_traj == "<nil>":
-                break
-            else:
-                probTrajList.pop(0)
+    def _buildUpdateCfg(self, simulation, traj_file, stepIndex):
+        """Configure the MaBoSS model for the next run of UppMaBoss.
+        In practice, _buildUpdateCfg uses the previous simulation result
+        to compute pop ratio, death, division, parameters, nodes formulas 
+        and sets the init state of the model for the next step of simulation
+        :param simulation: MaBoSS simulation
+        :param traj_file: trajectory file of previous run        
+        :param stepIndex: current step of the UppMaBoss simulation
+        """
+        #
+        # Read first and last line, extract last states with respective probs
+        #
+        first_line, last_line = read_first_last_lines_from_trajectory (traj_file)
+        states, probs = get_states_probs_from_trajectory_line (first_line, last_line)                                                            
+        #
+        # Update pop ratio
+        #
+        self.pop_ratio *= self._updatePopRatio (states, probs)
+        new_time = self.uppModel.time_shift + self.uppModel.time_step*stepIndex
+        self.pop_ratios[new_time] = self.pop_ratio
+        #
+        # Normalize
+        #
+        states, probs = self.normalize_with_death_and_division (states, probs)
+        if states is None:
+            return None        
+        #
+        # Compute formulas for parameters and nodes 
+        # 
+        parameters = self.compute_parameters(simulation, states, probs)
+        nodes_with_formula = self.compute_nodes_formula (states, probs)
+        #
+        # Apply new values for parameters 
+        # 
+        simulation.param.update(parameters)
+        #
+        # Init states
+        #
+        nodes_to_init, new_istate = self._initCond_Trajline (states, probs)
+        simulation.network.set_istate (nodes_to_init, new_istate, warnings=False)
+        #
+        # Init nodes having a formula
+        #
+        for a_node in nodes_with_formula.keys():
+            new_val = nodes_with_formula[a_node]
+            simulation.network.set_istate(a_node, [1-new_val,new_val], warnings=False)
+        return simulation 
+    
+    def normalize_with_death_and_division(self, states, probs): 
+        """
+        Take into account impact of death and division and normalize
+        NB: if no death, nor division is defined, do nothing
+        :param states: list of states extracted from the trajectory
+        :param probs: list of states probabilities extracted from the trajectory  
+        """
+        #
+        # speed up programm when no death, nor division
+        # 
+        if not self.uppModel.death_node and not self.uppModel.division_node:
+            return states, probs
+        #
+        # if death or division
+        #
+        norm_factor = 0
+        death_prob = 0
+        division_prob = 0
+    
+        states_ret = []
+        probs_ret = []
+        for one_state, one_prob in zip(states, probs):
+            one_state_ret = one_state.copy()
+            one_prob_ret = one_prob
             
-        normFactor = 0
-        deathProb = 0
-        divisionProb = 0
-
-        for i in range(0, len(probTrajList), 3):
-            t_state = probTrajList[i]
-
-            if nodeIsInState(self.uppModel.death_node, t_state):
-                deathProb += float(probTrajList[i+1])
-                probTrajList[i+1] = str(0)
-
+            if self.uppModel.death_node in one_state_ret:
+                death_prob += one_prob_ret
+                one_prob_ret = 0
             else:
-                if t_state == self.uppModel.division_node:
-                    divisionProb += float(probTrajList[i+1])
-                    probTrajList[i+1] = str(2.0*float(probTrajList[i+1]))
-                    probTrajList[i] = "<nil>"
-
-                elif t_state.startswith(self.uppModel.division_node+" "):
-                    divisionProb += float(probTrajList[i+1])
-                    probTrajList[i+1] = str(2.0*float(probTrajList[i+1]))
-                    probTrajList[i] = probTrajList[i].replace(self.uppModel.division_node+" -- ", "")
-
-                elif (" %s " % self.uppModel.division_node) in t_state:
-                    divisionProb += float(probTrajList[i+1])
-                    probTrajList[i+1] = str(2.0*float(probTrajList[i+1]))
-                    probTrajList[i] = probTrajList[i].replace(" -- "+self.uppModel.division_node, "")
-            
-                elif t_state.endswith(" "+self.uppModel.division_node):
-                    divisionProb += float(probTrajList[i+1])
-                    probTrajList[i+1] = str(2.0*float(probTrajList[i+1]))
-                    probTrajList[i] = probTrajList[i].replace(" -- "+self.uppModel.division_node, "")
-
-                normFactor += float(probTrajList[i+1])
-
+                if self.uppModel.division_node in one_state_ret:
+                    division_prob += one_prob_ret
+                    one_prob_ret *= 2.0
+                    one_state_ret.remove(self.uppModel.division_node)
+                norm_factor += one_prob_ret
+                
+            states_ret.append (one_state_ret)
+            probs_ret.append (one_prob_ret)
+    
         if self.verbose:
-            print("Norm Factor:%g probability of death: %g probability of division: %g" % (normFactor, deathProb, divisionProb))
+            print("Norm Factor:%g probability of death: %g probability of division: %g"  \
+                  % (norm_factor, death_prob, division_prob))
+        #
+        # if norm_factor <= 0, no more cells
+        #
+        if norm_factor <= 0:
+            return None, None
+        #
+        # If norm_factor > 0, normalize 
+        #
+        probs_ret = np.array(probs_ret, dtype = float)
+        probs_ret = (probs_ret / norm_factor).tolist()
+        return states_ret, probs_ret
 
-        if normFactor > 0:
+    def compute_parameters(self, simulation, states, probs): 
+        """
+        Computer parameters
+        :param simulation: MaBoss model (containing the defining of parameters) 
+        :param states: list of states extracted from the trajectory
+        :param probs: list of states probabilities extracted from the trajectory  
+        """
+        parameters = {}
+        for parameter, value in simulation.param.items():
+            if parameter.startswith("$") and parameter in self.uppModel.update_var.keys():
+                formula = self.uppModel.update_var[parameter]
+                new_value = varDef_Upp(formula, states, probs)
+                for match in re.findall("#rand", new_value):
+                    rand_number = random.uniform(0, 1)
+                    new_value = new_value.replace("#rand", str(rand_number), 1)
+    
+                new_value = new_value.replace("#pop_ratio", str(self.pop_ratio))
+                parameters.update({parameter: new_value})
+                if self.verbose:
+                    print("Updated variable: %s = %s" % (parameter, new_value))
+        return parameters
+
+    def compute_nodes_formula (self, states, probs): 
+        """
+        Computer nodes formula to be used as init values for next run
+        :param states: list of states extracted from the trajectory
+        :param probs: list of states probabilities extracted from the trajectory  
+        """
+        all_node_upd = {}
+        for node_upd in self.uppModel.nodes_formula.keys():
+            node_formula = self.uppModel.nodes_formula[node_upd]
+            new_value = varDef_Upp(node_formula, states, probs)
             
-            for i in range(0, len(probTrajList), 3):
-                probTrajList[i+1] = str(float(probTrajList[i+1])/normFactor)
+            for match in re.findall("#rand", new_value):
+                rand_number = random.uniform(0, 1)
+                new_value = new_value.replace("#rand", str(rand_number), 1)
+    
+            new_value = new_value.replace("#pop_ratio", str(self.pop_ratio))
+            #
+            # Remove trailing ';' added by varDef_Upp, compute formula via eval 
+            # and convert to proba
+            #
+            new_value = float (eval(new_value[:-1]))
+            new_value = np.clip(new_value, 0, 1)
+               
+            all_node_upd.update({node_upd: new_value})
+            if self.verbose:
+                print("Updated node:", node_upd, "=", new_value)
+        return all_node_upd
 
-            parameters = {}
-
-            for parameter, value in simulation.param.items():
-                if parameter.startswith("$") and parameter in self.uppModel.update_var.keys():
-                    new_value = varDef_Upp(self.uppModel.update_var[parameter], probTrajList)
-
-                    for match in re.findall("#rand", new_value):
-                        rand_number = random.uniform(0, 1)
-                        new_value = new_value.replace("#rand", str(rand_number), 1)
-
-                    new_value = new_value.replace("#pop_ratio", str(self.pop_ratio))
-                    parameters.update({parameter: new_value})
-                    if self.verbose:
-                        print("Updated variable: %s = %s" % (parameter, new_value))
-            
-            simulation.param.update(parameters)
-            new_istate = self._initCond_Trajline(probTrajList)
-            
-            simulation.network.set_istate(self.uppModel.node_list, new_istate, warnings=False)
-            return simulation
-
-    def _initCond_Trajline(self, proba_traj_list):
-
+    def _initCond_Trajline(self, states, probs, nodes_init=None):
+        """
+        Return the list of states to be initialized from states and probs
+        The function excludes from states the nodes with formulas
+        or (for the first run) nodes with init value supplied as parameter
+        :param states: list of states extracted from the trajectory
+        :param probs: list of states probabilities extracted from the trajectory  
+        :param nodes_init: dict of nodes values of the form { "NODE1" : TrueValue1, "NODE2" : TrueValue2, ... }.
+        Nodes to exclude from InitCond as these nodes have a specific init value
+        """
         new_istate = {}
-        name2idx = {name: i for i, name in enumerate(self.uppModel.node_list)}
+        #
+        # Remove from the list of nodes the ones having a rule or an init value
+        #
+        nodes_to_exclude = set(self.uppModel.nodes_formula.keys()) 
+        if nodes_init:
+            nodes_to_exclude= nodes_to_exclude | set(nodes_init.keys())
 
-        for i in range(0, len(proba_traj_list), 3):
-            state = proba_traj_list[i]
-            proba = float(proba_traj_list[i+1])
-
-            state_tuple = tuple(_str2state(state, name2idx))
+        list_nodes_to_set = list( set(self.uppModel.node_list) - nodes_to_exclude )
+        # Not necessary for MaBoss, only to have visually an ouput always in the same order
+        list_nodes_to_set.sort()
+        #
+        # Associate an index to each node
+        #
+        name2idx = {name: i for i, name in enumerate(list_nodes_to_set)}
+        #
+        # Exclude nodes with formula or with specific init from states
+        #
+        states = exclude_nodes_from_states (states, nodes_to_exclude)
+        #
+        # Construct a list of states (each state is tuple of nodes on/off)
+        # with the probability of each state
+        #
+        for state, prob in zip(states, probs):
+            #
+            # Inclusion of modified _str2state code
+            #
+            str2state = [ 0 ] * len(name2idx)
+            if '<nil>' not in state:
+                for node in state:
+                    str2state[name2idx[node]] = 1
+            
+            state_tuple = tuple(str2state)
 
             if state_tuple in new_istate.keys():
-                proba += new_istate[state_tuple]
+                prob += new_istate[state_tuple]
             
-            new_istate.update({state_tuple: proba})
+            new_istate.update({state_tuple: prob})
 
-        return new_istate
+        return list_nodes_to_set, new_istate
 
-    def _updatePopRatio(self, last_line):
-
-        upPopRatio = 0.0
-        probTrajList = last_line.split("\t")
-        indexStateTrajList = -1
-
-        for probTraj in probTrajList:
-            indexStateTrajList += 1
-            if probTraj[0].isalpha() or probTraj == "<nil>":
-                break
-
-        for i in range(indexStateTrajList, len(probTrajList), 3):
-            t_node = probTrajList[i]
-
-            if not nodeIsInState(self.uppModel.death_node, t_node):
-                if nodeIsInState(self.uppModel.division_node, t_node):
-                    upPopRatio += 2*float(probTrajList[i+1])
+    def _updatePopRatio (self, states, probs):
+        """
+        Return update population ratio using nodes having death or division
+        :param states: states extracted from the trajectory
+        :param probs: probabilities of states extracted from the trajectory  
+        """
+        upd_pop_ratio = 0.0
+        for a_state, a_prob in zip(states, probs):
+            if self.uppModel.death_node not in a_state:
+                if self.uppModel.division_node in a_state:
+                    upd_pop_ratio += 2 * a_prob
                 else:
-                    upPopRatio += float(probTrajList[i+1])
+                    upd_pop_ratio += a_prob
+        return upd_pop_ratio
 
-        return upPopRatio
-
-def nodeIsInState(node, state):
-    return (
-        state == node 
-        or state.startswith(node+" ") 
-        or state.endswith(" "+node) 
-        or (" %s " % node) in state
-    )
-
-def varDef_Upp(update_line, prob_traj_list):
-
+def varDef_Upp(update_line, states, probs):
 	res_match = re.findall("p\[[^\[]*\]", update_line)
 	if len(res_match) == 0:
 		print("Syntax error in the parameter update definition : %s" % update_line, file=sys.stderr)
@@ -342,8 +452,8 @@ def varDef_Upp(update_line, prob_traj_list):
 				upNodeList.append(node)
 
 		probValue = 0.0
-		for i in range(0, len(prob_traj_list), 3):
-			upNodeProbTraj = prob_traj_list[i].split(" -- ")
+		for i in range(0, len(states)):
+			upNodeProbTraj = states[i]
 			interlength = 0
 
 			for upNodePt in upNodeProbTraj:
@@ -362,39 +472,114 @@ def varDef_Upp(update_line, prob_traj_list):
 					if interlength == 1:
 						break
 				if interlength == 0:
-					probValue += float(prob_traj_list[i+1])
+					probValue += probs[i]
 
 		update_line = update_line.replace(match, str(probValue), 1)
 	update_line += ";"
 	return update_line
-	
-def _get_next_condition_from_trajectory(self, next_model, step=-1):
-    names = [ n for n in self.uppModel.model.network.names ]
-    name2idx = {}
-    for i in range(len(names)): name2idx[ names[i] ] = i
 
+def _get_next_condition_from_trajectory(self, next_model, step=-1, nodes_init=None):
+    """
+    Set the values of MaBoss model when resuming from a previous run
+    :param next_model : MaBoss model
+    :param step: step of the UppMaBoss simulation
+    :param states: states extracted from the trajectory
+    :param probs: probabilities of states extracted from the trajectory  
+    """
+    #
+    # Extract states and probs from trajectory
+    #
     trajfile = self.results[step].get_probtraj_file()
-    with open(trajfile) as f:
-        first_line = f.readline()
-        first_col = next(i for i, col in enumerate(first_line.strip("\n").split("\t")) if col == "State")
-        last_line = f.readlines()[-1]
-        data = last_line.strip("\n").split("\t")
-        states = [ _str2state(s,name2idx) for s in data[first_col::3] ]
-        probs = [float(v) for v in data[first_col+1::3]]
-    probDict = {}
-    for state,prob in zip(states, probs):
-        probDict[tuple(state)] = prob
+    first_line, last_line = read_first_last_lines_from_trajectory (trajfile)
+    states, probs = get_states_probs_from_trajectory_line (first_line, last_line)
+    #
+    # Compute formulas for nodes 
+    # 
+    nodes_with_formula = self.compute_nodes_formula (states, probs)
+    #
+    # Init states
+    #
+    nodes_to_set, new_istate = self._initCond_Trajline \
+        (states, probs, nodes_init=nodes_init)        
+    next_model.network.set_istate (nodes_to_set, new_istate, warnings=False)    
+    #
+    # Init nodes having a formula
+    #
+    for a_node in nodes_with_formula.keys():
+        new_val = nodes_with_formula[a_node]
+        next_model.network.set_istate(a_node, [1-new_val,new_val], warnings=False)
+    #
+    # Init nodes having an init value
+    #
+    if nodes_init:
+        for a_node in nodes_init.keys():
+            new_val = nodes_init[a_node]
+            next_model.network.set_istate(a_node, [1-new_val,new_val], warnings=False)
+            if self.verbose:
+                print("Starting init of node:", a_node, "=", new_val)
 
-    next_model.network.set_istate(names, probDict, warnings=False)
+def read_first_last_lines_from_trajectory (traj_file):
+    """Read first and last lines of a trajectory file
+    :param traj_file: trajectory file
+    """
+    f = open (traj_file, 'r')
+    first_line = ""
+    last_line = ""
+    first_pass = True
+    # 
+    # This loop avoid to load all the file in memory
+    #
+    for line in f:
+        if first_pass:
+            first_line = line
+            first_pass = False
+        else:
+            last_line = line
+    f.close()
+    first_line = first_line.strip("\n")
+    last_line = last_line.strip("\n")
+    return first_line, last_line
 
-
-def _str2state(s, name2idx):
-    state = [ 0 for n in name2idx]
-    if '<nil>' != s:
-        for n in s.split(' -- '):
-            state[name2idx[n]] = 1
-    return state
-
+def get_states_probs_from_trajectory_line (first_line, last_line):
+    """Extract states and probabilities from the first and last lines 
+    of a trajectory file
+    :param first_line: first line of trajectory file
+    :param last_line: last line of trajectory file
+    """
+    #
+    # Split using tab separator
+    #    
+    first_line_as_list = first_line.split("\t")
+    last_line_as_list = last_line.split("\t")
+    #
+    # Locate 'State' cols
+    #    
+    cols_state = next(i for i, col in enumerate (first_line_as_list) if col == "State")
+    #
+    # Extract state from 'State' cols
+    #    
+    states = [ s.split(" -- ")  for s in last_line_as_list[cols_state::3] ]
+    #
+    # Extract probs from 'State' cols + 1
+    #    
+    probs = [float(v) for v in last_line_as_list[cols_state+1::3]]
+    return states, probs
+            
+def exclude_nodes_from_states (traj_states, nodes_exluded=None):
+    """Exclude nodes from states
+    :param traj_states: list of states (each state is a liste of nodes)
+    :param nodes_exluded: list/set of nodes to remove
+    """
+    if (not nodes_exluded) or len(nodes_exluded) <= 0:
+        return traj_states
+    traj_states_ret = []
+    for one_traj_states in traj_states:
+        new_traj_states = list( set(one_traj_states) - set(nodes_exluded) )
+        if len (new_traj_states) <= 0:
+            new_traj_states  = ["<nil>"]
+        traj_states_ret.append (new_traj_states)
+    return traj_states_ret   
+           
 
 def make_stepwise_probability_distribution_line(result):
     return result.get_last_states_probtraj()
