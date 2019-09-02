@@ -74,3 +74,17 @@ class TestLoadModels(TestCase):
 			join(dirname(__file__), "cellcycle_runcfg.cfg"),
 			join(dirname(__file__), "cellcycle_runcfg-thread_1.cfg")
 		)
+
+	def test_type_istate(self):
+
+		sim = load(
+			join(dirname(__file__), "TregModel_InitPop.bnd"),
+			join(dirname(__file__), "TregModel_InitPop_ActTCR2_TGFB.cfg")
+		)
+
+		istate = sim.network.get_istate()
+
+		self.assertEqual([type(value) for value in istate["PTEN"].values()], [float, float])
+		self.assertEqual([type(value) for value in istate[("TCR_b1", "TCR_b2", "CD28")].values()], [str, str, str])
+		self.assertEqual([type(value) for value in istate[("PI3K_b1", "PI3K_b2")].values()], [float, float, float])
+		self.assertEqual([type(value) for value in istate["TGFB"].values()], [str, str])
