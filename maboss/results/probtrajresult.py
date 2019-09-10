@@ -280,10 +280,13 @@ class ProbTrajResult(object):
 
         return self.entropy_probtraj_error
 
+    def _get_probtraj_fd(self):
+        return open(self.get_probtraj_file(), 'r')
+
     def _get_raw_data(self):
     
         if self._raw_data is None:
-            with open(self.get_probtraj_file(), 'r') as probtraj:
+            with self._get_probtraj_fd() as probtraj:
 
                 raw_lines = probtraj.readlines()
 
@@ -297,7 +300,7 @@ class ProbTrajResult(object):
     def _get_raw_last_data(self):
     
         if self._raw_last_data is None:
-            with open(self.get_probtraj_file(), 'r') as probtraj:
+            with self._get_probtraj_fd() as probtraj:
 
                 if self._first_state_index is None:
                     first_line = probtraj.readline()
