@@ -79,13 +79,13 @@ class Result(BaseResult):
     def getRunLog(self):
         return self._runlog
 
-    def get_fp_file(self):
+    def _get_fp_fd(self):
         return StringIO(self.getFP())
 
-    def get_probtraj_file(self):
+    def _get_probtraj_fd(self):
         return StringIO(self.getProbTraj())
 
-    def get_statdist_file(self):
+    def _get_statdist_fd(self):
         return StringIO(self.getStatDist())
 
     def get_probtraj_dtypes(self):
