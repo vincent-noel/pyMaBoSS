@@ -37,8 +37,8 @@ class UpdatePopulation:
 
             self._readUppFile()
 
-    def run(self, workdir=None, overwrite=None, verbose=False):
-        return UpdatePopulationResults(self, verbose, workdir, overwrite, self.previous_run)
+    def run(self, workdir=None, overwrite=None, verbose=False, host=None, port=7777):
+        return UpdatePopulationResults(self, verbose, workdir, overwrite, self.previous_run, host=host, port=port)
 
     def _readUppFile(self):
 

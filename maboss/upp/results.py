@@ -11,12 +11,13 @@ else:
     from contextlib import ExitStack
 import glob
 from ..results.storedresult import StoredResult
+from ..server import MaBoSSClient
 import shutil
 from multiprocessing import Pool
 
 
 class UpdatePopulationResults:
-    def __init__(self, uppModel, verbose=False, workdir=None, overwrite=False, previous_run=None, previous_run_step=-1):
+    def __init__(self, uppModel, verbose=False, workdir=None, overwrite=False, previous_run=None, previous_run_step=-1, host=None, port=7777):
         self.uppModel = uppModel
         self.pop_ratios = pd.Series()
         self.stepwise_probability_distribution = None
@@ -28,6 +29,9 @@ class UpdatePopulationResults:
         self.workdir = workdir
         self.overwrite = overwrite
         self.pop_ratio = uppModel.pop_ratio
+
+        self.host = host
+        self.port = port   
 
         if workdir is not None and os.path.exists(workdir) and not self.overwrite:
             # Restoring
@@ -64,7 +68,13 @@ class UpdatePopulationResults:
             print("Run MaBoSS step 0")
 
         sim_workdir = os.path.join(self.workdir, "Step_0") if self.workdir is not None else None
-        result = self.uppModel.model.run(workdir=sim_workdir)
+        
+        if self.host is None:
+            result = self.uppModel.model.run(workdir=sim_workdir)
+        else:
+            mbcli = MaBoSSClient(self.host, self.port)
+            result = mbcli.run(self.uppModel.model)
+            mbcli.close()
 
         self.results.append(result)
         self.pop_ratios[self.uppModel.time_shift] = self.pop_ratio
@@ -93,7 +103,13 @@ class UpdatePopulationResults:
                     print("Running MaBoSS for step %d" % stepIndex)
 
                 sim_workdir = os.path.join(self.workdir, "Step_%d" % stepIndex) if self.workdir is not None else None
-                result = modelStep.run(workdir=sim_workdir)
+                
+                if self.host is None:
+                    result = modelStep.run(workdir=sim_workdir)
+                else:
+                    mbcli = MaBoSSClient(self.host, self.port)
+                    result = mbcli.run(modelStep)
+                    mbcli.close()
 
                 self.results.append(result)
 
