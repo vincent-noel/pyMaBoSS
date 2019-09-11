@@ -74,7 +74,7 @@ class UpdatePopulationResults:
         for stepIndex in range(1, self.uppModel.step_number+1):
 
             LastLinePrevTraj = ""                
-            with open(result.get_probtraj_file(), 'r') as PrStepTrajF:
+            with result._get_probtraj_fd() as PrStepTrajF:
                 LastLinePrevTraj = PrStepTrajF.readlines()[-1]
             
             self.pop_ratio *= self._updatePopRatio(LastLinePrevTraj)
@@ -373,8 +373,7 @@ def _get_next_condition_from_trajectory(self, next_model, step=-1):
     name2idx = {}
     for i in range(len(names)): name2idx[ names[i] ] = i
 
-    trajfile = self.results[step].get_probtraj_file()
-    with open(trajfile) as f:
+    with self.results[step]._get_probtraj_fd() as f:
         first_line = f.readline()
         first_col = next(i for i, col in enumerate(first_line.strip("\n").split("\t")) if col == "State")
         last_line = f.readlines()[-1]
