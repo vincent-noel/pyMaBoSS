@@ -44,7 +44,7 @@ class EnsembleResult(BaseResult):
         self.asymptotic_nodes_probtraj_distribution = None
         maboss_cmd = simulation.get_maboss_cmd()
 
-        simulation.write_cfg(self._cfg)
+        simulation.write_cfg(self._path, "ensemble.cfg")
         simulation.write_mutations(self._path)
         self.models_files = simulation.models_files
 
@@ -55,9 +55,17 @@ class EnsembleResult(BaseResult):
         if simulation.random_sampling:
             options.append("--random-sampling")
 
-        cmd_line = [
-            maboss_cmd, "-c", self._cfg
-        ] + options + [
+        cmd_line = [maboss_cmd] + options
+
+        if simulation.individual_cfgs is not None:
+            cmd_line.append("--ensemble-istates")
+            for model_file in self.models_files:
+                cmd_line += ["-c", os.path.join(self._path, "models", simulation.individual_cfgs[os.path.basename(model_file)])]
+
+        else:
+            cmd_line += ["-c", self._cfg]
+
+        cmd_line += [
             "-o", self._path+'/'+self.prefix
         ] + self.models_files
 

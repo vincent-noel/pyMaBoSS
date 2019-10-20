@@ -16,7 +16,7 @@ from colomoto import minibn
 
 class Ensemble(object):
 
-    def __init__(self, path, cfg_filename=None, models=None, *args, **kwargs):
+    def __init__(self, path, cfg_filename=None, individual_istates=None, models=None, *args, **kwargs):
 
         self.models_path = path
         self.param = _default_parameter_list
@@ -44,6 +44,8 @@ class Ensemble(object):
 
         self.variables = collections.OrderedDict()
         self.istates = collections.OrderedDict()
+        self.individual_istates = individual_istates
+        self.individual_cfgs = None
         self.outputs = collections.OrderedDict()
         self.mutations = collections.OrderedDict()
         self.individual_results = False
@@ -93,6 +95,7 @@ class Ensemble(object):
         ensemble.individual_results = self.individual_results
         ensemble.random_sampling = self.random_sampling
         ensemble.palette = self.palette
+        ensemble.individual_istates = self.individual_istates.copy()
         return ensemble
 
     def get_maboss_cmd(self):
@@ -264,7 +267,7 @@ class Ensemble(object):
             for line in bnet_model:
                 self.nodes.append(line.split(",")[0].strip())
 
-    def str_cfg(self):
+    def str_cfg(self, individual=None):
         res = ""
         for var, value in self.variables.items():
             res += "%s = %s;\n" % (var, value)
@@ -272,29 +275,81 @@ class Ensemble(object):
         for param, value in self.param.items():
             res += "%s = %s;\n" % (param, value)
 
-        for node, istate in self.istates.items():
-            res += "[%s].istate = %g[0], %g[1];\n" % (node, istate[0], istate[1])
+        if individual is None:
+            for node, istate in self.istates.items():
+                if isinstance(node, tuple):
+                    res += "["
+                    for i, t_node in enumerate(node):
+                        res += t_node
+                        if i < len(node)-1:
+                            res += ", "
+                    res += "].istate = "
+
+                    for i, (state, value) in enumerate(istate.items()):
+                        res += "%f %s" % (value, str(list(state)).replace(" ", ""))
+                        if i < len(istate)-1:
+                            res += ", "
+                    res += ";\n"
+                else:
+                    res += "[%s].istate = %g[0], %g[1];\n" % (node.replace("-", "_"), istate[0], istate[1])
+        else:
+
+            for node, istate in self.individual_istates[individual].items():
+                if isinstance(node, tuple):
+                    res += "["
+                    for i, t_node in enumerate(node):
+                        res += t_node
+                        if i < len(node) - 1:
+                            res += ", "
+
+                    res += "].istate = "
+
+                    for i, (nodes, value) in enumerate(istate.items()):
+                        res += "%f %s" % (value, str(list(nodes)))
+                        if i < len(istate) - 1:
+                            res += ", "
+
+                    res += ";\n"
+
+                else:
+                    if istate not in [0, 1]:
+                        istate = 0
+
+                    res += "[%s].istate = %g[0], %g[1];\n" % (node.replace("-", "_"), 1 - istate, istate)
 
         for node in self.nodes:
             if len(self.outputs) == 0 or (node in self.outputs.keys() and self.outputs[node]):
-                res += "%s.is_internal = FALSE;\n" % node
+                res += "%s.is_internal = FALSE;\n" % node.replace("-", "_")
             else:
-                res += "%s.is_internal = TRUE;\n" % node
+                res += "%s.is_internal = TRUE;\n" % node.replace("-", "_")
+
         return res
 
     def print_cfg(self):
         print(self.str_cfg())
 
-    def write_cfg(self, filename):
-        with open(filename, 'w+') as cfg_file:
-            cfg_file.write(self.str_cfg())
-            
+    def write_cfg(self, path, filename):
+        if os.path.exists(os.path.join(path, "models")):
+            shutil.rmtree(os.path.join(path, "models"))
+
+        os.mkdir(os.path.join(path, "models"))
+
+        if self.individual_istates is None:
+            with open(os.path.join(path, filename), 'w+') as cfg_file:
+                cfg_file.write(self.str_cfg())
+        else:
+            self.individual_cfgs = {}
+            for individual in self.individual_istates.keys():
+                t_filename = "%s.cfg" % ".".join(individual.split(".")[0:-1])
+                self.individual_cfgs.update({individual: t_filename})
+                with open(os.path.join(path, "models", t_filename), 'w+') as cfg_file:
+                    cfg_file.write(self.str_cfg(individual))
 
     def write_mutations(self, path):
         if len(self.mutations) > 0:
             new_models = []
 
-            os.mkdir(os.path.join(path, "models"))
+            # os.mkdir(os.path.join(path, "models"))
             for model in self.models_files:
                 if os.path.splitext(model)[1] == ".bnet":
                     new_models.append(self.mutate_bnet(model, path))
