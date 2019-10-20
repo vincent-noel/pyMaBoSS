@@ -345,22 +345,24 @@ class Ensemble(object):
                 with open(os.path.join(path, "models", t_filename), 'w+') as cfg_file:
                     cfg_file.write(self.str_cfg(individual))
 
-    def write_mutations(self, path):
-        if len(self.mutations) > 0:
-            new_models = []
+    def write_models(self, path):
+        new_models = []
 
-            # os.mkdir(os.path.join(path, "models"))
-            for model in self.models_files:
-                if os.path.splitext(model)[1] == ".bnet":
-                    new_models.append(self.mutate_bnet(model, path))
-            self.models_files = new_models
+        for model in self.models_files:
+            if os.path.splitext(model)[1] == ".bnet":
+                new_models.append(self.mutate_bnet(model, path))
+        self.models_files = new_models
 
     def mutate_bnet(self, model_path, path):
         new_path = os.path.join(path, "models", os.path.basename(model_path))
+
         with open(model_path, 'r') as model_file, open(new_path, 'w+') as new_model_file:
             for line in model_file:
-                var, _ = line.split(",")
+                var, formula = line.split(",")
                 var = var.strip()
+
+                while "-" in var:
+                    var = var.replace("-", "_")
 
                 if var in self.mutations.keys():
                     if self.mutations[var] == 'ON':
@@ -370,9 +372,13 @@ class Ensemble(object):
                         new_model_file.write("%s, %d\n" % (var, 0))
 
                     else:
-                        print("Unknown mutation %s for node %s. Ignored" % (self.mutations[var, var]))
-
+                        print("Unknown mutation %s for node %s. Ignored" % (self.mutations[var], var))
                 else:
-                    new_model_file.write("%s" % line)
+                    formula = formula.strip()
+
+                    while "-" in formula:
+                        formula = formula.replace("-", "_")
+
+                    new_model_file.write("%s, %s\n" % (var, formula))
 
         return new_path

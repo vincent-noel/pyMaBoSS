@@ -46,7 +46,7 @@ class EnsembleResult(BaseResult):
         maboss_cmd = simulation.get_maboss_cmd()
 
         simulation.write_cfg(self._path, "ensemble.cfg")
-        simulation.write_mutations(self._path)
+        simulation.write_models(self._path)
         self.models_files = simulation.models_files
 
         options = ["--ensemble"]
