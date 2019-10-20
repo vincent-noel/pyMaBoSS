@@ -42,7 +42,7 @@ class EnsembleResult(BaseResult):
         self.prefix = prefix
         self.asymptotic_probtraj_distribution = None
         self.asymptotic_nodes_probtraj_distribution = None
-        maboss_cmd = "MaBoSS"
+        maboss_cmd = simulation.get_maboss_cmd()
 
         simulation.write_cfg(self._cfg)
         simulation.write_mutations(self._path)

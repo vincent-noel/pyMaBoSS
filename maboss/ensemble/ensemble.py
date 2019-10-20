@@ -87,6 +87,24 @@ class Ensemble(object):
         ensemble.palette = self.palette
         return ensemble
 
+    def get_maboss_cmd(self):
+        maboss_cmd = "MaBoSS"
+
+        l = len(self.nodes)
+        assert l <= 1024, "MaBoSS is not compatible with models with more than 1024 nodes"
+        if l <= 64:
+            pass
+        elif l <= 128:
+            maboss_cmd = "MaBoSS_128n"
+        elif l <= 256:
+            maboss_cmd = "MaBoSS_256n"
+        elif l <= 516:
+            maboss_cmd = "MaBoSS_512n"
+        elif l <= 1024:
+            maboss_cmd = "MaBoSS_1024n"
+
+        return maboss_cmd
+
     def run(self, workdir=None, overwrite=False, prefix="res"):
         return EnsembleResult(self, workdir, overwrite, prefix)
         # return EnsembleResult(self.models_files, self._cfg, "res", self.individual_results, self.random_sampling)
