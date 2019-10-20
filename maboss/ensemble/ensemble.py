@@ -16,16 +16,24 @@ from colomoto import minibn
 
 class Ensemble(object):
 
-    def __init__(self, path, cfg_filename=None, *args, **kwargs):
+    def __init__(self, path, cfg_filename=None, models=None, *args, **kwargs):
 
         self.models_path = path
         self.param = _default_parameter_list
         self.param["use_physrandgen"] = 0
-        self.models_files = [
-            os.path.join(self.models_path, filename) 
-            for filename in os.listdir(self.models_path)
-            if filename.endswith(".bnet") or filename.endswith(".bnd")
-        ]
+
+        if models is None:
+            self.models_files = [
+                os.path.join(self.models_path, filename)
+                for filename in os.listdir(self.models_path)
+                if filename.endswith(".bnet") or filename.endswith(".bnd")
+            ]
+        else:
+            self.models_files = [
+                os.path.join(self.models_path, filename)
+                for filename in models
+            ]
+
         self.minibns = None
         self.miniensemble = None
 
