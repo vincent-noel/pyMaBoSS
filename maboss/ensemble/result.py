@@ -24,6 +24,7 @@ class EnsembleResult(BaseResult):
     def __init__(self, simulation, workdir=None, overwrite=False, prefix="res"):
 
         # self._cfg = cfg_filename
+        self.workdir = workdir
         if workdir is None:
             self._path = tempfile.mkdtemp()
         else:
@@ -100,7 +101,8 @@ class EnsembleResult(BaseResult):
         return StoredResult(self._path, self.prefix + "_model_" + str(model))
 
     def __del__(self):
-        shutil.rmtree(self._path)
+        if self.workdir is None:
+            shutil.rmtree(self._path)
 
     def get_individual_states_probtraj(self, filter=None, cluster=None):
         if self.asymptotic_probtraj_distribution is None:
