@@ -92,16 +92,10 @@ class UpdatePopulationResults:
         modelStep = self.uppModel.model.copy()
 
         for stepIndex in range(1, self.uppModel.step_number+1):
-
-            LastLinePrevTraj = ""
-            with result._get_probtraj_fd() as PrStepTrajF:
-                LastLinePrevTraj = PrStepTrajF.readlines()[-1]
-            
-            self.pop_ratio *= self._updatePopRatio(LastLinePrevTraj)
-            self.pop_ratios[self.uppModel.time_shift + self.uppModel.time_step*stepIndex] = self.pop_ratio
-            
-            modelStep = self._buildUpdateCfg(modelStep, LastLinePrevTraj)
-            
+            #
+            # Update pop ratio and construct the new version of model
+            #
+            modelStep = self._buildUpdateCfg(modelStep, result.get_probtraj_file(), stepIndex)
             if modelStep is None:
                 if self.verbose:
                     print("No cells left")
