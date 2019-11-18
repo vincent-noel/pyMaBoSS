@@ -50,10 +50,8 @@ class UpdatePopulation:
 
             self._readUppFile()
 
-    def run(self, workdir=None, overwrite=None, verbose=False):
-        return UpdatePopulationResults(self, verbose, workdir, overwrite, 
-                                       previous_run=self.previous_run,
-                                       nodes_init = self.nodes_init)
+    def run(self, workdir=None, overwrite=None, verbose=False, host=None, port=7777):
+        return UpdatePopulationResults(self, verbose, workdir, overwrite, self.previous_run, host=host, port=port)
 
     def _readUppFile(self):
 
@@ -143,7 +141,7 @@ class UpdatePopulation:
             return
 
         self.update_var.update({name: formula})
-        
+
     def setNodeFormula(self, node, formula, overwrite=False):
         if node in self.nodes_formula.keys() and not overwrite:
             print("Formula for node %s already exists !" % node, file=sys.stderr)

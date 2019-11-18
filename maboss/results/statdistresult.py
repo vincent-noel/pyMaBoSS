@@ -171,9 +171,12 @@ class StatDistResult(object):
                 statdist_table.write("\t".join(line_3) + "\n")
                 statdist_table.write("\n")
 
+    def _get_statdist_fd(self):
+        return open(self.get_statdist_file(), "r")
+
     def _get_raw_statdist(self):
         if self._raw_statdist is None or self._traj_count is None:
-            with open(self.get_statdist_file(), "r") as f:
+            with self._get_statdist_fd() as f:
                 self._raw_statdist = []
                 self._traj_count = None
                 for i, line in enumerate(f.readlines()):
@@ -193,7 +196,7 @@ class StatDistResult(object):
             self._raw_statdist_clusters = []
             self._raw_statdist_clusters_summary = []
 
-            with open(self.get_statdist_file(), "r") as f:
+            with self._get_statdist_fd() as f:
                 started_cluster = False
                 t_cluster = []
                 started_summary = False

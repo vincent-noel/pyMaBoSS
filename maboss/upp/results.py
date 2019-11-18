@@ -11,13 +11,13 @@ else:
     from contextlib import ExitStack
 import glob
 from ..results.storedresult import StoredResult
+from ..server import MaBoSSClient
 import shutil
 from multiprocessing import Pool
 
 
 class UpdatePopulationResults:
-    def __init__(self, uppModel, verbose=False, workdir=None, overwrite=False, 
-                 previous_run=None, previous_run_step=-1, nodes_init = None):
+    def __init__(self, uppModel, verbose=False, workdir=None, overwrite=False, previous_run=None, previous_run_step=-1, host=None, port=7777):
         """UpdatePopulationResults class
         :param uppModel: UppMaBoSS model
         :param verbose: boolean to activate verbose mode, default to False        
@@ -27,10 +27,6 @@ class UpdatePopulationResults:
         distribution, default to None
         :param previous_run_step: step used to initialize starting probability
         distribution from previous run, default to -1 (last)
-        :param nodes_init: dict of nodes values of the form { "NODE1" : TrueValue1, "NODE2" : TrueValue2, ... }.
-        used to set the probability of specific nodes at the start of the simulation 
-        NB: nodes_init overrides probability distribution of previous_run 
-        for the specified nodes
         """
         self.uppModel = uppModel
         self.pop_ratios = pd.Series()
@@ -43,6 +39,9 @@ class UpdatePopulationResults:
         self.workdir = workdir
         self.overwrite = overwrite
         self.pop_ratio = uppModel.pop_ratio
+
+        self.host = host
+        self.port = port   
 
         if workdir is not None and os.path.exists(workdir) and not self.overwrite:
             # Restoring
@@ -68,50 +67,61 @@ class UpdatePopulationResults:
                 os.makedirs(workdir)
 
             if previous_run:
-                # Load the previous run final state and init some nodes if required
-                _get_next_condition_from_trajectory \
-                    (previous_run, self.uppModel.model, 
-                     step=previous_run_step, nodes_init=nodes_init)
+                # Load the previous run final state
+                _get_next_condition_from_trajectory(previous_run, self.uppModel.model, step=previous_run_step)
 
             self._run()
 
     def _run(self):
-        #
-        # Simulation workdir is None when self.workdir is None
-        #
-        sim_workdir = None
-        #
-        # Perform a first run
-        #            
+        
         if self.verbose:
             print("Run MaBoSS step 0")
-        if self.workdir is not None:
-            sim_workdir = os.path.join(self.workdir, "Step_0")
-        result = self.uppModel.model.run(workdir=sim_workdir)
+
+        sim_workdir = os.path.join(self.workdir, "Step_0") if self.workdir is not None else None
+        
+        if self.host is None:
+            result = self.uppModel.model.run(workdir=sim_workdir)
+        else:
+            mbcli = MaBoSSClient(self.host, self.port)
+            result = mbcli.run(self.uppModel.model)
+            mbcli.close()
+
         self.results.append(result)
         self.pop_ratios[self.uppModel.time_shift] = self.pop_ratio
     
         modelStep = self.uppModel.model.copy()
 
         for stepIndex in range(1, self.uppModel.step_number+1):
-            #
-            # Update pop ratio and construct the new version of model
-            #
-            modelStep = self._buildUpdateCfg \
-                (modelStep, result.get_probtraj_file(), stepIndex)
+
+            LastLinePrevTraj = ""
+            with result._get_probtraj_fd() as PrStepTrajF:
+                LastLinePrevTraj = PrStepTrajF.readlines()[-1]
+            
+            self.pop_ratio *= self._updatePopRatio(LastLinePrevTraj)
+            self.pop_ratios[self.uppModel.time_shift + self.uppModel.time_step*stepIndex] = self.pop_ratio
+            
+            modelStep = self._buildUpdateCfg(modelStep, LastLinePrevTraj)
+            
             if modelStep is None:
                 if self.verbose:
                     print("No cells left")
-                break        
-            #
-            # If we still have cells, run new step
-            #
-            if self.verbose:
-                print("Running MaBoSS for step %d" % stepIndex)
-            if self.workdir is not None:
-                sim_workdir = os.path.join(self.workdir, "Step_%d" % stepIndex)
-            result = modelStep.run(workdir=sim_workdir)
-            self.results.append(result)
+
+                break
+
+            else:
+                if self.verbose:
+                    print("Running MaBoSS for step %d" % stepIndex)
+
+                sim_workdir = os.path.join(self.workdir, "Step_%d" % stepIndex) if self.workdir is not None else None
+                
+                if self.host is None:
+                    result = modelStep.run(workdir=sim_workdir)
+                else:
+                    mbcli = MaBoSSClient(self.host, self.port)
+                    result = mbcli.run(modelStep)
+                    mbcli.close()
+
+                self.results.append(result)
 
         if self.workdir is not None:
             self.save_population_ratios(os.path.join(self.workdir, "PopRatios.csv"))
@@ -478,13 +488,11 @@ def varDef_Upp(update_line, states, probs):
 	update_line += ";"
 	return update_line
 
-def _get_next_condition_from_trajectory(self, next_model, step=-1, nodes_init=None):
+def _get_next_condition_from_trajectory(self, next_model, step=-1):
     """
     Set the values of MaBoss model when resuming from a previous run
     :param next_model : MaBoss model
     :param step: step of the UppMaBoss simulation
-    :param states: states extracted from the trajectory
-    :param probs: probabilities of states extracted from the trajectory  
     """
     #
     # Extract states and probs from trajectory
@@ -579,7 +587,6 @@ def exclude_nodes_from_states (traj_states, nodes_exluded=None):
             new_traj_states  = ["<nil>"]
         traj_states_ret.append (new_traj_states)
     return traj_states_ret   
-           
 
 def make_stepwise_probability_distribution_line(result):
     return result.get_last_states_probtraj()

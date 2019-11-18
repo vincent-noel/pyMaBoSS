@@ -147,12 +147,18 @@ class Simulation(object):
         maboss_cmd = "MaBoSS"
 
         l = len(self.network)
+        assert l <= 1024, "Models with more than 1024 nodes are not compatible with this version of MaBoSS"
+
         if l <= 64:
             pass
         elif l <= 128:
             maboss_cmd = "MaBoSS_128n"
-        else:
+        elif l <= 256:
             maboss_cmd = "MaBoSS_256n"
+        elif l <= 512:
+            maboss_cmd = "MaBoSS_512n"
+        else:
+            maboss_cmd = "MaBoSS_1024n"
 
         return maboss_cmd
 

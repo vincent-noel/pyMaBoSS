@@ -23,4 +23,8 @@ class TestServer(TestCase):
 			+ "FP\tProba\tState\tMdm2N\tp53_h\tp53\tMdm2C\tDam\n"
 			+ "#1\t0.90548\tMdm2N\t1\t0\t0\t0\t0\n"
 		)
+
+		res.get_states_probtraj()
+		res.get_statdist_clusters()
+		
 		mbcli.close()

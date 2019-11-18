@@ -166,12 +166,25 @@ def _read_cfg(string):
             if token.attrib:  # True if token is istate_decl
                 # TODO check if lens are consistent
                 if len(token.nodes) == 1:
-                    istate_list[token.nodes[0]] = {int(t[1][0]): t[0]
-                                                   for t in token.attrib}
+                    t_istate_list = {}
+                    for t in token.attrib:
+                        try:
+                            t_istate_list.update({int(t[1][0]): float(str(t[0]))})
+                        except ValueError:
+                            t_istate_list.update({int(t[1][0]): str(t[0])})
+
+                    istate_list[token.nodes[0]] = t_istate_list
+
                 else:
                     nodes = tuple(token.nodes)
-                    istate_list[nodes] = {tuple(t[1]): t[0]
-                                          for t in token.attrib}
+                    t_istate_list = {}
+                    for t in token.attrib:
+                        try:
+                            t_istate_list.update({tuple(t[1]): float(str(t[0]))})
+                        except ValueError:
+                            t_istate_list.update({tuple(t[1]): str(t[0])})
+
+                    istate_list[nodes] = t_istate_list
 
         return (variables, parameters, is_internal_list, istate_list,
                 refstate_list)

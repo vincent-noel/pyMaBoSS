@@ -7,7 +7,7 @@ if version_info[0] < 3:
     optional_contextlib.append("contextlib2")
 
 setup(name='maboss',
-    version="0.7.5",
+    version="0.7.8",
     packages=find_packages(exclude=["test"]),
     py_modules = ["maboss_setup"],
     author="Nicolas Levy",
@@ -19,6 +19,7 @@ setup(name='maboss',
         "ipywidgets",
         "matplotlib",
         "pandas",
+        "sklearn",
     ] + optional_contextlib,
     scripts=['scripts/MBSS_FormatTable.py', 'scripts/UpPMaBoSS.py']
 )
