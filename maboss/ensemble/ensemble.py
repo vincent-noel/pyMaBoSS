@@ -94,8 +94,10 @@ class Ensemble(object):
         ensemble.outputs = self.outputs.copy()
         ensemble.individual_results = self.individual_results
         ensemble.random_sampling = self.random_sampling
-        ensemble.palette = self.palette
+        ensemble.palette = self.palette.copy()
         ensemble.individual_istates = self.individual_istates.copy()
+        ensemble.models_files = self.models_files.copy()
+        ensemble.nodes = self.nodes.copy()
         return ensemble
 
     def get_maboss_cmd(self):
