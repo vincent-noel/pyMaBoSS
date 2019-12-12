@@ -40,8 +40,6 @@ class Ensemble(object):
         self.nodes = []
         self.read_nodes(self.models_files[0])
 
-        self._path = tempfile.mkdtemp()
-
         self.variables = collections.OrderedDict()
         self.istates = collections.OrderedDict()
         self.individual_istates = individual_istates
@@ -50,7 +48,6 @@ class Ensemble(object):
         self.mutations = collections.OrderedDict()
         self.individual_results = False
         self.random_sampling = False
-        self._cfg = os.path.join(self._path, "model.cfg")
         self.palette = {}
 
         if cfg_filename is not None:
@@ -83,8 +80,6 @@ class Ensemble(object):
 
             elif p == "random_sampling":
                 self.random_sampling = kwargs[p]
-        # self.write_cfg()
-        # self.write_mutations()
 
     def copy(self):
         ensemble = Ensemble(self.models_path)
