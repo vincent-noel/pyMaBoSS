@@ -4,3 +4,4 @@ colomoto_jupyter
 pandas
 matplotlib
 ipython
+sklearn
