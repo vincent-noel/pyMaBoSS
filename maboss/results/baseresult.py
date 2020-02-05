@@ -41,10 +41,6 @@ class BaseResult(ProbTrajResult, StatDistResult):
         ProbTrajResult.__init__(self, output_nodes)
         StatDistResult.__init__(self)
         self._path = path
-        self._trajfig = None
-        self._piefig = None
-        self._fpfig = None
-        self._ndtraj = None
         self._err = False
         self.palette = {}
         self.statdist_traj_count = None
@@ -56,7 +52,8 @@ class BaseResult(ProbTrajResult, StatDistResult):
     
         self.fptable = None
    
-    def plot_trajectory(self, legend=True, until=None, error=False, prob_cutoff=0.01):
+    def plot_trajectory(self, legend=True, until=None, error=False, prob_cutoff=0.01,
+                            axes=None):
         """Plot the graph state probability vs time.
 
         :param float until: plot only up to time=`until`
@@ -78,11 +75,13 @@ class BaseResult(ProbTrajResult, StatDistResult):
             if error:
                 table_error = table_error[table_error.index <= until]
 
-        _, ax = plt.subplots(1,1)
+        if axes is None:
+            _, axes = plt.subplots(1,1)
       
-        make_plot_trajectory(table, ax, self.palette, legend=legend, error_table=table_error)
+        make_plot_trajectory(table, axes, self.palette, legend=legend, error_table=table_error)
 
-    def plot_piechart(self, embed_labels=False, autopct=4, prob_cutoff=0.01):
+    def plot_piechart(self, embed_labels=False, autopct=4, prob_cutoff=0.01,
+                        axes=None):
         """Plot the states probability distribution of last time point.
 
         :param float prob_cutoff: states with a probability below this cut-off
@@ -97,22 +96,26 @@ class BaseResult(ProbTrajResult, StatDistResult):
             print("Error, plot_piechart cannot be called because MaBoSS"
                   "returned non 0 value", file=stderr)
             return
-        self._piefig, self._pieax = plt.subplots(1, 1)
+
+        if axes is None:
+            _, axes = plt.subplots(1,1)
         table = self.get_last_states_probtraj()
-        plot_piechart(table, self._pieax, self.palette,
+        plot_piechart(table, axes, self.palette,
                 embed_labels=embed_labels, autopct=autopct,
                 prob_cutoff=prob_cutoff)
 
-    def plot_fixpoint(self):
+    def plot_fixpoint(self, axes=None):
         """Plot the probability distribution of fixed point."""
         if self._err:
             print("Error maboss previously returned non 0 value",
                   file=stderr)
             return
-        self._fpfig, self._fpax = plt.subplots(1, 1)
-        plot_fix_point(self.get_fptable(), self._fpax, self.palette)
+        if axes is None:
+            _, axes = plt.subplots(1,1)
+        plot_fix_point(self.get_fptable(), axes, self.palette)
 
-    def plot_node_trajectory(self, until=None, legend=True, error=False, prob_cutoff=0.01):
+    def plot_node_trajectory(self, until=None, legend=True, error=False, prob_cutoff=0.01,
+                                axes=None):
         """Plot the probability of each node being up over time.
 
         :param float until: plot only up to time=`until`.
@@ -121,7 +124,8 @@ class BaseResult(ProbTrajResult, StatDistResult):
             print("Error maboss previously returned non 0 value",
                   file=stderr)
             return
-        self._ndtraj, self._ndtrajax = plt.subplots(1, 1)
+        if axes is None:
+            _, axes = plt.subplots(1,1)
         table = self.get_nodes_probtraj(prob_cutoff=prob_cutoff)
         table_error = None
         if error:
@@ -131,9 +135,9 @@ class BaseResult(ProbTrajResult, StatDistResult):
             if error:
                 table_error = table_error[table_error.index <= until]
 
-        plot_node_prob(table, self._ndtrajax, self.palette, legend=legend, error_table=table_error)
+        plot_node_prob(table, axes, self.palette, legend=legend, error_table=table_error)
 
-    def plot_entropy_trajectory(self, until=None):
+    def plot_entropy_trajectory(self, until=None, axes=None):
         """Plot the evolution of the (transition) entropy over time.
 
         :param float until: plot only up to time=`until`.
@@ -145,7 +149,7 @@ class BaseResult(ProbTrajResult, StatDistResult):
         table = self.get_entropy_trajectory()
         if until:
             table = table[table.index <= until]
-        table.plot()
+        table.plot(ax=axes)
 
     def get_fptable(self): 
         """Return the content of fp.csv as a pandas dataframe."""
