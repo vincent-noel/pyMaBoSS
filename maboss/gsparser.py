@@ -88,7 +88,7 @@ internal_decl = pp.Group(varName("node") + ~pp.White()
 
 refstate_decl = pp.Group(varName("node") + ~pp.White()
                          + pp.Suppress(".refstate") + pp.Suppress('=')
-                         + booleanStr("refstate_val")
+                         + numOrBool("refstate_val")
                          + pp.Suppress(';'))
 
 cfg_decl = (var_decl | istate_decl | param_decl | internal_decl
