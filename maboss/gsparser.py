@@ -211,8 +211,8 @@ def _read_bnd(string, is_internal_list):
         for token in parse_bnd:
             interns = {v.lhs: v.rhs for v in token.interns}
             logic = interns.pop('logic') if 'logic' in interns else None
-            rate_up = interns.pop('rate_up')
-            rate_down = interns.pop('rate_down')
+            rate_up = interns.pop('rate_up') if 'rate_up' in interns.keys() else "@logic ? 1.0 : 0.0"
+            rate_down = interns.pop('rate_down') if 'rate_down' in interns.keys() else "@logic ? 0.0 : 1.0"
 
             internal = (is_internal_list[token.name]
                         if token.name in is_internal_list
