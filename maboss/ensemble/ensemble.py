@@ -274,8 +274,10 @@ class Ensemble(object):
             res += "%s = %s;\n" % (param, value)
 
         if individual is None:
+            defined = []
             for node, istate in self.istates.items():
                 if isinstance(node, tuple):
+                    defined += list(node)
                     res += "["
                     for i, t_node in enumerate(node):
                         res += t_node
@@ -289,7 +291,12 @@ class Ensemble(object):
                             res += ", "
                     res += ";\n"
                 else:
-                    res += "[%s].istate = %g[0], %g[1];\n" % (node.replace("-", "_"), istate[0], istate[1])
+                    defined.append(node)
+                    res += "[%s].istate = %.1f[0], %.1f[1];\n" % (node.replace("-", "_"), istate[0], istate[1])
+                    
+            for node in list(set(self.nodes).difference(set(defined))):
+                res += "[%s].istate = %.1f[0], %.1f[1];\n" % (node.replace("-", "_"), 1.0, 0.0)
+ 
         else:
 
             for node, istate in self.individual_istates[individual].items():
@@ -313,7 +320,7 @@ class Ensemble(object):
                     if istate not in [0, 1]:
                         istate = 0
 
-                    res += "[%s].istate = %g[0], %g[1];\n" % (node.replace("-", "_"), 1 - istate, istate)
+                    res += "[%s].istate = %.1f[0], %.1f[1];\n" % (node.replace("-", "_"), 1 - istate, istate)
 
         for node in self.nodes:
             if len(self.outputs) == 0 or (node in self.outputs.keys() and self.outputs[node]):
