@@ -455,7 +455,10 @@ def parse_ast(t_ast, data, ds=None):
 
     elif isinstance(t_ast, ast.Name):
         if ds is not None:
-            return data[ds[t_ast.id]]
+            if t_ast.id in ds.keys():
+                return data[ds[t_ast.id]]
+            else:
+                return pd.DataFrame(np.zeros(data.iloc[0].shape), columns=[t_ast.id], index=data.columns)
         else:
             return data[t_ast.id]
     
