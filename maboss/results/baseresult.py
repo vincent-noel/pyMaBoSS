@@ -79,6 +79,7 @@ class BaseResult(ProbTrajResult, StatDistResult):
             _, axes = plt.subplots(1,1)
       
         make_plot_trajectory(table, axes, self.palette, legend=legend, error_table=table_error)
+        self._trajfig = axes.get_figure()
 
     def plot_piechart(self, embed_labels=False, autopct=4, prob_cutoff=0.01,
                         axes=None, legend=True):
@@ -103,6 +104,7 @@ class BaseResult(ProbTrajResult, StatDistResult):
         plot_piechart(table, axes, self.palette,
                 embed_labels=embed_labels, autopct=autopct,
                 prob_cutoff=prob_cutoff, legend=legend)
+        self._piefig = axes.get_figure()
 
     def plot_fixpoint(self, axes=None):
         """Plot the probability distribution of fixed point."""
@@ -113,6 +115,7 @@ class BaseResult(ProbTrajResult, StatDistResult):
         if axes is None:
             _, axes = plt.subplots(1,1)
         plot_fix_point(self.get_fptable(), axes, self.palette)
+        self._fpfig = axes.get_figure()
 
     def plot_node_trajectory(self, until=None, legend=True, error=False, prob_cutoff=0.01,
                                 axes=None):
@@ -136,6 +139,7 @@ class BaseResult(ProbTrajResult, StatDistResult):
                 table_error = table_error[table_error.index <= until]
 
         plot_node_prob(table, axes, self.palette, legend=legend, error_table=table_error)
+        self._ndtraj = axes.get_figure()
 
     def plot_entropy_trajectory(self, until=None, axes=None):
         """Plot the evolution of the (transition) entropy over time.
@@ -150,6 +154,7 @@ class BaseResult(ProbTrajResult, StatDistResult):
         if until:
             table = table[table.index <= until]
         table.plot(ax=axes)
+        self._etraj = axes.get_figure()
 
     def get_fptable(self): 
         """Return the content of fp.csv as a pandas dataframe."""
