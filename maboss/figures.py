@@ -47,7 +47,7 @@ def plot_node_prob(time_table, ax, palette, legend=True, error_table=None):
 
 
 def plot_piechart(plot_table, ax, palette, embed_labels=False, autopct=4, \
-                    prob_cutoff=0.01, legend=True):
+                    prob_cutoff=0.01, legend=True, nil_label=None):
     plot_line = plot_table.iloc[-1].rename("")  # Takes the last time point
 
     others = plot_line[plot_line <= prob_cutoff].sum()
@@ -66,7 +66,10 @@ def plot_piechart(plot_table, ax, palette, embed_labels=False, autopct=4, \
         state = plot_line.index.values[value_index]
         color_list.append(persistent_color(palette, state))
         if embed_labels and value >= 0.1:
-            plotting_labels.append(state)
+            if state == "<nil>" and nil_label is not None:
+                plotting_labels.append(nil_label)
+            else:
+                plotting_labels.append(state)
         else:
             plotting_labels.append("")
 
@@ -84,7 +87,10 @@ def plot_piechart(plot_table, ax, palette, embed_labels=False, autopct=4, \
            startangle=90, colors=color_list, **opts)
     ax.axis('equal')
     if legend:
-        ax.legend(plot_line.index.values, loc=(0.9, 0.2))
+        if nil_label is not None:
+            ax.legend([nil_label if label == "<nil>" else label for label in plot_line.index.values], loc=(0.9, 0.2))
+        else:
+            ax.legend(plot_line.index.values, loc=(0.9, 0.2))
 
 
 def plot_fix_point(table, ax, palette):

@@ -82,7 +82,7 @@ class BaseResult(ProbTrajResult, StatDistResult):
         self._trajfig = axes.get_figure()
 
     def plot_piechart(self, embed_labels=False, autopct=4, prob_cutoff=0.01,
-                        axes=None, legend=True):
+                        axes=None, legend=True, nil_label=None):
         """Plot the states probability distribution of last time point.
 
         :param float prob_cutoff: states with a probability below this cut-off
@@ -103,7 +103,7 @@ class BaseResult(ProbTrajResult, StatDistResult):
         table = self.get_last_states_probtraj()
         plot_piechart(table, axes, self.palette,
                 embed_labels=embed_labels, autopct=autopct,
-                prob_cutoff=prob_cutoff, legend=legend)
+                prob_cutoff=prob_cutoff, legend=legend, nil_label=nil_label)
         self._piefig = axes.get_figure()
 
     def plot_fixpoint(self, axes=None):
