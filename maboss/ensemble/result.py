@@ -233,8 +233,6 @@ class EnsembleResult(BaseResult):
             if ax is None:
                 fig = plt.figure(figsize=figsize)
                 ax = fig.add_subplot(111, projection='3d')
-                
-            
             if compare is not None:
                 
                 m_table = compare.get_individual_states_probtraj()
@@ -258,15 +256,12 @@ class EnsembleResult(BaseResult):
             else:
                 values = table[dims].values
                 ax.scatter(values[:, 0], values[:, 1], values[:, 2], **args)
-
-                
-                
                 
             ax.set_xlabel(dims[0])
             ax.set_ylabel(dims[1])
             ax.set_zlabel(dims[2])
 
-    def plotSteadyStatesDistribution(self, figsize=None, compare=None, labels=None, alpha=1, single_out=None, single_out_mutant=None, nil_label=None, compare_labels=None, **args):
+    def plotSteadyStatesDistribution(self, compare=None, labels=None, alpha=1, single_out=None, single_out_mutant=None, nil_label=None, compare_labels=None, **args):
 
         pca = PCA()
         table = self.get_individual_states_probtraj()
