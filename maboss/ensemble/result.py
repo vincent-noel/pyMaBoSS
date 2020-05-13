@@ -264,7 +264,7 @@ class EnsembleResult(BaseResult):
             ax.set_ylabel(dims[1])
             ax.set_zlabel(dims[2])
 
-    def plotSteadyStatesDistribution(self, figsize=None, compare=None, labels=None, alpha=1, **args):
+    def plotSteadyStatesDistribution(self, figsize=None, compare=None, labels=None, alpha=1, nil_label=None, **args):
 
         pca = PCA()
         table = self.get_individual_states_probtraj()
@@ -292,7 +292,9 @@ class EnsembleResult(BaseResult):
             self.plotPCA(
                 pca, X_pca, 
                 list(table.columns.values), list(table.index.values), labels, alpha,
-                compare=c_pca, **args
+                compare=c_pca,
+                nil_label=nil_label,
+                **args,
             )
         else:
             mat = table.values
@@ -300,7 +302,12 @@ class EnsembleResult(BaseResult):
             X_pca = pca.transform(mat)
             arrows_raw = (np.transpose(pca_res.components_[0:2, :]))
         
-            self.plotPCA(pca, X_pca, list(table.columns.values), list(table.index.values), labels, alpha, figsize=figsize, **args)
+            self.plotPCA(
+                pca, X_pca, 
+                list(table.columns.values), list(table.index.values), labels, alpha, 
+                nil_label=nil_label,
+                **args
+            )
 
     def plotSteadyStatesNodesDistribution(self, compare=None, labels=None, alpha=1, **args):
 
@@ -326,7 +333,7 @@ class EnsembleResult(BaseResult):
                 **args
             )
 
-    def plotPCA(self, pca, X_pca, samples, features, colors=None, alpha=1, compare=None, figsize=(20, 12), show_samples=False, show_features=True, ax=None, cutoff_arrows=None):
+    def plotPCA(self, pca, X_pca, samples, features, colors=None, alpha=1, compare=None, nil_label=None, figsize=(20, 12), show_samples=False, show_features=True, ax=None, cutoff_arrows=None):
         
         if ax is None:
             fig = plt.figure(figsize=figsize)
@@ -387,7 +394,10 @@ class EnsembleResult(BaseResult):
             for i, v in enumerate(arrows_raw):
                 if cutoff_arrows is None or math.sqrt(math.pow(v[0], 2) + math.pow(v[1], 2)) > cutoff_arrows:
                     ax.arrow(0, 0, v[0], v[1], linewidth=2, color='red')
-                    ax.text(v[0], v[1], samples[i], color='black', ha='right', va='top', fontsize=18)
+                    if samples[i] == "<nil>" and nil_label is not None:
+                        ax.text(v[0], v[1], nil_label, color='black', ha='right', va='top', fontsize=18)
+                    else:
+                        ax.text(v[0], v[1], samples[i], color='black', ha='right', va='top', fontsize=18)
 
             ax.set_xlim(min(min_x_values, min_x_arrows)*1.2, max(max_x_values, max_x_arrows)*1.2)
             ax.set_ylim(min(min_y_values, min_y_arrows)*1.2, max(max_y_values, max_y_arrows)*1.2)
