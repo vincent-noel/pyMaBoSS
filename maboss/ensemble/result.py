@@ -344,7 +344,7 @@ class EnsembleResult(BaseResult):
 
         patches = []
         if colors is None:
-            ax.scatter(X_pca[:, 0], X_pca[:, 1], alpha=alpha)
+            ax.scatter(X_pca[:, 0], X_pca[:, 1], alpha=alpha, c='C0')
             patches.append(mpatches.Patch(color="C0", label=(compare_labels[0] if (compare_labels is not None and len(compare_labels) > 0) else None)))
             if single_out is not None:
                 ax.scatter([X_pca[single_out, 0]], [X_pca[single_out, 1]], marker='o', facecolors='none', edgecolors='C0', s=200)
@@ -366,7 +366,7 @@ class EnsembleResult(BaseResult):
             legend = plt.legend(handles=patches)
 
         if compare is not None:
-            ax.scatter(compare[:, 0], compare[:, 1], alpha=alpha)
+            ax.scatter(compare[:, 0], compare[:, 1], alpha=alpha, c='C1')
             patches.append(mpatches.Patch(color="C1", label=(compare_labels[1] if (compare_labels is not None and len(compare_labels) > 1) else None)))
             if single_out_mutant is not None:
                 ax.scatter([compare[single_out_mutant, 0]], [compare[single_out_mutant, 1]], marker='o', facecolors='none', edgecolors='C1', s=200)
