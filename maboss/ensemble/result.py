@@ -264,7 +264,7 @@ class EnsembleResult(BaseResult):
             ax.set_ylabel(dims[1])
             ax.set_zlabel(dims[2])
 
-    def plotSteadyStatesDistribution(self, figsize=None, compare=None, labels=None, alpha=1, nil_label=None, **args):
+    def plotSteadyStatesDistribution(self, figsize=None, compare=None, labels=None, alpha=1, single_out=None, single_out_mutant=None, nil_label=None, **args):
 
         pca = PCA()
         table = self.get_individual_states_probtraj()
@@ -293,7 +293,7 @@ class EnsembleResult(BaseResult):
                 pca, X_pca, 
                 list(table.columns.values), list(table.index.values), labels, alpha,
                 compare=c_pca,
-                nil_label=nil_label,
+                single_out=single_out, single_out_mutant=single_out_mutant, nil_label=nil_label,
                 **args,
             )
         else:
@@ -305,7 +305,7 @@ class EnsembleResult(BaseResult):
             self.plotPCA(
                 pca, X_pca, 
                 list(table.columns.values), list(table.index.values), labels, alpha, 
-                nil_label=nil_label,
+                single_out=single_out, nil_label=nil_label,
                 **args
             )
 
@@ -333,7 +333,7 @@ class EnsembleResult(BaseResult):
                 **args
             )
 
-    def plotPCA(self, pca, X_pca, samples, features, colors=None, alpha=1, compare=None, nil_label=None, figsize=(20, 12), show_samples=False, show_features=True, ax=None, cutoff_arrows=None):
+    def plotPCA(self, pca, X_pca, samples, features, colors=None, alpha=1, compare=None, single_out=None, single_out_mutant=None, nil_label=None, figsize=(20, 12), show_samples=False, show_features=True, ax=None, cutoff_arrows=None):
         
         if ax is None:
             fig = plt.figure(figsize=figsize)
@@ -341,6 +341,8 @@ class EnsembleResult(BaseResult):
 
         if colors is None:
             ax.scatter(X_pca[:, 0], X_pca[:, 1], alpha=alpha)
+            if single_out is not None:
+                ax.scatter([X_pca[single_out, 0]], [X_pca[single_out, 1]], marker='o', facecolors='none', edgecolors='C0', s=200)
         else:
             legend = ["Cluster #%d" % (i + 1) for i in colors]
 
@@ -361,6 +363,9 @@ class EnsembleResult(BaseResult):
         if compare is not None:
             ax.scatter(compare[:, 0], compare[:, 1], alpha=alpha)
 
+            if single_out_mutant is not None:
+                ax.scatter([compare[single_out_mutant, 0]], [compare[single_out_mutant, 1]], marker='o', facecolors='none', edgecolors='C1', s=200)
+            
         ax.set_xlabel("PC{} ({}%)".format(1, round(pca.explained_variance_ratio_[0] * 100, 2)))
         ax.set_ylabel("PC{} ({}%)".format(2, round(pca.explained_variance_ratio_[1] * 100, 2)))
                 
