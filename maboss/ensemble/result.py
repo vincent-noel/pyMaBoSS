@@ -48,6 +48,7 @@ class EnsembleResult(BaseResult):
         self.asymptotic_probtraj_distribution = None
         self.asymptotic_nodes_probtraj_distribution = None
         self._pcafig = None
+        self._3dfig = None
         maboss_cmd = simulation.get_maboss_cmd()
 
         simulation.write_cfg(self._path, "ensemble.cfg")
@@ -226,13 +227,16 @@ class EnsembleResult(BaseResult):
                     os.path.join(output_directory, os.path.basename(self.models_files[model]))
                 )
 
-    def plotStates3D(self, dims, figsize=None, compare=None, ax=None, **args):
+    def plotStates3D(self, dims, figsize=(20, 12), compare=None, ax=None, **args):
         if len(dims) == 3:
             table = self.get_individual_states_probtraj()
             
             if ax is None:
-                fig = plt.figure(figsize=figsize)
-                ax = fig.add_subplot(111, projection='3d')
+                self._3dfig = plt.figure(figsize=figsize)
+                ax = self._3dfig.add_subplot(111, projection='3d')
+            else:
+                self._3dfig = ax.get_figure()
+            
             if compare is not None:
                 
                 m_table = compare.get_individual_states_probtraj()
