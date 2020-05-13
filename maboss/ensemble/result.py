@@ -47,6 +47,7 @@ class EnsembleResult(BaseResult):
         self.prefix = prefix
         self.asymptotic_probtraj_distribution = None
         self.asymptotic_nodes_probtraj_distribution = None
+        self._pcafig = None
         maboss_cmd = simulation.get_maboss_cmd()
 
         simulation.write_cfg(self._path, "ensemble.cfg")
@@ -339,9 +340,11 @@ class EnsembleResult(BaseResult):
         figsize=(20, 12), show_samples=False, show_features=True, ax=None, cutoff_arrows=None):
         
         if ax is None:
-            fig = plt.figure(figsize=figsize)
-            ax = fig.add_subplot(1,1,1)
-
+            self._pcafig = plt.figure(figsize=figsize)
+            ax = self._pcafig.add_subplot(1,1,1)
+        else:
+            self._pcafig = ax.get_figure()
+        
         patches = []
         if colors is None:
             ax.scatter(X_pca[:, 0], X_pca[:, 1], alpha=alpha, c='C0')
