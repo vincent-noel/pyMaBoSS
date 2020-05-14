@@ -5,3 +5,4 @@ pandas
 matplotlib
 ipython
 sklearn
+sphinx_rtd_theme
