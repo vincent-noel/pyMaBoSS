@@ -53,7 +53,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'pyMaBoSS'
-copyright = u'2019, Nicolas Levy, Vincent Noël, Aurelien Naldi, Loïc Paulevé'
+copyright = u'2020, Nicolas Levy, Vincent Noël, Aurelien Naldi, Loïc Paulevé'
 author = u'Nicolas Levy, Vincent Noël, Aurelien Naldi, Loïc Paulevé'
 
 # The version info for the project you're documenting, acts as replacement for
