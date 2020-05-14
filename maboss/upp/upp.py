@@ -4,20 +4,19 @@ from .results import UpdatePopulationResults
 from .cmaboss_results import CMaBoSSUpdatePopulationResults
 
 class UpdatePopulation:
-    def __init__(self, model, uppfile=None, previous_run=None, 
-                 nodes_init=None, verbose=False):
-        """
+    """
         .. py:class:: construct a simulation for Update Population MaBoSS.
 
         :param model: MaBoSS model
         :param uppfile: upp file, default to None 
         :param previous_run: previous run to start from, default to None 
-        :param nodes_init: dict in the form { "node1" : TrueProb1, "node2" : TrueProb2, ...}
-        with nodes to be initialised to a specific value at the start
-        of the simulation. These values override the previous run probabilities
-        for the specified nodes, default to None 
+        :param nodes_init: dict in the form { "node1" : TrueProb1, "node2" : TrueProb2, ...} with nodes to be initialised to a specific value at the start of the simulation. These values override the previous run probabilities for the specified nodes, default to None 
         :param verbose: boolean to activate verbose mode, default to False
+        
         """
+        
+    def __init__(self, model, uppfile=None, previous_run=None, 
+                 nodes_init=None, verbose=False):
 
         self.model = model
         self.uppfile = uppfile

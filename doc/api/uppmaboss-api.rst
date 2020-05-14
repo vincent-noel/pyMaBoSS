@@ -1,20 +1,13 @@
+.. api documentation.
+
 UPMaBoSS API
-=============
+============
 
-**UpdatePopulation**
+:doc:`uppmaboss-api-updatepopulation` is the object representing the UPMaBoSS simulation. It allows simulation tweaking, and execution. 
+The execution, via the run() method, returns a :doc:`uppmaboss-api-updatepopulationresult` object which allows to plot and save results.
 
-    This is the main class of the UPMaBoSS API, used to build the Update Population simulation
-    from a MaBoSS simulation and an optional UPMaBoSS specific file (.upp).
+.. toctree::
+   :maxdepth: 1
 
-.. autoclass:: maboss.upp.UpdatePopulation
-	       :members:
-
-
-
-
-**UpdatePopulationResults**
-
-    This is the results class of the UPMaBoSS API, used to get easy access to the results
-
-.. autoclass:: maboss.upp.UpdatePopulationResults
-   :members:
+   uppmaboss-api-updatepopulation.rst
+   uppmaboss-api-updatepopulationresult.rst

@@ -18,16 +18,6 @@ from collections import OrderedDict
 
 class UpdatePopulationResults:
     def __init__(self, uppModel, verbose=False, workdir=None, overwrite=False, previous_run=None, previous_run_step=-1, host=None, port=7777, nodes_init=None):
-        """UpdatePopulationResults class
-        :param uppModel: UppMaBoSS model
-        :param verbose: boolean to activate verbose mode, default to False        
-        :param workdir: working directoy, default to None
-        :param overwrite: overwrite previous results, default to False
-        :param previous_run: previous run used to initialize starting probability
-        distribution, default to None
-        :param previous_run_step: step used to initialize starting probability
-        distribution from previous run, default to -1 (last)
-        """
         self.uppModel = uppModel
         self.pop_ratios = pd.Series(dtype='float64')
         self.stepwise_probability_distribution = None
@@ -254,14 +244,14 @@ class UpdatePopulationResults:
         #
         # Normalize
         #
-        states, probs = self.normalize_with_death_and_division (states, probs)
+        states, probs = self._normalize_with_death_and_division (states, probs)
         if states is None:
             return None        
         #
         # Compute formulas for parameters and nodes 
         # 
-        parameters = self.compute_parameters(simulation, states, probs)
-        nodes_with_formula = self.compute_nodes_formula (states, probs)
+        parameters = self._compute_parameters(simulation, states, probs)
+        nodes_with_formula = self._compute_nodes_formula (states, probs)
         #
         # Apply new values for parameters 
         # 
@@ -279,7 +269,7 @@ class UpdatePopulationResults:
             simulation.network.set_istate(a_node, [1-new_val,new_val], warnings=False)
         return simulation 
     
-    def normalize_with_death_and_division(self, states, probs): 
+    def _normalize_with_death_and_division(self, states, probs): 
         """
         Take into account impact of death and division and normalize
         NB: if no death, nor division is defined, do nothing
@@ -332,7 +322,7 @@ class UpdatePopulationResults:
         probs_ret = (probs_ret / norm_factor).tolist()
         return states_ret, probs_ret
 
-    def compute_parameters(self, simulation, states, probs): 
+    def _compute_parameters(self, simulation, states, probs): 
         """
         Computer parameters
         :param simulation: MaBoss model (containing the defining of parameters) 
@@ -354,7 +344,7 @@ class UpdatePopulationResults:
                     print("Updated variable: %s = %s" % (parameter, new_value))
         return parameters
 
-    def compute_nodes_formula (self, states, probs): 
+    def _compute_nodes_formula (self, states, probs): 
         """
         Computer nodes formula to be used as init values for next run
         :param states: list of states extracted from the trajectory
@@ -519,7 +509,7 @@ def _get_next_condition_from_trajectory(self, next_model, step=-1):
     #
     # Compute formulas for nodes 
     # 
-    nodes_with_formula = self.compute_nodes_formula (states, probs)
+    nodes_with_formula = self._compute_nodes_formula (states, probs)
     #
     # Init states
     #
