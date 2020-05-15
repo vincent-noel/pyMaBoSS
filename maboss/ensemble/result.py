@@ -111,6 +111,15 @@ class EnsembleResult(BaseResult):
             shutil.rmtree(self._path)
 
     def get_individual_states_probtraj(self, filter=None, cluster=None):
+        """
+        .. py:method:: Get a Panda Dataframe with the states final probability of each model
+        
+        :param filter: (optional) condition on the node distributions
+        :param cluster: (optional) only get the result of a specified cluster, a list of ids
+        
+        """ 
+        
+        
         if self.asymptotic_probtraj_distribution is None:
             results = []
             for i, model in enumerate(self.models_files):
@@ -131,6 +140,15 @@ class EnsembleResult(BaseResult):
         return self.asymptotic_probtraj_distribution
 
     def get_individual_nodes_probtraj(self, filter=None, cluster=None):
+        """
+        .. py:method:: Get a Panda Dataframe with the nodes final probability of each model
+        
+        :param filter: (optional) condition on the node distributions
+        :param cluster: (optional) only get the result of a specified cluster, a list of ids
+        
+        """ 
+        
+        
         if self.asymptotic_nodes_probtraj_distribution is None:
 
             table = self.get_individual_states_probtraj()
@@ -150,6 +168,14 @@ class EnsembleResult(BaseResult):
         return self.asymptotic_nodes_probtraj_distribution
 
     def getByCondition(self, node_filter=None, state_filter=None):
+        """
+        .. py:method:: Filter the ensemble by condition on the node or state distribution
+        
+        :param node_filter: (optional) condition on the node distributions
+        :param node_filter: (optional) condition on the state distributions
+        
+        """ 
+        
         if node_filter is not None:
             indexes = self.get_individual_nodes_probtraj(node_filter).index.values
             labels = [0 if i not in indexes else 1 for i in range(len(self.models_files))]
@@ -161,7 +187,15 @@ class EnsembleResult(BaseResult):
         
 
     def filterEnsembleByCondition(self, output_directory, node_filter=None, state_filter=None):
-
+        """
+        .. py:method:: Build an sub-ensemble from a condition on node or state distributions
+        
+        :param output_directory: directory in which to write the new ensemble
+        :param node_filter: (optional) condition on the node distributions
+        :param node_filter: (optional) condition on the state distributions
+        
+        """ 
+         
         model_list = None
         if node_filter is not None:
             model_list = self.get_individual_nodes_probtraj(node_filter).index.values
@@ -185,6 +219,14 @@ class EnsembleResult(BaseResult):
             )
     
     def getKMeans(self, clusters=0):
+        """
+        .. py:method:: Perform a k-means clustering on the nodes distributions of each individual result 
+        
+        :param clusters: number of clusters
+        
+        :return: (dict associating cluster id to a list of models, labels of the clusters)
+        
+        """ 
         if clusters > 0:
             kmeans = KMeans(n_clusters=clusters).fit(self.get_individual_nodes_probtraj().values)
             indices = {}
@@ -199,6 +241,14 @@ class EnsembleResult(BaseResult):
             return indices, kmeans.labels_
 
     def getStatesKMeans(self, clusters=0):
+        """
+        .. py:method:: Perform a k-means clustering on the state distributions of each individual result 
+        
+        :param clusters: number of clusters
+        
+        :return: (dict associating cluster id to a list of models, labels of the clusters)
+        
+        """ 
         if clusters > 0:
             kmeans = KMeans(n_clusters=clusters).fit(self.get_individual_states_probtraj().values)
             indices = {}
@@ -213,7 +263,13 @@ class EnsembleResult(BaseResult):
             return indices, kmeans.labels_
 
     def filterEnsembleByCluster(self, output_directory, cluster):
-
+        """
+        .. py:method:: Build an sub-ensemble from a list of list of models
+        
+        :param output_directory: directory in which to write the new ensemble
+        :param cluster: list of models to include in the new ensemble
+        
+        """ 
         if cluster is not None:
             if not os.path.exists(output_directory):
                 os.mkdir(output_directory)
@@ -228,6 +284,16 @@ class EnsembleResult(BaseResult):
                 )
 
     def plotStates3D(self, dims, figsize=(20, 12), compare=None, ax=None, **args):
+        """
+        .. py:method:: Plots the distribution of the ensemble individual results as a 3D object, for 3 given states.
+        
+        
+        :param dims: list of the three states to plot
+        :param figsize: (optional) tuple containing the size of the figure
+        :param compare: (optional) other ensemble result for comparison
+        :param ax: (optional) axes to plot on
+        
+        """
         if len(dims) == 3:
             table = self.get_individual_states_probtraj()
             
@@ -266,7 +332,18 @@ class EnsembleResult(BaseResult):
             ax.set_zlabel(dims[2])
 
     def plotSteadyStatesDistribution(self, compare=None, labels=None, alpha=1, single_out=None, single_out_mutant=None, nil_label=None, compare_labels=None, **args):
-
+        """
+        .. py:method:: Plots the distribution of the ensemble individual results in PCA space
+        
+        :param compare: (optional) other ensemble simulation result, for comparison
+        :param labels: (optional) list of colors to use for each model
+        :param alpha: (optional) transparency of markers
+        :param single_out: (optional) index of a model to highlight
+        :param single_out_mutant: (optional) index of a model to highlight in the other ensemble simulation result
+        :param nil_label: (optional) label for renaming the <nil> state
+        :param compare_labels: (optional) labels to use in the legend
+        
+        """ 
         pca = PCA()
         table = self.get_individual_states_probtraj()
         if compare is not None:
@@ -311,7 +388,15 @@ class EnsembleResult(BaseResult):
             )
 
     def plotSteadyStatesNodesDistribution(self, compare=None, labels=None, alpha=1, **args):
-
+        """
+        .. py:method:: Plots the nodes distribution of the ensemble individual results in PCA space
+        
+        :param compare: (optional) other ensemble simulation result, for comparison
+        :param labels: (optional) list of colors to use for each model
+        :param alpha: (optional) transparency of markers
+        
+        """ 
+        
         pca = PCA()
         table = self.get_individual_nodes_probtraj()
         mat = table.values
@@ -419,7 +504,17 @@ class EnsembleResult(BaseResult):
             ax.set_ylim(min_y_values*1.2, max_y_values*1.2)
 
     def plotTSNESteadyStatesNodesDistribution(self, node_filter=None, state_filter=None, clusters={}, perplexity=50, n_iter=2000, **args):
-
+        """
+        .. py:method:: Plots the nodes distribution of the ensemble individual results in T-SNE space
+        
+        :param node_filter: (optional) filter in node distribution to highlight a sub-ensemble of models
+        :param node_filter: (optional) filter in state distribution to highlight a sub-ensemble of models
+        :param cluster: (optional) dict with, for each model, the id of the cluster if belongs to
+        :param perplexity: (optional) hyper-parameter of T-SNE (default=50)
+        :param n_iter: (optional) default parameter of T-SNE (default=2000)
+        
+        """ 
+        
         pca = PCA()
         table = self.get_individual_nodes_probtraj()
         
@@ -444,7 +539,16 @@ class EnsembleResult(BaseResult):
             plt.scatter(res[not_filtered, 0], res[not_filtered, 1], color='b')
 
     def plotTSNESteadyStatesDistribution(self, node_filter=None, state_filter=None, clusters={}, perplexity=50, n_iter=2000, **args):
-
+        """
+        .. py:method:: Plots the states distribution of the ensemble individual results in T-SNE space
+        
+        :param node_filter: (optional) filter in node distribution to highlight a sub-ensemble of models
+        :param node_filter: (optional) filter in state distribution to highlight a sub-ensemble of models
+        :param cluster: (optional) dict with, for each model, the id of the cluster if belongs to
+        :param perplexity: (optional) hyper-parameter of T-SNE (default=50)
+        :param n_iter: (optional) default parameter of T-SNE (default=2000)
+        
+        """ 
         pca = PCA()
         table = self.get_individual_states_probtraj()
         

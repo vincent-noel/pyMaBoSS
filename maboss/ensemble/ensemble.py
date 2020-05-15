@@ -19,7 +19,17 @@ import shutil
 from colomoto import minibn
 
 class Ensemble(object):
+    """
+        .. py:class:: construct a simulation for Ensemble MaBoSS.
 
+        :param path: folder with bnet files, or zip file with bnet files
+        :param cfg_filename: (optional) the path of the cfg file with simulation parameters
+        :param individual_istates: (optional) dictionnary containing the initial states of each model
+        :param individual_mutations: (optional) dictionnary containing the mutations of each model
+        :param models: (optional) list of the sub-ensemble of models within the path to simulate
+        
+    """
+        
     def __init__(self, path, cfg_filename=None, individual_istates=collections.OrderedDict(), individual_mutations=collections.OrderedDict(), models=None, *args, **kwargs):
 
         self.set_models_path(path)
@@ -82,6 +92,10 @@ class Ensemble(object):
                 self.random_sampling = kwargs[p]
 
     def copy(self):
+        """
+        .. py:method:: Returns a new copy of the simulation
+        
+        """
         ensemble = Ensemble(self.models_path)
         ensemble.param = self.param.copy()
         ensemble.variables = self.variables.copy()
@@ -115,10 +129,24 @@ class Ensemble(object):
         return maboss_cmd
 
     def run(self, workdir=None, overwrite=False, prefix="res"):
+        """
+        .. py:method:: Run the simulation and return a :doc:`ensemblemaboss-api-ensemble` object.
+        
+        :param workdir: (optional) directory where the simulation is to be executed
+        :param overwrite: (optional) overwrite a previous simulation in the same workdir
+        :param prefix: (optional) prefix of the simulation results files 
+        
+        """
         return EnsembleResult(self, workdir, overwrite, prefix)
         # return EnsembleResult(self.models_files, self._cfg, "res", self.individual_results, self.random_sampling)
 
     def set_models_path(self, path):
+        """
+        .. py:method:: Set a new path for the models
+        
+        :param path: folder with bnet files, or zip file with bnet files
+        
+        """
         if path.lower().endswith(".zip"):
             self.models_path = tempfile.mkdtemp(prefix="maboss-ensemble")
             def cleanup(d):
@@ -137,7 +165,7 @@ class Ensemble(object):
 
     def mutate(self, node, state):
         """
-        Trigger or untrigger mutation for a node.
+        .. py:method:: Trigger or untrigger mutation for a node.
 
         :param node: The identifier of the node to be modified
         :type node: :py:str:
@@ -164,7 +192,7 @@ class Ensemble(object):
 
     def set_istate(self, nodes, probDict, warnings=True):
         """
-        Change the inital states probability of one or several nodes.
+        .. py:method:: Change the inital states probability of one or several nodes.
 
         :param nodes: the node(s) whose initial states are to be modified
         :type nodes: a :py:class:`Node` or a list or tuple of :py:class:`Node`
@@ -192,6 +220,12 @@ class Ensemble(object):
 
 
     def set_outputs(self, outputs):
+        """
+        .. py:method:: Change the variables returned in the simulation results
+        
+        :param outputs: list of variables
+        
+        """ 
         self.outputs.update({node: node in outputs for node in self.nodes})
 
     def get_mini_bns(self):
