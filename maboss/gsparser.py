@@ -23,6 +23,8 @@ externVar = pp.Suppress('$') + ~pp.White() + varName
 externVar.setParseAction(lambda token: token[0])
 import uuid
 
+def _fail_action(string, loc, expr, err):
+    raise pp.ParseFatalException(err)
 # ====================
 # bnd grammar
 # ====================
@@ -40,8 +42,12 @@ bnd_grammar.ignore('//' + pp.restOfLine)
 
 intPart = pp.Word(pp.nums)
 intPart.setParseAction(lambda token: int(token[0]))
+intPart.setFailAction(_fail_action)
+
 floatNum = pp.Word(pp.nums + '.' + 'E' + 'e' + '-' + '+')
 floatNum.setParseAction(lambda token: float(token[0]))
+floatNum.setFailAction(_fail_action)
+
 booleanStr = (pp.oneOf('0 1')
               | pp.CaselessLiteral("True") | pp.CaselessLiteral("False"))
 
@@ -57,7 +63,10 @@ def booleanStrAction(token):
 
 
 booleanStr.setParseAction(lambda token: booleanStrAction(token[0]))
+booleanStr.setFailAction(_fail_action)
+
 numOrBool = (floatNum | booleanStr)("value")
+numOrBool.setFailAction(_fail_action)
 
 var_decl = pp.Group(externVar("lhs") + pp.Suppress('=')
                     + pp.SkipTo(';')("rhs") + pp.Suppress(';'))
@@ -69,9 +78,11 @@ param_decl = pp.Group(varName("param") + pp.Suppress('=')
 stateSet = (pp.Suppress('[') + pp.Group(pp.delimitedList(intPart))
             + pp.Suppress(']'))
 stateSet.setParseAction(lambda token: list(token))
+stateSet.setFailAction(_fail_action)
 
 stateProb = pp.Word(pp.alphanums+' ()+-*/$.')('proba') + stateSet("states")
 stateProb.setParseAction(lambda token: (token.proba, token.states))
+stateProb.setFailAction(_fail_action)
 
 istate_decl = pp.Group(pp.Suppress('[') + pp.delimitedList(varName)("nodes")
                        + pp.Suppress('].istate') + pp.Suppress('=')
@@ -142,11 +153,19 @@ def load(bnd_filename, *cfg_filenames, **extra_args):
             cfg_file = stack.enter_context(open(cfg_filename, 'r'))
             cfg_content += cfg_file.read()
 
-        (variables, parameters, is_internal_list,
-         istate_list, refstate_list) = _read_cfg(cfg_content)
-
-        nodes = _read_bnd(bnd_content, is_internal_list)
-
+        try:    
+            (variables, parameters, is_internal_list,
+            istate_list, refstate_list) = _read_cfg(cfg_content)
+        except pp.ParseFatalException:
+            print("Error while reading the config file", file=sys.stderr)
+            return 
+            
+        try:
+            nodes = _read_bnd(bnd_content, is_internal_list)
+        except pp.ParseFatalException:
+            print("Error while reading the network file", file=sys.stderr)
+            return        
+            
         net = Network(nodes)
         for istate in istate_list:
             net.set_istate(istate, istate_list[istate])
