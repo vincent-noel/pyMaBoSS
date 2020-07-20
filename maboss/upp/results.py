@@ -439,11 +439,8 @@ class UpdatePopulationResults:
         return upd_pop_ratio
 
 def varDef_Upp(update_line, states, probs):
+
 	res_match = re.findall("p\[[^\[]*\]", update_line)
-	if len(res_match) == 0:
-		print("Syntax error in the parameter update definition : %s" % update_line, file=sys.stderr)
-		exit()
-	
 	for match in res_match:
 
 		lhs, rhs = match.split("=")
@@ -491,6 +488,7 @@ def varDef_Upp(update_line, states, probs):
 
 		update_line = update_line.replace(match, str(probValue), 1)
 	update_line += ";"
+	
 	return update_line
 
 def _get_next_condition_from_trajectory(self, next_model, step=-1):
