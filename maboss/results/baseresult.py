@@ -150,6 +150,8 @@ class BaseResult(ProbTrajResult, StatDistResult):
             print("Error maboss previously returned non 0 value",
                   file=stderr)
             return
+        if axes is None:
+            _, axes = plt.subplots(1,1)
         table = self.get_entropy_trajectory()
         if until:
             table = table[table.index <= until]
