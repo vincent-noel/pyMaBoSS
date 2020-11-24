@@ -1,14 +1,11 @@
 """utilitary functions to manipulate boolean expressions."""
 
-from __future__ import print_function
 import pyparsing as pp
 
-boolCst = pp.oneOf("True False")
-boolNot = pp.oneOf("! NOT")
-boolAnd = pp.oneOf("&& & AND")
-boolOr = pp.oneOf("|| | OR")
-boolXor = pp.oneOf("^ XOR")
-boolTest = pp.Literal("?")
-boolElse = pp.Literal(":")
+def checkReserved(token):
+    if token.lower() in ["true", "false", "not", "or", "and", "xor", "node"]:
+        raise Exception("Name %s is reserved !" % token)
+    return token
+
 varName = (pp.Word(pp.alphas, pp.alphanums+'_'))
-varName.setParseAction(lambda token: token[0])
+varName.setParseAction(lambda token: checkReserved(token[0]))
