@@ -10,6 +10,5 @@ boolOr = pp.oneOf("|| | OR")
 boolXor = pp.oneOf("^ XOR")
 boolTest = pp.Literal("?")
 boolElse = pp.Literal(":")
-varName = (~boolAnd + ~boolOr + ~boolXor + ~boolNot + ~boolCst + ~boolTest + ~boolElse
-           + ~pp.Literal('Node') + pp.Word(pp.alphas+'$', pp.alphanums+'_'))
+varName = (pp.Word(pp.alphas, pp.alphanums+'_'))
 varName.setParseAction(lambda token: token[0])
