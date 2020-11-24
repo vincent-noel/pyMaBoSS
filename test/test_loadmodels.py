@@ -106,3 +106,15 @@ class TestLoadModels(TestCase):
 				'TCF12', 'THAP11', 'TP53', 'TP63', 'VDR', 'XBP1', 'YBX1', 'YY1', 'ZNF143'
 			]
 		)
+	
+	def test_load_confusedparser(self):
+		
+		sim = load(
+			join(dirname(__file__), "confused_parser.bnd"),
+			join(dirname(__file__), "confused_parser.cfg") 
+		)
+		
+		self.assertEqual(
+			list(sim.network.keys()),
+			['A', 'NOTH', 'B']
+		)

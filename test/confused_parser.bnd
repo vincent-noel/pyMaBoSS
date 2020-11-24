@@ -1,0 +1,18 @@
+Node A {
+  logic = B;
+  rate_up = @logic ? $u_A : 0;
+  rate_down = @logic ? 0 : $d_A;
+}
+
+Node NOTH {
+  logic = A;
+  rate_up = @logic ? $u_NOTCH : 0;
+  rate_down = @logic ? 0 : $d_NOTCH;
+}
+
+Node B {
+  logic = A;
+  rate_up = @logic ? $u_B : 0;
+  rate_down = @logic ? 0 : $d_B;
+}
+
