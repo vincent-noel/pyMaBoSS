@@ -24,6 +24,7 @@ class TestLoadModels(TestCase):
 		res.plot_fixpoint()
 		res.plot_trajectory(error=True)
 		res.plot_node_trajectory(error=True)
+		res.plot_entropy_trajectory()
 		res.plot_piechart()
 
 	def test_copy_p53_Mdm2(self):
