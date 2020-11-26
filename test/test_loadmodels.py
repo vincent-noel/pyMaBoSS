@@ -119,3 +119,15 @@ class TestLoadModels(TestCase):
 			list(sim.network.keys()),
 			['A', 'NOTH', 'B']
 		)
+		
+	def test_load_reserved_names(self):
+
+		with self.assertRaises(Exception) as context:
+			sim = load(
+				join(dirname(__file__), "reserved_names.bnd"),
+				join(dirname(__file__), "reserved_names.cfg") 
+			)
+		print(context.exception)
+		self.assertTrue(
+			   "Name NOT is reserved !" == str(context.exception)
+		)
