@@ -5,8 +5,7 @@ package:
   version: '{{ version }}'
 
 source:
-  git_rev: v{{ version }}
-  git_url: https://github.com/colomoto/pyMaBoSS.git
+  path: ..
 
 channels:
   - colomoto
