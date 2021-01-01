@@ -107,7 +107,7 @@ jobs:
 
     - name: Install MaBoSS
       run: |
-        conda install -c potassco/label/dev -c colomoto maboss ginsim-python python=${{ matrix.python }}
+        conda install -c potassco/label/dev -c colomoto -c conda-forge maboss ginsim-python python=${{ matrix.python }}
         
     - name: Test MaBoSS
       run: |
@@ -149,7 +149,7 @@ jobs:
 
     - name: Install MaBoSS
       run: |
-        conda install -c potassco/label/dev -c colomoto maboss ginsim-python python=${{ matrix.python }}
+        conda install -c potassco/label/dev -c colomoto -c conda-forge maboss ginsim-python python=${{ matrix.python }}
         
     - name: Test MaBoSS
       run: |
@@ -186,7 +186,7 @@ jobs:
       
     - name: Build pyMaBoSS Anaconda package
       run: |
-        conda build conda -c vincent-noel -c colomoto
+        conda build conda -c vincent-noel -c colomoto -c conda-forge
         anaconda -t ${{ secrets.ANACONDA_TOKEN }} upload -u colomoto /usr/share/miniconda/conda-bld/noarch/*.tar.bz2 --force;
 
   pypi_pymaboss:
