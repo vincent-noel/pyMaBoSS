@@ -68,7 +68,7 @@ jobs:
     - name: Install MaBoSS
       run: |
         conda config --set add_pip_as_python_dependency false
-        conda install -c potassco/label/dev -c colomoto maboss ginsim-python python=${{ matrix.python }}
+        conda install -c potassco/label/dev -c colomoto -c conda-forge maboss ginsim-python python=${{ matrix.python }}
         
     - name: Test MaBoSS
       run: |
