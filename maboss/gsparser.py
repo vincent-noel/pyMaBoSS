@@ -19,6 +19,7 @@ from .logic import varName
 from .network import Node, Network
 from .simulation import Simulation
 from .cmabosssimulation import CMaBoSSSimulation
+from .sbmlsimulation import SBMLSSimulation
 externVar = pp.Suppress('$') + ~pp.White() + varName
 externVar.setParseAction(lambda token: token[0])
 import uuid
@@ -106,6 +107,11 @@ def loadBNet(bnet_filename):
     from colomoto_jupyter import import_colomoto_tool
     biolqm = import_colomoto_tool("biolqm")
     return biolqm.to_maboss(biolqm.load(bnet_filename))
+
+def loadSBML(sbml_filename, *cfg_filenames):
+    assert sbml_filename.lower().endswith(".xml") or sbml_filename.lower().endswith(".sbml")
+    
+    return SBMLSSimulation(sbml_filename, *cfg_filenames)
 
 def load(bnd_filename, *cfg_filenames, **extra_args):
     """Loads a network from a MaBoSS format file.

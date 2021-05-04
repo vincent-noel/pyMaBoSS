@@ -8,29 +8,29 @@ import os
 from .results.baseresult import BaseResult
 from contextlib import ExitStack
 from time import time
-class CMaBoSSResult2(BaseResult):
+class SBMLCMaBoSSResult(BaseResult):
 
-    def __init__(self, sim, workdir=None, only_final_state=False):
+    def __init__(self, sim, only_final_state=False):
 
         BaseResult.__init__(self, "some_path")
-        self.cmaboss_simulation = sim.cmaboss.MaBoSSSim(net=sim.cmaboss_net, cfg=sim.cmaboss_cfg)
-        self.cmaboss_result = self.cmaboss_simulation.run(only_last_state=only_final_state)
+        # self.cmaboss_simulation = sim.cmaboss.MaBoSSSim(network=sim.sbml, config=sim.cfgs)
+        self.cmaboss_result = sim.cmaboss_sim.run(only_last_state=only_final_state)
 
-        self.workdir = workdir
+        # self.workdir = workdir
         self.only_final_state = only_final_state
 
-        if workdir is not None:
-            if not os.path.exists(workdir):
-                os.makedirs(workdir)
+        # if workdir is not None:
+        #     if not os.path.exists(workdir):
+        #         os.makedirs(workdir)
 
-            self.cmaboss_result.display_run(os.path.join(workdir, "%s_run.txt" % prefix))
+        #     self.cmaboss_result.display_run(os.path.join(workdir, "%s_run.txt" % prefix))
 
-            if self.only_final_state:
-                self.cmaboss_result.display_final_states(os.path.join(workdir, "%s_finalprob.csv" % prefix))
-            else:
-                self.cmaboss_result.display_probtraj(os.path.join(workdir, "%s_probtraj.csv" % prefix))
-                self.cmaboss_result.display_fp(os.path.join(workdir, "%s_fp.csv" % prefix))
-                self.cmaboss_result.display_statdist(os.path.join(workdir, "%s_statdist.csv" % prefix))
+        #     if self.only_final_state:
+        #         self.cmaboss_result.display_final_states(os.path.join(workdir, "%s_finalprob.csv" % prefix))
+        #     else:
+        #         self.cmaboss_result.display_probtraj(os.path.join(workdir, "%s_probtraj.csv" % prefix))
+        #         self.cmaboss_result.display_fp(os.path.join(workdir, "%s_fp.csv" % prefix))
+        #         self.cmaboss_result.display_statdist(os.path.join(workdir, "%s_statdist.csv" % prefix))
 
 
     def get_last_states_probtraj(self):
@@ -87,4 +87,4 @@ class CMaBoSSResult2(BaseResult):
             return df
 
 
-__all__ = ["CMaBoSSResult2"]
+__all__ = ["SBMLCMaBoSSResult"]
