@@ -108,10 +108,9 @@ def loadBNet(bnet_filename):
     biolqm = import_colomoto_tool("biolqm")
     return biolqm.to_maboss(biolqm.load(bnet_filename))
 
-def loadSBML(sbml_filename, *cfg_filenames):
+def loadSBML(sbml_filename, cfg_filename=None):
     assert sbml_filename.lower().endswith(".xml") or sbml_filename.lower().endswith(".sbml")
-    
-    return SBMLSSimulation(sbml_filename, *cfg_filenames)
+    return SBMLSSimulation(sbml_filename, cfg_filename)
 
 def load(bnd_filename, *cfg_filenames, **extra_args):
     """Loads a network from a MaBoSS format file.

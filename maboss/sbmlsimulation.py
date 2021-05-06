@@ -2,10 +2,10 @@
 Class that contains the cMaBoSS simulation.
 """
 from .sbmlcmabossresult import SBMLCMaBoSSResult
-
+from sys import stdout
 class SBMLSSimulation(object):
 
-    def __init__(self, sbml, cfgs):
+    def __init__(self, sbml, cfgs=None):
 
         self.sbml = sbml
         self.cfgs = cfgs
@@ -13,7 +13,10 @@ class SBMLSSimulation(object):
         self.nb_nodes = self.count_nodes()
         self.cmaboss = self.get_cmaboss()
 
-        self.cmaboss_sim = self.cmaboss.MaBoSSSim(self.sbml, self.cfgs)
+        if self.cfgs is None:
+            self.cmaboss_sim = self.cmaboss.MaBoSSSim(self.sbml)
+        else:
+            self.cmaboss_sim = self.cmaboss.MaBoSSSim(self.sbml, self.cfgs)
 
         # self.cmaboss_net = self.cmaboss.MaBoSSNet(self.bnd)
         # self.cmaboss_cfg = self.cmaboss.MaBoSSCfg(self.cmaboss_net, self.cfgs)
@@ -28,6 +31,13 @@ class SBMLSSimulation(object):
                     res += 1
         return res
 
+    def print_bnd(self, out=stdout):
+        """Produce the content of the bnd file associated to the simulation."""
+        print(self.cmaboss_sim.str_bnd(), file=out)
+
+    def print_cfg(self, out=stdout):
+        """Produce the content of the cfg file associated to the simulation."""
+        print(self.cmaboss_sim.str_cfg(), file=out)
 
     def get_cmaboss(self):
 

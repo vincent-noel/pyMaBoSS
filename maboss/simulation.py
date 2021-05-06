@@ -409,3 +409,11 @@ def to_minibn(maboss_model):
             bnet_file.write("%s, %s\n" % (node, rule))
 
     return minibn.BooleanNetwork.load(bnet_filename)
+
+def sbml_to_bnd(sbml_filename, bnd_filename):
+    
+    from .gsparser import loadSBML
+    model = loadSBML(sbml_filename)
+    with open(bnd_filename, "w") as bnd_file:
+        model.print_bnd(bnd_file)
+ 
