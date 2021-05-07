@@ -417,3 +417,18 @@ def sbml_to_bnd(sbml_filename, bnd_filename):
     with open(bnd_filename, "w") as bnd_file:
         model.print_bnd(bnd_file)
  
+def sbml_to_bnd_and_cfg(sbml_filename, bnd_filename, cfg_filename):
+    
+    from .gsparser import loadSBML
+    model = loadSBML(sbml_filename)
+    with open(bnd_filename, "w") as bnd_file:
+        model.print_bnd(bnd_file)
+    with open(cfg_filename, "w") as cfg_file:
+        model.print_cfg(cfg_file)
+
+def sbml_to_maboss(sbml_filename):
+    from .gsparser import load
+    bnd_filename = new_output_file("bnd")
+    cfg_filename = new_output_file("cfg")
+    sbml_to_bnd_and_cfg(sbml_filename)
+    sim = load(bnd_filename, cfg_filename)
