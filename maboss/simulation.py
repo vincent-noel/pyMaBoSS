@@ -410,25 +410,25 @@ def to_minibn(maboss_model):
 
     return minibn.BooleanNetwork.load(bnet_filename)
 
-def sbml_to_bnd(sbml_filename, bnd_filename):
+def sbml_to_bnd(sbml_filename, bnd_filename, useSBMLNames=False):
     
     from .gsparser import loadSBML
-    model = loadSBML(sbml_filename)
+    model = loadSBML(sbml_filename, useSBMLNames)
     with open(bnd_filename, "w") as bnd_file:
         model.print_bnd(bnd_file)
  
-def sbml_to_bnd_and_cfg(sbml_filename, bnd_filename, cfg_filename):
+def sbml_to_bnd_and_cfg(sbml_filename, bnd_filename, cfg_filename, use_sbml_names=False):
     
     from .gsparser import loadSBML
-    model = loadSBML(sbml_filename)
+    model = loadSBML(sbml_filename, use_sbml_names=use_sbml_names)
     with open(bnd_filename, "w") as bnd_file:
         model.print_bnd(bnd_file)
     with open(cfg_filename, "w") as cfg_file:
         model.print_cfg(cfg_file)
 
-def sbml_to_maboss(sbml_filename):
+def sbml_to_maboss(sbml_filename, use_sbml_names=False):
     from .gsparser import load
     bnd_filename = new_output_file("bnd")
     cfg_filename = new_output_file("cfg")
-    sbml_to_bnd_and_cfg(sbml_filename)
+    sbml_to_bnd_and_cfg(sbml_filename, bnd_filename, cfg_filename, use_sbml_names)
     sim = load(bnd_filename, cfg_filename)

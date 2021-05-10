@@ -3,29 +3,28 @@ Class that contains the cMaBoSS simulation.
 """
 from .sbmlcmabossresult import SBMLCMaBoSSResult
 from sys import stdout
-class SBMLSSimulation(object):
+class BNetSimulation(object):
 
-    def __init__(self, sbml, cfgs=None, use_sbml_names=False):
+    def __init__(self, bnet, cfgs=None):
 
-        self.sbml = sbml
+        self.bnet = bnet
         self.cfgs = cfgs
 
         self.nb_nodes = self.count_nodes()
         self.cmaboss = self.get_cmaboss()
 
         if self.cfgs is None:
-            self.cmaboss_sim = self.cmaboss.MaBoSSSim(self.sbml, use_sbml_names=use_sbml_names)
+            self.cmaboss_sim = self.cmaboss.MaBoSSSim(self.bnet)
         else:
-            self.cmaboss_sim = self.cmaboss.MaBoSSSim(self.sbml, self.cfgs, use_sbml_names=use_sbml_names)
-
-        
+            self.cmaboss_sim = self.cmaboss.MaBoSSSim(self.bnet, self.cfgs)
+   
     def count_nodes(self):
         
         res = 0
-        with open(self.sbml, 'r') as f:
+        with open(self.bnet, 'r') as f:
             lines = f.readlines()
             for line in lines:
-                if len(line) > 0 and "</qual:qualitativespecies>" in line.lower():
+                if len(line) > 0 and "," in line and line.split(',')[0].strip() != "targets":
                     res += 1
         return res
 
@@ -68,4 +67,4 @@ class SBMLSSimulation(object):
         return SBMLCMaBoSSResult(self, only_final_state)
 
 
-__all__ = ["SBMLSSimulation"]
+__all__ = ["BNetSimulation"]

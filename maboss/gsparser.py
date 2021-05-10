@@ -20,6 +20,7 @@ from .network import Node, Network
 from .simulation import Simulation
 from .cmabosssimulation import CMaBoSSSimulation
 from .sbmlsimulation import SBMLSSimulation
+from .bnetsimulation import BNetSimulation
 externVar = pp.Suppress('$') + ~pp.White() + varName
 externVar.setParseAction(lambda token: token[0])
 import uuid
@@ -106,11 +107,25 @@ def loadBNet(bnet_filename):
 
     from colomoto_jupyter import import_colomoto_tool
     biolqm = import_colomoto_tool("biolqm")
+    # print("loading bnet")
     return biolqm.to_maboss(biolqm.load(bnet_filename))
 
-def loadSBML(sbml_filename, cfg_filename=None):
+def loadBNetCMaBoSS(bnet_filename, cfg_filename=None):
+    assert bnet_filename.lower().endswith(".bnet"), "wrong extension for BNet file"
+
+    if "://" in bnet_filename:
+        from colomoto_jupyter.io import ensure_localfile
+        bnet_filename = ensure_localfile(bnet_filename)
+
+    return BNetSimulation(bnet_filename, cfg_filename)
+
+def loadSBML(sbml_filename, cfg_filename=None, use_sbml_names=False):
     assert sbml_filename.lower().endswith(".xml") or sbml_filename.lower().endswith(".sbml")
-    return SBMLSSimulation(sbml_filename, cfg_filename)
+
+    if "://" in sbml_filename:
+        from colomoto_jupyter.io import ensure_localfile
+        sbml_filename = ensure_localfile(sbml_filename)
+    return SBMLSSimulation(sbml_filename, cfg_filename, use_sbml_names)
 
 def load(bnd_filename, *cfg_filenames, **extra_args):
     """Loads a network from a MaBoSS format file.
