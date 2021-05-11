@@ -18,6 +18,7 @@ class SBMLSSimulation(object):
         else:
             self.cmaboss_sim = self.cmaboss.MaBoSSSim(self.sbml, self.cfgs, use_sbml_names=use_sbml_names)
 
+        self.network = self.get_logical_rules()
         
     def count_nodes(self):
         
