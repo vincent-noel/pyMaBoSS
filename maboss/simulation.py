@@ -432,3 +432,5 @@ def sbml_to_maboss(sbml_filename, use_sbml_names=False):
     cfg_filename = new_output_file("cfg")
     sbml_to_bnd_and_cfg(sbml_filename, bnd_filename, cfg_filename, use_sbml_names)
     sim = load(bnd_filename, cfg_filename)
+    return sim
+    
