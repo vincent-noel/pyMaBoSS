@@ -15,7 +15,7 @@ class SBMLCMaBoSSResult(BaseResult):
         BaseResult.__init__(self, "some_path")
         # self.cmaboss_simulation = sim.cmaboss.MaBoSSSim(network=sim.sbml, config=sim.cfgs)
         self.cmaboss_result = sim.cmaboss_sim.run(only_last_state=only_final_state)
-
+        self.simul = sim
         # self.workdir = workdir
         self.only_final_state = only_final_state
 
