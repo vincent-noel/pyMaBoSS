@@ -304,7 +304,7 @@ class Ensemble(object):
             print("Unknown model type")
 
     def read_maboss_nodes(self, filename):
-        model = load(filename, self._cfg)
+        model = load(filename)
         self.nodes = list(model.network.keys())
 
     def read_bnet_nodes(self, filename):
