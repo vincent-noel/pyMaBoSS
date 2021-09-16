@@ -181,7 +181,7 @@ class Network(collections.OrderedDict):
 
             if isinstance(self._attribution[nodes], tuple):
                 if warnings:
-                    print("Warning, node %s was previously bound to other nodes" % node, file=stderr)
+                    print("Warning, node %s was previously bound to other nodes" % nodes, file=stderr)
                 self._erase_binding(nodes)
             self._initState[nodes] = {0: probDict[0], 1: probDict[1]}
 
