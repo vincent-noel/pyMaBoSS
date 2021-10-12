@@ -59,7 +59,6 @@ class EnsembleResult(BaseResult):
             options.append("--random-sampling")
 
         cmd_line = [maboss_cmd] + options
-                
         if len(simulation.individual_cfgs) > 0:
             os.mkdir(os.path.join(self._path, "models"))
             self.models_files = simulation.models_files
