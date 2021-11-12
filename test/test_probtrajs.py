@@ -238,7 +238,7 @@ class TestProbTrajs(TestCase):
 		res = sim.run()
 		self.assertEqual(
 			list(res.get_nodes_probtraj().columns.values),
-			['A', 'B', 'C']
+			['C', 'A', 'B']
 		)
 
 		sim.network.set_output(['A', 'B'])
@@ -259,7 +259,7 @@ class TestProbTrajs(TestCase):
 		res = sim.run()
 		self.assertEqual(
 			list(res.get_nodes_probtraj().columns.values),
-			['A', 'B', 'C']
+			['C', 'A', 'B']
 		)
 
 		sim.network.set_output(['A', 'B'])
