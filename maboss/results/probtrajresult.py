@@ -97,7 +97,7 @@ class ProbTrajResult(object):
 
         return self.state_probtraj_errors
 
-    def get_nodes_probtraj(self, prob_cutoff=None):
+    def get_nodes_probtraj(self, nodes=None, prob_cutoff=None):
         """
             Returns the node probability vs time, as a pandas dataframe.
 
@@ -124,6 +124,9 @@ class ProbTrajResult(object):
         if prob_cutoff is not None:
             maxs = self.nd_probtraj.max(axis=0)
             return self.nd_probtraj[maxs[maxs>prob_cutoff].index]
+
+        if nodes is not None:
+            return self.nd_probtraj[nodes]
 
         return self.nd_probtraj
 
@@ -210,7 +213,7 @@ class ProbTrajResult(object):
              
         return self.last_states_probtraj
 
-    def get_last_nodes_probtraj(self):
+    def get_last_nodes_probtraj(self, nodes=None):
         """
             Returns the asymptotic node probability, as a pandas dataframe.
         """
@@ -220,18 +223,22 @@ class ProbTrajResult(object):
             raw_states = [s for s in data[first_col::3]]
             raw_probs = np.array([float(v) for v in data[first_col+1::3]])
 
-            nodes = set()
-            for state in raw_states:
-                if state != "<nil>":
-                    nodes.update([node for node in state.split(" -- ")])
-            nodes = list(nodes) 
-            nodes_indexes = {node:index for index, node in enumerate(nodes)}
+            if nodes is not None:
+                nodes_indexes = {node:index for index, node in enumerate(nodes)}
+            else:
+                nodes = set()
+                for state in raw_states:
+                    if state != "<nil>":
+                        nodes.update([node for node in state.split(" -- ")])
+                nodes = list(nodes) 
+                nodes_indexes = {node:index for index, node in enumerate(nodes)}
 
             new_probas = np.zeros((1, len(nodes)))
             for i, proba in enumerate(raw_probs):
                 if raw_states[i] != "<nil>":
                     for node in raw_states[i].split(" -- "):
-                        new_probas[0, nodes_indexes[node]] += proba
+                        if node in nodes:
+                            new_probas[0, nodes_indexes[node]] += proba
 
             self.last_nodes_probtraj = pd.DataFrame(new_probas, columns=nodes, index=[data[0]])
             self.last_nodes_probtraj.sort_index(axis=1, inplace=True)
