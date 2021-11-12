@@ -162,35 +162,47 @@ class UpdatePopulationResults:
            
             return self.stepwise_probability_distribution.loc[:, states_filtered]
 
-    def get_nodes_stepwise_probability_distribution(self, nodes=None, nb_cores=1):
+    def get_nodes_stepwise_probability_distribution(self, nodes=None, nb_cores=1, direct=True):
         if self.nodes_stepwise_probability_distribution is None or set(nodes) != self.nodes_list_stepwise_probability_distribution:
             
-            table = self.get_stepwise_probability_distribution(nb_cores=nb_cores)
             
-            states = table.columns.values[1:].tolist()
-            if "<nil>" in states:
-                states.remove("<nil>")
-
-            if nodes is None:
-                nodes = get_nodes(states)
-            else:
-                nodes = set(nodes)
+            if direct:  
+                tables = [result.get_last_nodes_probtraj(nodes) for result in self.results]
             
-            self.nodes_list_stepwise_probability_distribution = nodes
-
-            node_dict = {}
-            for state in states:
-                t_nodes = state.split(" -- ")
-                t_nodes = [node for node in t_nodes if node in nodes]
-                if len(t_nodes) > 0:
-                    node_dict.update({state: t_nodes})
-
-            if nb_cores > 1:
-                self.nodes_stepwise_probability_distribution = make_nodes_table_parallel(table, nodes, node_dict, nb_cores)
+                self.nodes_stepwise_probability_distribution = pd.concat(tables, axis=0, sort=False)
+                self.nodes_stepwise_probability_distribution.fillna(0, inplace=True)
+                self.nodes_stepwise_probability_distribution.set_index([list(range(0, len(tables)))], inplace=True)
+                self.nodes_stepwise_probability_distribution.insert(
+                    0, column='PopRatio', value=(self.pop_ratios*self.uppModel.base_ratio).values
+                )
+                
             else:
-                self.nodes_stepwise_probability_distribution = make_nodes_table(table, nodes, node_dict)
+                table = self.get_stepwise_probability_distribution(nb_cores=nb_cores)
+                
+                states = table.columns.values[1:].tolist()
+                if "<nil>" in states:
+                    states.remove("<nil>")
 
-            self.nodes_stepwise_probability_distribution.insert(0, column='PopRatio', value=(self.pop_ratios*self.uppModel.base_ratio).values)
+                if nodes is None:
+                    nodes = get_nodes(states)
+                else:
+                    nodes = set(nodes)
+                
+                self.nodes_list_stepwise_probability_distribution = nodes
+
+                node_dict = {}
+                for state in states:
+                    t_nodes = state.split(" -- ")
+                    t_nodes = [node for node in t_nodes if node in nodes]
+                    if len(t_nodes) > 0:
+                        node_dict.update({state: t_nodes})
+
+                if nb_cores > 1:
+                    self.nodes_stepwise_probability_distribution = make_nodes_table_parallel(table, nodes, node_dict, nb_cores)
+                else:
+                    self.nodes_stepwise_probability_distribution = make_nodes_table(table, nodes, node_dict)
+
+                self.nodes_stepwise_probability_distribution.insert(0, column='PopRatio', value=(self.pop_ratios*self.uppModel.base_ratio).values)
 
         return self.nodes_stepwise_probability_distribution
 
