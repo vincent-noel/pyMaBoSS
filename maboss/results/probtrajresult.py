@@ -126,7 +126,7 @@ class ProbTrajResult(object):
             return self.nd_probtraj[maxs[maxs>prob_cutoff].index]
 
         if nodes is not None:
-            return self.nb_probtraj[nodes]
+            return self.nd_probtraj[nodes]
 
         return self.nd_probtraj
 
