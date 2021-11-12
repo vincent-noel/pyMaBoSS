@@ -25,7 +25,7 @@ jobs:
     - name: Install MaBoSS
       run: |
         conda update conda --all
-        conda install -c potassco/label/dev -c colomoto maboss ginsim-python python=${{ matrix.python }}
+        conda install -c vincent-noel -c colomoto -c potassco/label/dev cmaboss maboss ginsim-python python=${{ matrix.python }}
         
     - name: Test MaBoSS
       run: |
@@ -67,7 +67,7 @@ jobs:
     - name: Install MaBoSS
       run: |
         conda update conda --all
-        conda install -c potassco/label/dev -c colomoto maboss ginsim-python python=${{ matrix.python }}
+        conda install -c vincent-noel -c colomoto -c potassco/label/dev cmaboss maboss ginsim-python python=${{ matrix.python }}
         
     - name: Test MaBoSS
       run: |
@@ -110,7 +110,7 @@ jobs:
     - name: Install MaBoSS
       run: |
         conda update conda --all
-        conda install -c potassco/label/dev -c colomoto maboss ginsim-python python=${{ matrix.python }}
+        conda install -c vincent-noel -c colomoto -c potassco/label/dev cmaboss maboss ginsim-python python=${{ matrix.python }}
         
     - name: Test MaBoSS
       run: |
@@ -154,7 +154,7 @@ jobs:
     - name: Install MaBoSS
       run: |
         conda update conda --all
-        conda install -c potassco/label/dev -c colomoto maboss ginsim-python python=${{ matrix.python }}
+        conda install -c vincent-noel -c colomoto -c potassco/label/dev cmaboss maboss ginsim-python python=${{ matrix.python }}
         
     - name: Test MaBoSS
       run: |
