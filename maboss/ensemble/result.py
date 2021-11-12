@@ -59,7 +59,6 @@ class EnsembleResult(BaseResult):
             options.append("--random-sampling")
 
         cmd_line = [maboss_cmd] + options
-        t0 = time()    
         if len(simulation.individual_cfgs) > 0:
             os.mkdir(os.path.join(self._path, "models"))
             self.models_files = simulation.models_files
@@ -85,7 +84,6 @@ class EnsembleResult(BaseResult):
             self.models_files = simulation.models_files
             cmd_line += ["-c", self._cfg]     
 
-        print('duration building ensemble : {}'.format(time()-t0))
         cmd_line += [
             "-o", self._path+'/'+self.prefix
         ] + self.models_files
