@@ -180,7 +180,6 @@ jobs:
     name: pyMaBoSS Conda package
     runs-on: ubuntu-20.04
     needs: [pymaboss_test, pymaboss_scripts, pymaboss_test_macos, pymaboss_scripts_macos]
-    if: github.event_name == 'release' && github.event.action == 'created' && github.repository == 'colomoto/pyMaBoSS'
 
     steps:
     - uses: actions/checkout@v2
@@ -192,8 +191,18 @@ jobs:
     - name: Build pyMaBoSS Anaconda package
       run: |
         conda build conda -c vincent-noel -c colomoto
+        
+        
+    - name: Upload Anaconda package to colomoto's repo
+      if: github.event_name == 'release' && github.event.action == 'created' && github.repository == 'colomoto/pyMaBoSS'
+      run: |
         anaconda -t ${{ secrets.ANACONDA_TOKEN }} upload -u colomoto /usr/share/miniconda/conda-bld/noarch/*.tar.bz2 --force;
-
+        
+    - name: Upload Anaconda package to vincent-noel's repo
+      if: github.repository == 'vincent-noel/pyMaBoSS' && github.ref == 'refs/heads/master'
+      run: |
+        anaconda -t ${{ secrets.ANACONDA_TOKEN }} upload -u vincent-noel /usr/share/miniconda/conda-bld/noarch/*.tar.bz2 --force;
+      
   pypi_pymaboss:
     name: pyMaBoSS PyPi package
     runs-on: ubuntu-20.04
