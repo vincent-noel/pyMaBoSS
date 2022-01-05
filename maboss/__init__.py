@@ -6,7 +6,7 @@ from .gsparser import load, loadBNet, loadSBML
 from .server import MaBoSSClient
 from .upp import UpdatePopulation
 from .ensemble import EnsembleResult, Ensemble
-
+import maboss.pipelines
 from colomoto_jupyter import IN_IPYTHON
 if IN_IPYTHON:
     from colomoto_jupyter import jupyter_setup
