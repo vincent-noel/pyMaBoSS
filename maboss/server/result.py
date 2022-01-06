@@ -107,7 +107,7 @@ class Result(BaseResult):
         """Return the content of fp.csv as a pandas dataframe."""
         if self._FP is not None:
             try:
-                self.fptable = pd.read_csv(self._get_fp_fd(), "\t", skiprows=[0])
+                self.fptable = pd.read_csv(self._get_fp_fd(), sep="\t", skiprows=[0])
 
             except pd.errors.EmptyDataError:
                 pass

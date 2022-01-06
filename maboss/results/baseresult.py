@@ -162,7 +162,7 @@ class BaseResult(ProbTrajResult, StatDistResult):
         """Return the content of fp.csv as a pandas dataframe."""
         if self.fptable is None:
             try:
-                self.fptable = pd.read_csv(self.get_fp_file(), "\t", skiprows=[0])
+                self.fptable = pd.read_csv(self.get_fp_file(), sep="\t", skiprows=[0])
 
             except pd.errors.EmptyDataError:
                 pass
