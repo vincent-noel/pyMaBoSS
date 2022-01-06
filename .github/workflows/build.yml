@@ -25,7 +25,7 @@ jobs:
     - name: Install MaBoSS
       run: |
         conda update conda --all
-        conda install -c vincent-noel -c colomoto cmaboss maboss python=${{ matrix.python }}
+        conda install -c colomoto cmaboss maboss python=${{ matrix.python }}
         
     - name: Test MaBoSS
       run: |
@@ -67,7 +67,7 @@ jobs:
     - name: Install MaBoSS
       run: |
         conda update conda --all
-        conda install -c vincent-noel -c colomoto cmaboss maboss python=${{ matrix.python }}
+        conda install -c colomoto cmaboss maboss python=${{ matrix.python }}
         
     - name: Test MaBoSS
       run: |
@@ -110,7 +110,7 @@ jobs:
     - name: Install MaBoSS
       run: |
         conda update conda --all
-        conda install -c vincent-noel -c colomoto cmaboss maboss python=${{ matrix.python }}
+        conda install -c colomoto cmaboss maboss python=${{ matrix.python }}
         
     - name: Test MaBoSS
       run: |
@@ -154,7 +154,7 @@ jobs:
     - name: Install MaBoSS
       run: |
         conda update conda --all
-        conda install -c vincent-noel -c colomoto cmaboss maboss python=${{ matrix.python }}
+        conda install -c colomoto cmaboss maboss python=${{ matrix.python }}
         
     - name: Test MaBoSS
       run: |
@@ -190,7 +190,7 @@ jobs:
       
     - name: Build pyMaBoSS Anaconda package
       run: |
-        conda build conda -c vincent-noel -c colomoto
+        conda build conda -c colomoto
         
         
     - name: Upload Anaconda package to colomoto's repo
