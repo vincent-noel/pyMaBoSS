@@ -8,6 +8,7 @@ from .upp import UpdatePopulation
 from .ensemble import EnsembleResult, Ensemble
 import maboss.pipelines
 from colomoto_jupyter import IN_IPYTHON
+import colomoto.setup_helper
 if IN_IPYTHON:
     from colomoto_jupyter import jupyter_setup
     from .widgets import *
