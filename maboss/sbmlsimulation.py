@@ -26,7 +26,7 @@ class SBMLSSimulation(object):
         with open(self.sbml, 'r') as f:
             lines = f.readlines()
             for line in lines:
-                if len(line) > 0 and "</qual:qualitativespecies>" in line.lower():
+                if len(line) > 0 and "<qual:qualitativespecies " in line.lower():
                     res += 1
         return res
 
