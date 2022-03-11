@@ -509,12 +509,12 @@ def _get_next_condition_from_trajectory(self, next_model, step=-1):
     #
     # Extract states and probs from trajectory
     #
-    last_state = result.cmaboss_result.get_last_states_probtraj()
+    last_state = self.results[step].get_last_states_probtraj()
     states = []
     probs = []
     for state, prob in last_state.items():
         states.append(state.split(" -- "))
-        probs.append(prob)
+        probs.append(prob.values[0])
     #
     # Compute formulas for nodes 
     # 
