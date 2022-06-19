@@ -433,20 +433,21 @@ class EnsembleResult(BaseResult):
 
     def plotPCA(self, 
         pca, X_pca, samples, features, colors=None, alpha=1, compare=None, single_out=None, single_out_mutant=None, nil_label=None, compare_labels=None,
-        figsize=(20, 12), show_samples=False, show_features=True, ax=None, cutoff_arrows=None):
+        figsize=(20, 12), dpi=500, show_samples=False, show_features=True, ax=None, cutoff_arrows=None):
         
         if ax is None:
-            self._pcafig = plt.figure(figsize=figsize)
+            self._pcafig = plt.figure(figsize=figsize, dpi=dpi)
             ax = self._pcafig.add_subplot(1,1,1)
         else:
             self._pcafig = ax.get_figure()
         
         patches = []
         if colors is None:
-            ax.scatter(X_pca[:, 0], X_pca[:, 1], alpha=alpha, c='C0')
+            ax.scatter(X_pca[:, 0], X_pca[:, 1], alpha=alpha, c='C0', label="Final points")
             patches.append(mpatches.Patch(color="C0", label=(compare_labels[0] if (compare_labels is not None and len(compare_labels) > 0) else None)))
             if single_out is not None:
                 ax.scatter([X_pca[single_out, 0]], [X_pca[single_out, 1]], marker='o', facecolors='none', edgecolors='C0', s=200)
+            
         else:
             legend = ["Cluster #%d" % (i + 1) for i in colors]
 
