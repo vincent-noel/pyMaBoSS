@@ -1,5 +1,11 @@
 def simulate_single_mutants(model, list_nodes, sign="BOTH"):
-    
+    """
+        Simulates a batch of single mutants and return an array of results
+
+        :param model: the model on which to perform the simulations
+        :param list_nodes: the node(s) which are to be mutated
+        :param sign: which mutations to perform. "ON", "OFF", or "BOTH" (default)
+    """ 
     list_single_mutants = []
     if (sign == "BOTH" or sign == "ON"):
         list_single_mutants += [(node, "ON") for node in list_nodes]
@@ -16,7 +22,13 @@ def simulate_single_mutants(model, list_nodes, sign="BOTH"):
     
     
 def simulate_double_mutants(model, list_nodes, sign="BOTH"):
-    
+    """
+        Simulates a batch of double mutants and return an array of results
+
+        :param model: the model on which to perform the simulations
+        :param list_nodes: the node(s) which are to be mutated
+        :param sign: which mutations to perform. "ON", "OFF", or "BOTH" (default)
+    """ 
     list_single_mutants = []
     if (sign == "BOTH" or sign == "ON"):
         list_single_mutants += [(node, "ON") for node in list_nodes]
@@ -34,7 +46,24 @@ def simulate_double_mutants(model, list_nodes, sign="BOTH"):
         
     return res
     
-def filter_sensititivy(results, state=None, node=None, minimum=None, maximum=None):
+def filter_sensitivity(results, state=None, node=None, minimum=None, maximum=None):
+    """
+        Filter a list of results by state of nodes value
+
+        :param results: the list of results to filter
+        :param state: the state on which to apply the filter (default None)
+        :param node: the state on which to apply the filter (default None)
+        :param minumum: the minimal value of the node (default None)
+        :param maximum: the maximal value of the node (default None)
+
+        Example : 
+
+        Filtering results showing more than 50% for Proliferation node
+        >>> res_ensemble = filter_sensitivity(results, node='Proliferation', maximum=0.5)
+
+        Filtering results showing more than 10% for Apoptosis -- NonACD state
+        >>> res_ensemble = filter_sensitivity(results, state='Apoptosis -- NonACD', minimum=0.1)
+    """ 
     ret_res = {}
     for (mutant, res) in results.items():
         
