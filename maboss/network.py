@@ -105,6 +105,11 @@ class Network(collections.OrderedDict):
     present in the list.
     
     Network objects are in charge of carrying the initial states of each node.
+
+     .. py:attribute:: names
+
+       the list of names of the nodes in the network
+
     """
 
     def __init__(self, nodeList):
@@ -257,6 +262,8 @@ class Network(collections.OrderedDict):
             self[nd].is_internal = nd not in output_list
 
     def get_output(self):
+        """Get all the nodes that are not in the output_list as internal.
+        """
         return [name for name, node in self.items() if not node.is_internal]
 
 def _testStateDict(stDict, nbState):
