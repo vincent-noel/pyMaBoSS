@@ -122,6 +122,7 @@ def loadSBML(sbml_filename, cfg_filename=None, use_sbml_names=False, cmaboss=Fal
 
     :param str sbml_filename: Network file
     :param str cfg_filename: Configuraton file
+    :param bool use_sbml_names: Use SBML names instead of IDs to name nodes
     :keyword str simulation_name: name of the returned :py:class:`.Simulation` object
     :rtype: :py:class:`.Simulation`
     """
