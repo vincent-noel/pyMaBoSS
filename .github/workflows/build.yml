@@ -16,16 +16,18 @@ jobs:
           - "3.7"
           - "3.8"
           - "3.9"
+          - "3.10"
     
     steps:
     - uses: actions/checkout@v2
     - uses: s-weigand/setup-conda@v1
-    
+      with:
+        update-conda: true
+        python-version: ${{ matrix.python }}
 
     - name: Install MaBoSS
       run: |
-        conda update conda --all
-        conda install -c colomoto cmaboss maboss python=${{ matrix.python }}
+        conda install -c colomoto cmaboss maboss
         
     - name: Test MaBoSS
       run: |
@@ -59,15 +61,18 @@ jobs:
           - "3.7"
           - "3.8"
           - "3.9"
+          - "3.10"
     
     steps:
     - uses: actions/checkout@v2
     - uses: s-weigand/setup-conda@v1
+      with:
+        update-conda: true
+        python-version: ${{ matrix.python }}
 
     - name: Install MaBoSS
       run: |
-        conda update conda --all
-        conda install -c colomoto cmaboss maboss python=${{ matrix.python }}
+        conda install -c colomoto cmaboss maboss
         
     - name: Test MaBoSS
       run: |
@@ -99,18 +104,21 @@ jobs:
     strategy:
       matrix:
         python:
-          - 3.7
-          - 3.8
-          - 3.9
+          - "3.7"
+          - "3.8"
+          - "3.9"
+          - "3.10"
     
     steps:
     - uses: actions/checkout@v2
     - uses: s-weigand/setup-conda@v1
+      with:
+        update-conda: true
+        python-version: ${{ matrix.python }}
 
     - name: Install MaBoSS
       run: |
-        conda update conda --all
-        conda install -c colomoto cmaboss maboss python=${{ matrix.python }}
+        conda install -c colomoto cmaboss maboss
         
     - name: Test MaBoSS
       run: |
@@ -143,19 +151,22 @@ jobs:
     strategy:
       matrix:
         python:
-          - 3.7
-          - 3.8
-          - 3.9
+          - "3.7"
+          - "3.8"
+          - "3.9"
+          - "3.10"
           
     
     steps:
     - uses: actions/checkout@v2
     - uses: s-weigand/setup-conda@v1
+      with:
+        update-conda: true
+        python-version: ${{ matrix.python }}
 
     - name: Install MaBoSS
       run: |
-        conda update conda --all
-        conda install -c colomoto cmaboss maboss python=${{ matrix.python }}
+        conda install -c colomoto cmaboss maboss
         
     - name: Test MaBoSS
       run: |
