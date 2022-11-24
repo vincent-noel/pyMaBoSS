@@ -189,7 +189,11 @@ class Simulation(object):
 
     def str_cfg(self):
 
-        res = "$nb_mutable = %d;\n" % len(self.mutations)
+        res = ""
+        # Filtering out unused values
+        if len(self.mutations) > 0:
+            res = "$nb_mutable = %d;\n" % len(self.mutations)
+
         for p in self.param:
             if p[0] == '$':
                 res += "%s = %s;\n" % (p, self.param[p])
@@ -202,10 +206,14 @@ class Simulation(object):
                 res += "%s = %s;\n" % (p, self.param[p])
 
         for name in self.network.names:
-            res += "%s.is_internal = %s;\n" % (name, self.network[name].is_internal)
+            # Filtering out default values
+            if str(self.network[name].is_internal).lower() not in ["false", "0", "0.0"]:
+                res += "%s.is_internal = %s;\n" % (name, self.network[name].is_internal)
 
         for nd in self.refstate:
-            res += "%s.refstate = %s;\n" % (nd, self.refstate[nd])
+            # Filtering out default values
+            if str(self.refstate[nd]) not in ["-1", "-1.0"]:
+               res += "%s.refstate = %s;\n" % (nd, self.refstate[nd])
 
         return res
 

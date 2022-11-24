@@ -248,7 +248,8 @@ class Network(collections.OrderedDict):
                     string += '[' + binding + '].istate = '
                     string += str(self._initState[binding][0]) + '[0] , '
                     string += str(self._initState[binding][1]) + '[1];'
-            stringList.append(string)
+            if len(string) > 0:
+                stringList.append(string)
         return '\n'.join(stringList)
 
     def set_output(self, output_list):
