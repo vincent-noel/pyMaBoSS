@@ -19,7 +19,7 @@ setup(name='maboss',
         "ipywidgets",
         "matplotlib",
         "pandas",
-        "sklearn",
+        "scikit-learn",
         "cmaboss>=1.0.0b16"
     ] + optional_contextlib,
     scripts=['scripts/MBSS_FormatTable.py', 'scripts/UpPMaBoSS.py']
