@@ -89,10 +89,15 @@ class CMaBoSSResult(BaseResult):
             df["Proba"] = [raw_res[fp][0] for fp in sorted(raw_res.keys())]
             df["State"] = [raw_res[fp][1] for fp in sorted(raw_res.keys())]
 
+            raw_nodes = []
             for node in self.simul.network.keys():
-                df[node] = [1 if node in raw_res[fp][1].split(" -- ") else 0 for fp in sorted(raw_res.keys())]
+                # df[node] = [1 if node in raw_res[fp][1].split(" -- ") else 0 for fp in sorted(raw_res.keys())]
+                raw_nodes.append([1 if node in raw_res[fp][1].split(" -- ") else 0 for fp in sorted(raw_res.keys())])
 
-            return df
+            t_df = pandas.DataFrame(raw_nodes, index=list(self.simul.network.keys())).transpose()
+
+            return pandas.concat([df, t_df], axis=1)
+            # return df
 
 
 __all__ = ["CMaBoSSResult"]
