@@ -4,5 +4,5 @@ colomoto_jupyter
 pandas
 matplotlib
 ipython
-sklearn
+scikit-learn
 sphinx_rtd_theme
