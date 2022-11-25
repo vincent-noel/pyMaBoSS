@@ -607,7 +607,7 @@ def get_nodes(states):
             nds = s.split(' -- ')
             for nd in nds:
                 nodes.add(nd)
-    return nodes
+    return list(nodes)
 
 def get_single_individual_nodes_distribution(table, index, nodes):
     ntable = pd.DataFrame(np.zeros((1, len(nodes))), index=[index], columns=nodes)
