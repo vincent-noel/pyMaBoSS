@@ -127,8 +127,6 @@ class BaseResult(ProbTrajResult, StatDistResult):
             print("Error maboss previously returned non 0 value",
                   file=stderr)
             return
-        if axes is None:
-            _, axes = plt.subplots(1,1)
         table = self.get_nodes_probtraj(prob_cutoff=prob_cutoff)
         table_error = None
         if error:
@@ -138,8 +136,9 @@ class BaseResult(ProbTrajResult, StatDistResult):
             if error:
                 table_error = table_error[table_error.index <= until]
 
-        plot_node_prob(table, axes, self.palette, legend=legend, error_table=table_error)
-        self._ndtraj = axes.get_figure()
+        axes = plot_node_prob(table, axes, self.palette, legend=legend, error_table=table_error)
+        if axes is not None:
+            self._ndtraj = axes.get_figure()
 
     def plot_entropy_trajectory(self, until=None, axes=None):
         """Plot the evolution of the (transition) entropy over time.
