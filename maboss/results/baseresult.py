@@ -117,7 +117,7 @@ class BaseResult(ProbTrajResult, StatDistResult):
         plot_fix_point(self.get_fptable(), axes, self.palette)
         self._fpfig = axes.get_figure()
 
-    def plot_node_trajectory(self, until=None, legend=True, error=False, prob_cutoff=0.01,
+    def plot_node_trajectory(self, until=None, legend=True, error=False, prob_cutoff=None,
                                 axes=None):
         """Plot the probability of each node being up over time.
 
