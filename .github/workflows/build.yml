@@ -143,6 +143,7 @@ jobs:
         coverage run -m unittest test.test_statdist
         coverage run -m unittest test.test_types
         coverage run -m unittest test.test_uppmaboss
+        coverage run -m unittest test.test_pipelines
         coveralls --service=github
         
   pymaboss_scripts_macos:
