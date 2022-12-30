@@ -1,11 +1,15 @@
-def simulate_single_mutants(model, list_nodes, sign="BOTH"):
+def simulate_single_mutants(model, list_nodes=[], sign="BOTH", cmaboss=False):
     """
         Simulates a batch of single mutants and return an array of results
 
         :param model: the model on which to perform the simulations
-        :param list_nodes: the node(s) which are to be mutated
+        :param list_nodes: the node(s) which are to be mutated (default: all nodes)
         :param sign: which mutations to perform. "ON", "OFF", or "BOTH" (default)
     """ 
+    
+    if len(list_nodes) == 0:
+        list_nodes = list(model.network.keys())
+    
     list_single_mutants = []
     if (sign == "BOTH" or sign == "ON"):
         list_single_mutants += [(node, "ON") for node in list_nodes]
@@ -16,19 +20,23 @@ def simulate_single_mutants(model, list_nodes, sign="BOTH"):
     for single_mutant in list_single_mutants:
         t_model = model.copy()
         t_model.mutate(*single_mutant)
-        res.update({single_mutant: t_model.run()})
+        res.update({single_mutant: t_model.run(cmaboss=cmaboss)})
         
     return res
     
     
-def simulate_double_mutants(model, list_nodes, sign="BOTH"):
+def simulate_double_mutants(model, list_nodes, sign="BOTH", cmaboss=False):
     """
         Simulates a batch of double mutants and return an array of results
 
         :param model: the model on which to perform the simulations
-        :param list_nodes: the node(s) which are to be mutated
+        :param list_nodes: the node(s) which are to be mutated (default: all nodes)
         :param sign: which mutations to perform. "ON", "OFF", or "BOTH" (default)
     """ 
+    
+    if len(list_nodes) == 0:
+        list_nodes = list(model.network.keys())
+    
     list_single_mutants = []
     if (sign == "BOTH" or sign == "ON"):
         list_single_mutants += [(node, "ON") for node in list_nodes]
@@ -42,7 +50,7 @@ def simulate_double_mutants(model, list_nodes, sign="BOTH"):
         t_model = model.copy()
         t_model.mutate(*(double_mutant[0]))
         t_model.mutate(*(double_mutant[1]))
-        res.update({double_mutant: t_model.run()})
+        res.update({double_mutant: t_model.run(cmaboss=cmaboss)})
         
     return res
     
