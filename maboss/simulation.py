@@ -106,6 +106,7 @@ class Simulation(object):
         result = Simulation(new_network, self.param, palette=self.palette)
         if self.mutations:
             result.mutations = self.mutations.copy()
+            result.mutationTypes = self.mutationTypes.copy()
         return result
 
     def check(self, command=None):
