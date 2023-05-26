@@ -28,7 +28,7 @@ jobs:
 
     - name: Install MaBoSS
       run: |
-        conda install -c colomoto cmaboss maboss
+        conda install -c colomoto maboss
         
     - name: Test MaBoSS
       run: |
@@ -73,7 +73,7 @@ jobs:
 
     - name: Install MaBoSS
       run: |
-        conda install -c colomoto cmaboss maboss
+        conda install -c colomoto maboss
         
     - name: Test MaBoSS
       run: |
@@ -119,7 +119,7 @@ jobs:
 
     - name: Install MaBoSS
       run: |
-        conda install -c colomoto cmaboss maboss
+        conda install -c colomoto maboss
         
     - name: Test MaBoSS
       run: |
@@ -168,7 +168,7 @@ jobs:
 
     - name: Install MaBoSS
       run: |
-        conda install -c colomoto cmaboss maboss
+        conda install -c colomoto maboss
         
     - name: Test MaBoSS
       run: |
