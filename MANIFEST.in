@@ -3,3 +3,4 @@ prune doc
 prune notebook
 prune test
 exclude .gitignore
+include description.rst
