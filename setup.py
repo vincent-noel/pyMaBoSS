@@ -20,6 +20,7 @@ setup(name='maboss',
     description="A python and jupyter API for the MaBoSS software",
     long_description=long_description,
     long_description_content_type='text/x-rst',
+    url="https://maboss.curie.fr",
     install_requires = [
         "colomoto_jupyter >=0.4.10",
         "pyparsing",
