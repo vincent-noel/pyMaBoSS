@@ -12,7 +12,7 @@ this_directory = Path(__file__).parent
 long_description = (this_directory / "description.rst").read_text()
 
 setup(name='maboss',
-    version="0.8.6",
+    version="0.8.7",
     packages=find_packages(exclude=["test"]),
     py_modules = ["maboss_setup"],
     author="Vincent Noël, Loic Paulevé, Aurelien Naldi and Nicolas Levy",
