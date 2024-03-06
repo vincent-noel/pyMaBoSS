@@ -47,5 +47,7 @@ class CMaBoSSSimulation(object):
     def run(self, workdir=None, only_final_state=False):
         return CMaBoSSResult2(self, workdir, only_final_state)
 
+    def check(self):
+        return self.cmaboss.MaBoSSSim(net=self.cmaboss_net, cfg=self.cmaboss_cfg)
 
 __all__ = ["CMaBoSSSimulation"]
