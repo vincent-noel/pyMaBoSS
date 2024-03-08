@@ -41,7 +41,7 @@ jobs:
         
     - name: Launch MaBoSS Server docker
       run: |
-        docker run -p 7777:7777 --network host -d sysbiocurie/maboss-server
+        docker run -p 7777:7777 --network host -d sysbiocurie/maboss
         
     - name: Install pyMaBoSS
       run: |
@@ -87,7 +87,7 @@ jobs:
         
     - name: Launch MaBoSS Server docker
       run: |
-        docker run -p 7777:7777 --network host -d sysbiocurie/maboss-server
+        docker run -p 7777:7777 --network host -d sysbiocurie/maboss
         
     - name: Install pyMaBoSS
       run: |
