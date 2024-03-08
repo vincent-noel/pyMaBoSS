@@ -27,7 +27,7 @@ class SBMLSSimulation(object):
             lines = f.readlines()
             for line in lines:
                 if len(line) > 0 and "<qual:qualitativespecies " in line.lower():
-                    res += 1
+                    res += line.lower().count("<qual:qualitativespecies ")
         return res
 
     def print_bnd(self, out=stdout):
