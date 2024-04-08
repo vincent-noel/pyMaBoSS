@@ -10,7 +10,7 @@ on:
 jobs:
   pymaboss_test:
     name: Testing pyMaBoSS (Linux)
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     strategy:
       matrix:
         python:
@@ -19,13 +19,20 @@ jobs:
           - "3.10"
           - "3.11"
           - "3.12"
-
+    
+    defaults:
+      run:
+        shell: bash -el {0}            
+          
     steps:
     - uses: actions/checkout@v4
-    - uses: s-weigand/setup-conda@v1
+    - uses: conda-incubator/setup-miniconda@v3
       with:
-        update-conda: true
+        auto-update-conda: true
+        channels: defaults
         python-version: ${{ matrix.python }}
+        miniforge-variant: Mambaforge
+        use-mamba: true
 
     - name: Install MaBoSS
       run: |
@@ -56,7 +63,7 @@ jobs:
         
   pymaboss_scripts: 
     name: Testing pyMaBoSS scripts (Linux)
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     strategy:
       matrix:
         python:
@@ -66,13 +73,20 @@ jobs:
           - "3.11"
           - "3.12"
 
+    defaults:
+      run:
+        shell: bash -el {0}
+                
     steps:
     - uses: actions/checkout@v4
-    - uses: s-weigand/setup-conda@v1
+    - uses: conda-incubator/setup-miniconda@v3
       with:
-        update-conda: true
+        auto-update-conda: true
+        channels: defaults
         python-version: ${{ matrix.python }}
-
+        miniforge-variant: Mambaforge
+        use-mamba: true
+        
     - name: Install MaBoSS
       run: |
         conda install -c colomoto maboss
@@ -103,7 +117,7 @@ jobs:
         
   pymaboss_test_macos:
     name: Testing pyMaBoSS (MacOS)
-    runs-on: macos-11
+    runs-on: macos-13
     strategy:
       matrix:
         python:
@@ -112,13 +126,19 @@ jobs:
           - "3.10"
           - "3.11"
           - "3.12"
-    
+          
+    defaults:
+      run:
+        shell: sh -l {0}
     steps:
     - uses: actions/checkout@v4
-    - uses: s-weigand/setup-conda@v1
+    - uses: conda-incubator/setup-miniconda@v3
       with:
-        update-conda: true
+        auto-update-conda: true
+        channels: defaults
         python-version: ${{ matrix.python }}
+        miniforge-variant: Mambaforge
+        use-mamba: true
 
     - name: Install MaBoSS
       run: |
@@ -152,7 +172,7 @@ jobs:
         
   pymaboss_scripts_macos:
     name: Testing pyMaBoSS scripts (MacOS)
-    runs-on: macos-11
+    runs-on: macos-13
     strategy:
       matrix:
         python:
@@ -162,13 +182,19 @@ jobs:
           - "3.11"
           - "3.12"
 
+    defaults:
+      run:
+        shell: sh -l {0}
     
     steps:
     - uses: actions/checkout@v4
-    - uses: s-weigand/setup-conda@v1
+    - uses: conda-incubator/setup-miniconda@v3
       with:
-        update-conda: true
+        auto-update-conda: true
+        channels: defaults
         python-version: ${{ matrix.python }}
+        miniforge-variant: Mambaforge
+        use-mamba: true
 
     - name: Install MaBoSS
       run: |
@@ -194,6 +220,113 @@ jobs:
         coverage run -a scripts/UpPMaBoSS.py test/CellFateModel.bnd test/CellFateModel_1h.cfg test/CellFate_1h.upp
         coveralls --service=github
               
+
+  pymaboss_test_macos_m1:
+    name: Testing pyMaBoSS (MacOS M1)
+    runs-on: macos-14
+    strategy:
+      matrix:
+        python:
+          - "3.8"
+          - "3.9"
+          - "3.10"
+          - "3.11"
+          - "3.12"
+    
+    defaults:
+      run:
+        shell: sh -l {0}
+    
+    steps:
+    - uses: actions/checkout@v4
+    - uses: conda-incubator/setup-miniconda@v3
+      with:
+        auto-update-conda: true
+        channels: defaults
+        python-version: ${{ matrix.python }}
+        miniforge-variant: Mambaforge
+        use-mamba: true
+
+    - name: Install MaBoSS
+      run: |
+        conda install -c colomoto maboss
+        
+    - name: Test MaBoSS
+      run: |
+        MaBoSS --version
+
+    - name: Install dependencies
+      run: |
+        pip3 install pip coveralls --upgrade
+        
+    - name: Install pyMaBoSS
+      run: |
+        pip3 install .
+        
+    - name: Test pyMaBoSS
+      env: 
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        coverage run -m unittest test.test_conversion
+        coverage run -m unittest test.test_ensemble
+        coverage run -m unittest test.test_loadmodels
+        coverage run -m unittest test.test_probtrajs
+        coverage run -m unittest test.test_statdist
+        coverage run -m unittest test.test_types
+        coverage run -m unittest test.test_uppmaboss
+        coverage run -m unittest test.test_pipelines
+        coveralls --service=github
+        
+  pymaboss_scripts_macos_m1:
+    name: Testing pyMaBoSS scripts (MacOS M1)
+    runs-on: macos-14
+    strategy:
+      matrix:
+        python:
+          - "3.8"
+          - "3.9"
+          - "3.10"
+          - "3.11"
+          - "3.12"
+          
+    defaults:
+      run:
+        shell: sh -l {0}
+    
+    steps:
+    - uses: actions/checkout@v4
+    - uses: conda-incubator/setup-miniconda@v3
+      with:
+        auto-update-conda: true
+        channels: defaults
+        python-version: ${{ matrix.python }}
+        miniforge-variant: Mambaforge
+        use-mamba: true
+
+    - name: Install MaBoSS
+      run: |
+        conda install -c colomoto maboss
+        
+    - name: Test MaBoSS
+      run: |
+        MaBoSS --version
+      
+    - name: Install dependencies
+      run: |
+        pip3 install pip coveralls --upgrade
+        
+    - name: Install pyMaBoSS
+      run: |
+        pip3 install .
+        
+    - name: Test pyMaBoSS
+      env: 
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        coverage run -a scripts/MBSS_FormatTable.py test/p53_Mdm2.bnd test/p53_Mdm2_runcfg.cfg
+        coverage run -a scripts/UpPMaBoSS.py test/CellFateModel.bnd test/CellFateModel_1h.cfg test/CellFate_1h.upp
+        coveralls --service=github
+                  
   conda_pymaboss:
     name: pyMaBoSS Conda package
     runs-on: ubuntu-20.04
