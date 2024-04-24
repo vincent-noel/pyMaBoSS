@@ -341,7 +341,7 @@ class CMaBoSSUpdatePopulationResults:
             if parameter.startswith("$") and parameter in self.uppModel.update_var.keys():
                 formula = self.uppModel.update_var[parameter]
                 new_value = varDef_Upp(formula, states, probs)
-                for match in re.findall("#rand", new_value):
+                for match in re.findall(r"#rand", new_value):
                     rand_number = random.uniform(0, 1)
                     new_value = new_value.replace("#rand", str(rand_number), 1)
     
@@ -362,7 +362,7 @@ class CMaBoSSUpdatePopulationResults:
             node_formula = self.uppModel.nodes_formula[node_upd]
             new_value = varDef_Upp(node_formula, states, probs)
             
-            for match in re.findall("#rand", new_value):
+            for match in re.findall(r"#rand", new_value):
                 rand_number = random.uniform(0, 1)
                 new_value = new_value.replace("#rand", str(rand_number), 1)
     
@@ -446,7 +446,7 @@ class CMaBoSSUpdatePopulationResults:
         return upd_pop_ratio
 
 def varDef_Upp(update_line, states, probs):
-	res_match = re.findall("p\[[^\[]*\]", update_line)
+	res_match = re.findall(r"p\[[^\[]*\]", update_line)
 	if len(res_match) == 0:
 		print("Syntax error in the parameter update definition : %s" % update_line, file=sys.stderr)
 		exit()
