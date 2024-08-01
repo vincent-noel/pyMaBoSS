@@ -79,11 +79,11 @@ def filter_sensitivity(results, state=None, node=None, minimum=None, maximum=Non
             t_res = res.get_last_states_probtraj()
             if state in t_res.columns:
                 if minimum is not None and maximum is not None:
-                    if t_res[state].values[0] > minimum and t_res[state].values[0] < maximum:
+                    if t_res[state].values[0] >= minimum and t_res[state].values[0] <= maximum:
                         ret_res.update({mutant: res})
-                elif minimum is not None and t_res[state].values[0] > minimum:
+                elif minimum is not None and t_res[state].values[0] >= minimum:
                     ret_res.update({mutant: res})
-                elif maximum is not None and t_res[state].values[0] < maximum:
+                elif maximum is not None and t_res[state].values[0] <= maximum:
                     ret_res.update({mutant: res})
             elif maximum is not None and minimum is None:
                 ret_res.update({mutant:res})
@@ -94,11 +94,11 @@ def filter_sensitivity(results, state=None, node=None, minimum=None, maximum=Non
 
             if node in t_res.columns:
                 if minimum is not None and maximum is not None:
-                    if t_res[node].values[0] > minimum and t_res[node].values[0] < maximum:
+                    if t_res[node].values[0] >= minimum and t_res[node].values[0] <= maximum:
                         ret_res.update({mutant: res})
-                elif minimum is not None and t_res[node].values[0] > minimum:
+                elif minimum is not None and t_res[node].values[0] >= minimum:
                     ret_res.update({mutant: res})
-                elif maximum is not None and t_res[node].values[0] < maximum:
+                elif maximum is not None and t_res[node].values[0] <= maximum:
                     ret_res.update({mutant: res})
             elif maximum is not None and minimum is None:
                 ret_res.update({mutant: res})
