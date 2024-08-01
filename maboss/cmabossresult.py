@@ -40,10 +40,13 @@ class CMaBoSSResult(BaseResult):
 
 
 
-    def get_last_states_probtraj(self):
+    def get_last_states_probtraj(self, as_series=False):
         
         raw_res = self.cmaboss_result.get_last_probtraj()
-        df = pandas.DataFrame(*raw_res)
+        if not as_series:
+            df = pandas.DataFrame(*raw_res)
+        else:
+            df = pandas.Series(*raw_res)
         return df
 
     def get_states_probtraj(self, prob_cutoff=None):
@@ -71,11 +74,15 @@ class CMaBoSSResult(BaseResult):
 
             return df
 
-    def get_last_nodes_probtraj(self, nodes=None):
+    def get_last_nodes_probtraj(self, nodes=None, as_series=False):
         raw_res = self.cmaboss_result.get_last_nodes_probtraj(nodes)
-        df = pandas.DataFrame(*raw_res)
-        df.sort_index(axis=0, inplace=True)
-
+        if not as_series:
+            df = pandas.DataFrame(*raw_res)
+            df.sort_index(axis=0, inplace=True)
+        else:
+            df = pandas.Series(*raw_res)
+            df.sort_index(inplace=True)
+            
         return df
 
 

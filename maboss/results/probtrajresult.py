@@ -197,7 +197,7 @@ class ProbTrajResult(object):
       
         return self.state_probtraj_full
 
-    def get_last_states_probtraj(self):
+    def get_last_states_probtraj(self, as_series=False):
         """
             Returns the asymptotic state probability, as a pandas dataframe.
         """
@@ -208,12 +208,16 @@ class ProbTrajResult(object):
             states = [s for s in data[first_col::3]]
             probs = np.array([float(v) for v in data[first_col+1::3]])
             
-            self.last_states_probtraj = pd.DataFrame([probs], columns=states, index=[data[0]])
-            self.last_states_probtraj.sort_index(axis=1, inplace=True)
+            if not as_series:
+                self.last_states_probtraj = pd.DataFrame([probs], columns=states, index=[data[0]])
+                self.last_states_probtraj.sort_index(axis=1, inplace=True)
+            else:
+                self.last_states_probtraj = pd.Series(probs, index=states, name=data[0])
+                self.last_states_probtraj.sort_index(inplace=True)
              
         return self.last_states_probtraj
 
-    def get_last_nodes_probtraj(self, nodes=None):
+    def get_last_nodes_probtraj(self, nodes=None, as_series=False):
         """
             Returns the asymptotic node probability, as a pandas dataframe.
         """
@@ -240,9 +244,13 @@ class ProbTrajResult(object):
                         if node in nodes:
                             new_probas[0, nodes_indexes[node]] += proba
 
-            self.last_nodes_probtraj = pd.DataFrame(new_probas, columns=nodes, index=[data[0]])
-            self.last_nodes_probtraj.sort_index(axis=1, inplace=True)
-
+            if not as_series:
+                self.last_nodes_probtraj = pd.DataFrame(new_probas, columns=nodes, index=[data[0]])
+                self.last_nodes_probtraj.sort_index(axis=1, inplace=True)
+            else:
+                self.last_nodes_probtraj = pd.Series(new_probas[0], index=nodes, name=data[0])
+                self.last_nodes_probtraj.sort_index(inplace=True)
+                
         return self.last_nodes_probtraj
 
     def get_entropy_trajectory(self):

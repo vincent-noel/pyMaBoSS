@@ -33,10 +33,16 @@ class CMaBoSSResult2(BaseResult):
                 self.cmaboss_result.display_statdist(os.path.join(workdir, "%s_statdist.csv" % prefix))
 
 
-    def get_last_states_probtraj(self):
+    def get_last_states_probtraj(self, as_series=False):
         
         raw_res = self.cmaboss_result.get_last_probtraj()
-        df = pandas.DataFrame(*raw_res)
+        if not as_series:
+            df = pandas.DataFrame(*raw_res)
+            df.sort_index(axis=1, inplace=True)
+        else:
+            df = pandas.Series(raw_res[0][0], index=raw_res[2], name=raw_res[1][0])
+            df.sort_index(inplace=True)
+
         return df
 
     def get_states_probtraj(self, prob_cutoff=None):
@@ -64,11 +70,14 @@ class CMaBoSSResult2(BaseResult):
 
             return df
 
-    def get_last_nodes_probtraj(self):
+    def get_last_nodes_probtraj(self, as_series=False):
         raw_res = self.cmaboss_result.get_last_nodes_probtraj()
-        df = pandas.DataFrame(*raw_res)
-        df.sort_index(axis=0, inplace=True)
-
+        if not as_series:
+            df = pandas.DataFrame(*raw_res)
+            df.sort_index(axis=0, inplace=True)
+        else:
+            df = pandas.Series(raw_res[0][0], index=raw_res[2], name=raw_res[1][0])
+            df.sort_index(inplace=True)
         return df
 
 

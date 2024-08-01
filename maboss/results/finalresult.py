@@ -7,7 +7,7 @@ class FinalResult(object):
     def __init__(self, simul, output_nodes=None):
         self.output_nodes = output_nodes
         
-    def get_last_states_probtraj(self):
+    def get_last_states_probtraj(self, as_series=False):
         """
             Returns the asymptotic state probability, as a pandas dataframe.
         """
@@ -18,12 +18,16 @@ class FinalResult(object):
             states = [t_data[1] for t_data in data]
             probs = np.array([float(t_data[0]) for t_data in data])
             
-            self.last_states_probtraj = pd.DataFrame([probs], columns=states)
-            self.last_states_probtraj.sort_index(axis=1, inplace=True)
+            if not as_series:
+                self.last_states_probtraj = pd.DataFrame([probs], columns=states)
+                self.last_states_probtraj.sort_index(axis=1, inplace=True)
+            else:
+                self.last_states_probtraj = pd.Series(probs, index=states)
+                self.last_states_probtraj.sort_index(inplace=True)
             
         return self.last_states_probtraj
 
-    def get_last_nodes_probtraj(self):
+    def get_last_nodes_probtraj(self, as_series=False):
         """
             Returns the asymptotic node probability, as a pandas dataframe.
         """
@@ -48,10 +52,13 @@ class FinalResult(object):
                 if raw_states[i] != "<nil>":
                     for node in raw_states[i].split(" -- "):
                         new_probas[0, nodes_indexes[node]] += proba
-
-            self.last_nodes_probtraj = pd.DataFrame(new_probas, columns=nodes)
-            self.last_nodes_probtraj.sort_index(axis=1, inplace=True)
-
+            if not as_series:
+                self.last_nodes_probtraj = pd.DataFrame(new_probas, columns=nodes)
+                self.last_nodes_probtraj.sort_index(axis=1, inplace=True)
+            else:
+                self.last_nodes_probtraj = pd.Series(new_probas[0], index=nodes)
+                self.last_nodes_probtraj.sort_index(inplace=True)
+                
         return self.last_nodes_probtraj
 
  
