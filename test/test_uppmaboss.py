@@ -152,7 +152,7 @@ class TestUpPMaBoSSRemote(TestCase):
 			"https://raw.githubusercontent.com/sysbio-curie/UPMaBoSS-docker/master/CellFate/CellFateModel_uppmaboss.cfg"
 		)
 		uppmaboss_model = UpdatePopulation(sim, 
-			"https://github.com/sysbio-curie/UPMaBoSS-docker/blob/master/CellFate/CellFateModel_uppmaboss.upp"
+			"https://raw.githubusercontent.com/sysbio-curie/UPMaBoSS-docker/master/CellFate/CellFateModel_uppmaboss.upp"
 		)
 		uppmaboss_sim = uppmaboss_model.run('remote')
 	
