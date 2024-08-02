@@ -330,7 +330,7 @@ jobs:
   conda_pymaboss:
     name: pyMaBoSS Conda package
     runs-on: ubuntu-20.04
-    needs: [pymaboss_test, pymaboss_scripts, pymaboss_test_macos, pymaboss_scripts_macos]
+    needs: [pymaboss_test, pymaboss_scripts, pymaboss_test_macos, pymaboss_scripts_macos, pymaboss_test_macos_m1, pymaboss_scripts_macos_m1]
 
     steps:
     - uses: actions/checkout@v4
@@ -357,7 +357,7 @@ jobs:
   pypi_pymaboss:
     name: pyMaBoSS PyPi package
     runs-on: ubuntu-20.04
-    needs: [pymaboss_test, pymaboss_scripts, pymaboss_test_macos, pymaboss_scripts_macos]
+    needs: [pymaboss_test, pymaboss_scripts, pymaboss_test_macos, pymaboss_scripts_macos, pymaboss_test_macos_m1, pymaboss_scripts_macos_m1]
     if: github.event_name == 'release' && github.event.action == 'created' && github.repository == 'colomoto/pyMaBoSS'
 
     steps:
