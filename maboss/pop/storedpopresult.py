@@ -4,7 +4,7 @@ Class that contains the results of a MaBoSS simulation.
 import numpy as np
 import os
 from .popresult import PopMaBoSSResult
-
+import itertools
 class StoredPopResult(PopMaBoSSResult):
     
     def __init__(self, sim, workdir=None, prefix="res", hexfloat=True):
@@ -100,18 +100,32 @@ class StoredPopResult(PopMaBoSSResult):
 
     def get_raw_states_probtraj_by_index(self, index):
         
-        raw_data, first_index, hexfloat = self._get_raw_data_by_index(index)
-        
-        indexes, states = self._get_indexes_nocache()
-        states_indexes = {state:index for index, state in enumerate(states)}
-
-        ndata = (len(raw_data)-first_index)//3
-        # print("len probas", len(raw_data), "first_index", first_index, "ndata", ndata)
+        raw_line, first_index, hexfloat = self._get_raw_data_by_index(index)
+        time = None
+        states = []
+        for i, token in enumerate(split_tab_gen(raw_line)):
+            if i == 0:
+                time = token
+            elif i >= self._first_state_index and (i-first_index) % 3 == 0:
+                states.append(token)
+                
+        states_indexes = {state:i for i, state in enumerate(states)}
+                
         new_data = np.zeros((len(states)))
-        for i in range(ndata):
-            new_data[states_indexes[raw_data[first_index+(i*3)]]] = raw_data[first_index+(i*3)+1]
-            
-        return [new_data], [indexes[index]], states
+        raw_data = split_tab_gen(raw_line)
+        state = None
+        value = None
+        for i, token in enumerate(raw_data):
+            if i >= first_index and (i-first_index) % 3 == 0:
+                state = token
+            elif i >= first_index and (i-first_index) % 3 == 1:
+                value = token
+                if hexfloat:
+                    new_data[states_indexes[state]] = float.fromhex(value)
+                else:
+                    new_data[states_indexes[state]] = float(value)
+                    
+        return [new_data], [time], states
     ########### Simple Last Probtraj
 
     def get_raw_simple_last_probtraj(self):
@@ -171,15 +185,16 @@ class StoredPopResult(PopMaBoSSResult):
     
         with self._get_probtraj_fd() as probtraj:
 
-            if self._first_state_index is None:
-                first_line = probtraj.readline()
-                self._first_state_index = next(i for i, col in enumerate(first_line.strip("\n").split("\t")) if col == "State")
-
-            last_line = probtraj.readlines()[index+1]
-            raw_data = last_line.strip("\n").split("\t")
-            self._hexfloat = raw_data[self._first_state_index+1].startswith("0x")
+            for i, line in enumerate(probtraj):
+                if i == 0 and self._first_state_index is None:
+                    self._get_first_state_index(line)
+                if i == index+1:
+                    raw_data = split_tab_gen(line)
+                    
+                    first_value = next(itertools.islice(raw_data, self._first_state_index+1, None))
+                    self._hexfloat = first_value.startswith("0x")
         
-        return raw_data, self._first_state_index, self._hexfloat
+                    return line, self._first_state_index, self._hexfloat
 
 
     def _get_raw_states(self):
@@ -229,14 +244,16 @@ class StoredPopResult(PopMaBoSSResult):
 
         return self.indexes, self.states
     
+    def _get_first_state_index(self, line):
+        if self._first_state_index is None:
+            self._first_state_index = next(i for i, col in enumerate(split_tab_gen(line)) if col == "State")
+        return self._first_state_index
+    
     def _get_indexes_nocache(self):
 
         states = set()
         indexes = []
         with self._get_probtraj_fd() as probtraj:
-
-            first_line = probtraj.readline()
-            first_state_index = next(i for i, col in enumerate(first_line.strip("\n").split("\t")) if col == "State")
 
             for line in probtraj.readlines()[1:]:
                 raw_data = line.strip("\n").split("\t")
@@ -521,4 +538,10 @@ class StoredPopResult(PopMaBoSSResult):
     # def get_simple_nodes_popsize(self, nodes=None):
     #     return self.get_simple_nodes_probtraj(nodes).multiply(self.get_simple_popsize(), axis=0)
        
-       
+def split_tab_gen(string):
+    start = 0
+    for i, c in enumerate(string):
+        if c == "\t":
+            yield string[start:i]
+            start = i+1
+    yield string[start:]
