@@ -69,6 +69,9 @@ class Result(BaseResult):
     def get_statdist_file(self):
         return "{}/{}_statdist.csv".format(self._path, self.prefix)
     
+    def get_observed_graph_file(self):
+        return "{}/{}_observed_graph.csv".format(self._path, self.prefix)
+    
     def save(self, prefix, replace=False):
         """
         Write the cfg, bnd and all results in working dir.

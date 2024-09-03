@@ -88,6 +88,11 @@ internal_decl = pp.Group(varName("node") + ~pp.White()
                          + booleanStr("is_internal_val")
                          + pp.Suppress(';'))
 
+ingraph_decl = pp.Group(varName("node") + ~pp.White()
+                         + pp.Suppress(".is_graph") + pp.Suppress('=')
+                         + booleanStr("is_graph_val")
+                         + pp.Suppress(';'))
+
 refstate_decl = pp.Group(varName("node") + ~pp.White()
                          + pp.Suppress(".refstate") + pp.Suppress('=')
                          + numOrBool("refstate_val")
@@ -172,10 +177,10 @@ def load(bnd_filename, *cfg_filenames, **extra_args):
             cfg_file = stack.enter_context(open(cfg_filename, 'r'))
             cfg_content += cfg_file.read()
 
-        (variables, parameters, is_internal_list,
+        (variables, parameters, is_internal_list, in_graph_list,
          istate_list, refstate_list) = _read_cfg(cfg_content)
 
-        nodes, mutations = _read_bnd(bnd_content, is_internal_list)
+        nodes, mutations = _read_bnd(bnd_content, is_internal_list, in_graph_list)
         mutationTypes = {}
         for mutation in mutations:
             
@@ -201,7 +206,9 @@ def _read_cfg(string):
         variables = OrderedDict()
         parameters = OrderedDict()
         is_internal_list = {}
+        in_graph_list = OrderedDict()
         istate_list = OrderedDict()
+        
         refstate_list = {}
         parse_cfg = cfg_grammar.parseString(string)
         for token in parse_cfg:
@@ -209,6 +216,8 @@ def _read_cfg(string):
                 variables[token.lhs] = token.rhs
             if token.is_internal_val:  # True if token is internal_decl
                 is_internal_list[token.node] = token.is_internal_val
+            if token.in_graph_val:  # True if token is internal_decl
+                in_graph_list[token.node] = token.in_graph_val
             if token.refstate_val:
                 refstate_list[token.node] = token.refstate_val
             if token.param:  # True if token is param_decl
@@ -239,11 +248,11 @@ def _read_cfg(string):
 
                     istate_list[nodes] = t_istate_list
 
-        return (variables, parameters, is_internal_list, istate_list,
+        return (variables, parameters, is_internal_list, in_graph_list, istate_list,
                 refstate_list)
 
 
-def _read_bnd(string, is_internal_list):
+def _read_bnd(string, is_internal_list, in_graph_list):
         nodes = []
         parse_bnd = bnd_grammar.parseString(string)
         mutations = []
@@ -263,6 +272,10 @@ def _read_bnd(string, is_internal_list):
             internal = (is_internal_list[token.name]
                         if token.name in is_internal_list
                         else False)
+            
+            ingraph = (in_graph_list[token.name]
+                        if token.name in in_graph_list
+                        else False)
             nodes.append(Node(token.name, logic, rate_up, rate_down,
-                              internal, interns))
+                              internal,  interns, ingraph))
         return nodes, mutations

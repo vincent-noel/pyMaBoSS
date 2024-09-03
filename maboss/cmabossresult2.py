@@ -80,7 +80,18 @@ class CMaBoSSResult2(BaseResult):
             df.sort_index(inplace=True)
         return df
 
-
+    def get_observed_graph(self, prob_cutoff=None):
+        raw_res = self.cmaboss_result.observed_graph()
+        if raw_res is not None:
+            graph = pandas.DataFrame(raw_res[0], columns=raw_res[1], index=raw_res[1])
+            for state, values in graph.iterrows():
+                graph.loc[state, :] = values/values.sum()
+            
+            if prob_cutoff is not None:
+                graph[graph < prob_cutoff] = 0
+        
+            return graph
+        
     def get_fptable(self):
         if not self.only_final_state:
             raw_res = self.cmaboss_result.get_fp_table()

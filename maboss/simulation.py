@@ -208,6 +208,11 @@ class Simulation(object):
             if str(self.network[name].is_internal).lower() not in ["false", "0", "0.0"]:
                 res += "%s.is_internal = %s;\n" % (name, self.network[name].is_internal)
 
+        for name in self.network.names:
+            # Filtering out default values
+            if str(self.network[name].in_graph).lower() not in ["false", "0", "0.0"]:
+                res += "%s.in_graph = %s;\n" % (name, self.network[name].in_graph)
+
         for nd in self.refstate:
             # Filtering out default values
             if str(self.refstate[nd]) not in ["-1", "-1.0"]:

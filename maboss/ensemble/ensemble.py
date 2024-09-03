@@ -64,7 +64,7 @@ class Ensemble(object):
 
         if cfg_filename is not None:
             with open(cfg_filename, 'r') as cfg_file:
-                variables, params, internals, istates, refstates = _read_cfg(cfg_file.read())
+                variables, params, internals, in_graph, istates, refstates = _read_cfg(cfg_file.read())
                 self.outputs.update({node:not value for node, value in internals.items()})
                 self.istates = istates
                 self.param = params

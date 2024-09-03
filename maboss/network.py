@@ -34,7 +34,7 @@ class Node(object):
     """
 
     def __init__(self, name, logExp=None, rt_up=1, rt_down=1,
-                 is_internal=False, internal_var={}, is_mutant=False):
+                 is_internal=False, internal_var={}, in_graph=False, is_mutant=False):
         """
         Create a node not yet inserted in a network.
 
@@ -52,6 +52,7 @@ class Node(object):
         self.rt_down = rt_down
         self.is_internal = is_internal
         self.internal_var = internal_var.copy()
+        self.in_graph = in_graph
         self.is_mutant=is_mutant
 
     def set_rate(self, rate_up, rate_down):
@@ -94,7 +95,7 @@ class Node(object):
 
     def copy(self):
         return Node(self.name, self.logExp, self.rt_up, self.rt_down,
-                    self.is_internal, self.internal_var, self.is_mutant)
+                    self.is_internal, self.internal_var, self.in_graph, self.is_mutant)
 
 
 class Network(collections.OrderedDict):
@@ -267,6 +268,16 @@ class Network(collections.OrderedDict):
         """
         return [name for name, node in self.items() if not node.is_internal]
 
+    def set_observed_graph_nodes(self, nodes_list):
+        """Set all the nodes to be included in the observed state transition graph.
+
+        :param nodes_list: the nodes to remain external
+        :type nodes_list: list of :py:class:`Node`
+        """
+        assert len(set(nodes_list) - set(self.keys())) == 0, "Node(s) %s not defined !" % str(set(nodes_list) - set(self.keys()))[1:-1]
+        for nd in self:
+            self[nd].in_graph = nd in nodes_list
+        
 def _testStateDict(stDict, nbState):
     """Check if stateDict is a good parameter for set_istate."""
     def goodTuple(t):

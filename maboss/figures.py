@@ -5,6 +5,8 @@ import sys
 import pandas as pd
 import matplotlib.pylab as plt
 import numpy as np
+import networkx as nx
+import matplotlib as mpl
 
 def persistent_color(palette, state):
 
@@ -124,5 +126,32 @@ def plot_fix_point(table, ax, palette):
         labels.append('no_fp')
     ax.pie(prob_list, labels=labels, colors=color_list)
 
+def plot_observed_graph(table, ax):
 
+    G = nx.from_pandas_adjacency(table,  create_using=nx.DiGraph())
+
+    edge_colors = [edge['weight'] for _, edge in G.edges.items()]
+
+    pos = nx.drawing.nx_agraph.graphviz_layout(G, prog="neato")
+    # fig = plt.figure(figsize=(12,6), dpi=100)
+
+    nx.draw(G, pos, with_labels=True, edgelist=[], node_size=0, ax=ax)
+    cmap = mpl.colors.ListedColormap(plt.cm.Blues(np.linspace(0.2, 1, 100)))
+
+    edges = nx.draw_networkx_edges(
+        G,
+        pos,
+        arrowstyle="->",
+        arrowsize=10,
+        edgelist=G.edges().keys(),
+        edge_color=edge_colors,
+        edge_cmap=cmap,
+        width=2,
+        connectionstyle='arc3, rad = 0.1',
+        ax=ax
+    )
+
+    pc = mpl.collections.PatchCollection(edges, cmap=cmap)
+    pc.set_array(edge_colors)
+    plt.colorbar(pc, ax=ax)
 

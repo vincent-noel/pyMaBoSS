@@ -297,6 +297,16 @@ class ProbTrajResult(object):
 
         return self.entropy_probtraj_error
 
+    def get_observed_graph(self, prob_cutoff=None):
+        data = pd.read_csv(self.get_observed_graph_file(), sep="\t", index_col=0).astype(np.float64)
+        for state, values in data.iterrows():
+            data.loc[state, :] = values/values.sum()
+            
+        if prob_cutoff is not None:
+            data[data < prob_cutoff] = 0
+            
+        return data
+    
     def _get_probtraj_fd(self):
         return open(self.get_probtraj_file(), 'r')
 

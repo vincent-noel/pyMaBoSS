@@ -6,7 +6,7 @@ from __future__ import print_function
 from sys import stderr, stdout, version_info
 from .statdistresult import StatDistResult
 from .probtrajresult import ProbTrajResult
-from ..figures import make_plot_trajectory, plot_piechart, plot_fix_point, plot_node_prob
+from ..figures import make_plot_trajectory, plot_piechart, plot_fix_point, plot_node_prob, plot_observed_graph
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
@@ -157,6 +157,19 @@ class BaseResult(ProbTrajResult, StatDistResult):
         table.plot(ax=axes)
         self._etraj = axes.get_figure()
 
+    def plot_observed_graph(self, prob_cutoff=None, axes=None):
+        
+        if self._err:
+            print("Error maboss previously returned non 0 value",
+                  file=stderr)
+            return
+        if axes is None:
+            _, axes = plt.subplots(1,1)
+        table = self.get_observed_graph(prob_cutoff)
+        
+        plot_observed_graph(table, axes)
+        self._observed_graph = axes.get_figure()
+        
     def get_fptable(self): 
         """Return the content of fp.csv as a pandas dataframe."""
         if self.fptable is None:
