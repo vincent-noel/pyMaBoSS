@@ -126,7 +126,15 @@ def plot_fix_point(table, ax, palette):
         labels.append('no_fp')
     ax.pie(prob_list, labels=labels, colors=color_list)
 
-def plot_observed_graph(table, ax):
+def plot_observed_graph(table, ax, prune=True):
+
+    if prune:
+        pruned_table = table.copy()
+        for i in range(len(table)):
+            if table.iloc[i,:].sum() == 0 and table.iloc[:,i].sum() == 0:
+                pruned_table.drop(table.columns[i], axis=1, inplace=True)
+                pruned_table.drop(table.index[i], axis=0, inplace=True)
+        table = pruned_table
 
     G = nx.from_pandas_adjacency(table,  create_using=nx.DiGraph())
 

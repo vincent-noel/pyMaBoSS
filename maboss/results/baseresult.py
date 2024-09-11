@@ -157,7 +157,7 @@ class BaseResult(ProbTrajResult, StatDistResult):
         table.plot(ax=axes)
         self._etraj = axes.get_figure()
 
-    def plot_observed_graph(self, prob_cutoff=None, axes=None):
+    def plot_observed_graph(self, prob_cutoff=None, axes=None, prune=True):
         
         if self._err:
             print("Error maboss previously returned non 0 value",
@@ -167,7 +167,7 @@ class BaseResult(ProbTrajResult, StatDistResult):
             _, axes = plt.subplots(1,1)
         table = self.get_observed_graph(prob_cutoff)
         
-        plot_observed_graph(table, axes)
+        plot_observed_graph(table, axes, prune)
         self._observed_graph = axes.get_figure()
         
     def get_fptable(self): 
