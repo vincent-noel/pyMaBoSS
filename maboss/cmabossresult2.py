@@ -85,7 +85,8 @@ class CMaBoSSResult2(BaseResult):
         if raw_res is not None:
             graph = pandas.DataFrame(raw_res[0], columns=raw_res[1], index=raw_res[1])
             for state, values in graph.iterrows():
-                graph.loc[state, :] = values/values.sum()
+                if values.sum() > 0:
+                    graph.loc[state, :] = values/values.sum()
             
             if prob_cutoff is not None:
                 graph[graph < prob_cutoff] = 0

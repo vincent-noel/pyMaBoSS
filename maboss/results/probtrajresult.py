@@ -300,7 +300,8 @@ class ProbTrajResult(object):
     def get_observed_graph(self, prob_cutoff=None):
         data = pd.read_csv(self.get_observed_graph_file(), sep="\t", index_col=0).astype(np.float64)
         for state, values in data.iterrows():
-            data.loc[state, :] = values/values.sum()
+            if values.sum() > 0:
+                data.loc[state, :] = values/values.sum()
             
         if prob_cutoff is not None:
             data[data < prob_cutoff] = 0
