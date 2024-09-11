@@ -31,7 +31,6 @@ jobs:
         auto-update-conda: true
         channels: defaults
         python-version: ${{ matrix.python }}
-        miniforge-variant: Mambaforge
         use-mamba: true
 
     - name: Install MaBoSS
@@ -84,7 +83,6 @@ jobs:
         auto-update-conda: true
         channels: defaults
         python-version: ${{ matrix.python }}
-        miniforge-variant: Mambaforge
         use-mamba: true
         
     - name: Install MaBoSS
@@ -137,7 +135,6 @@ jobs:
         auto-update-conda: true
         channels: defaults
         python-version: ${{ matrix.python }}
-        miniforge-variant: Mambaforge
         use-mamba: true
 
     - name: Install MaBoSS
@@ -194,7 +191,6 @@ jobs:
         auto-update-conda: true
         channels: defaults
         python-version: ${{ matrix.python }}
-        miniforge-variant: Mambaforge
         use-mamba: true
 
     - name: Install MaBoSS
@@ -245,7 +241,6 @@ jobs:
         auto-update-conda: true
         channels: defaults
         python-version: ${{ matrix.python }}
-        miniforge-variant: Mambaforge
         use-mamba: true
 
     - name: Install MaBoSS
@@ -302,7 +297,6 @@ jobs:
         auto-update-conda: true
         channels: defaults
         python-version: ${{ matrix.python }}
-        miniforge-variant: Mambaforge
         use-mamba: true
 
     - name: Install MaBoSS
