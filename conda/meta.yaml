@@ -20,14 +20,16 @@ requirements:
 
   run:
     - colomoto_jupyter >=0.4.10
-    - maboss
+    - maboss >=2.6.0
     - pandas
     - pyparsing
     - python
     - matplotlib
     - ipywidgets
     - scikit-learn
-    - cmaboss >=1.0.0b24
+    - networkx
+    - pygraphviz
+    - cmaboss >=1.0.0b25
 
 about:
   home: https://github.com/colomoto/pyMaBoSS
