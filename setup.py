@@ -29,7 +29,7 @@ setup(name='maboss',
         "pandas",
         "scikit-learn",
         "networkx",
-        "cmaboss>=1.0.0b25"
+        "cmaboss>=1.0.0b25; platform_system!='Windows'"
     ] + optional_contextlib,
     scripts=['scripts/MBSS_FormatTable.py', 'scripts/UpPMaBoSS.py']
 )
