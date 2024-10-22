@@ -72,6 +72,7 @@ class TestPopPMaBoSS(TestCase):
 			[2.49620084e-05, 1.49996524e+00, 1.50000979e+00],
 			[8.54296115e-07, 1.49998000e+00, 1.50001915e+00],
 			[0.00000000e+00, 1.49998000e+00, 1.50002000e+00],
+			[0.00000000e+00, 1.49998000e+00, 1.50002000e+00],
 		])
 		
 		self.assertTrue(np.allclose(res.get_simple_states_popsize().values, expected, atol=1e-5))

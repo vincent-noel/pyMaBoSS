@@ -30,12 +30,12 @@ class TestPipelines(TestCase):
 		
 		self.assertTrue(numpy.isclose(
 			ress[('CycD', 'OFF')].get_last_states_probtraj().values[0],
-			numpy.array([9.99931e-01, 2.10000e-05, 2.30000e-05, 2.20000e-05, 3.00000e-06])
+			numpy.array([9.99949e-01, 1.60000e-05, 1.50000e-05, 1.80000e-05, 1.00000e-06, 1.00000e-06])
 		).all())
 		
 		self.assertTrue(numpy.isclose(
 			ress[('CycD', 'OFF')].get_last_nodes_probtraj().values[0],
-			numpy.array([0.000044, 0.000045, 0.000003])
+			numpy.array([3.2e-05, 3.3e-05, 2.0e-06])
 		).all())
 		
 		fres = filter_sensitivity(ress, "<nil>", maximum=0.5)

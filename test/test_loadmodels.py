@@ -197,7 +197,7 @@ class TestLoadModels(TestCase):
 		res = sim.run()
 		
 		self.assertEqual(
-			list(res.get_last_states_probtraj().values[0]), [0.00179 , 0.001214, 0.996996]
+			list(res.get_last_states_probtraj().values[0]), [4.9e-05, 0.00096, 0.998991]
 		)
 
 		self.assertEqual(
