@@ -5,20 +5,26 @@ from .sbmlcmabossresult import SBMLCMaBoSSResult
 from sys import stdout
 class SBMLSSimulation(object):
 
-    def __init__(self, sbml, cfgs=None, use_sbml_names=False):
+    def __init__(self, sbml, cfgs=None, use_sbml_names=False, cmaboss=None, cmaboss_sim=None):
 
-        self.sbml = sbml
-        self.cfgs = cfgs
-
-        self.nb_nodes = self.count_nodes()
-        self.cmaboss = self.get_cmaboss()
-
-        if self.cfgs is None:
-            self.cmaboss_sim = self.cmaboss.MaBoSSSim(self.sbml, use_sbml_names=use_sbml_names)
+        if cmaboss is not None and cmaboss_sim is not None:
+            self.cmaboss = cmaboss
+            self.cmaboss_sim = cmaboss_sim
+            
         else:
-            self.cmaboss_sim = self.cmaboss.MaBoSSSim(self.sbml, self.cfgs, use_sbml_names=use_sbml_names)
+            self.sbml = sbml
+            self.cfgs = cfgs
 
-        self.network = self.get_logical_rules()
+            self.nb_nodes = self.count_nodes()
+            self.cmaboss = self.get_cmaboss()
+
+            if self.cfgs is None:
+                self.cmaboss_sim = self.cmaboss.MaBoSSSim(self.sbml, use_sbml_names=use_sbml_names)
+            else:
+                self.cmaboss_sim = self.cmaboss.MaBoSSSim(self.sbml, self.cfgs, use_sbml_names=use_sbml_names)
+
+        self.network = self.cmaboss_sim.network
+        self.param = self.cmaboss_sim.param
         
     def count_nodes(self):
         
@@ -38,6 +44,12 @@ class SBMLSSimulation(object):
         """Produce the content of the cfg file associated to the simulation."""
         print(self.cmaboss_sim.str_cfg(), file=out)
 
+    def update_parameters(self, **kwargs):
+        self.cmaboss_sim.update_parameters(**kwargs)
+
+    def copy(self):
+        return SBMLSSimulation(cmaboss=self.cmaboss, cmaboss_sim=self.cmaboss_sim.copy())
+        
     def get_cmaboss(self):
 
         assert self.nb_nodes <= 1024, "Models with more than 1024 nodes are not compatible with this version of MaBoSS"
