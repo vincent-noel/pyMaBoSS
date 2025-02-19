@@ -24,7 +24,7 @@ class PopMaBoSSResult:
     def get_states_probtraj(self, prob_cutoff=None):
 
         raw_res = self.get_raw_states_probtraj()
-        df = pandas.DataFrame(*(raw_res[0:2]))
+        df = pandas.DataFrame(*(raw_res[0:3]))
         # df.sort_index(axis=1, inplace=True)
 
         if prob_cutoff is not None:
@@ -73,6 +73,35 @@ class PopMaBoSSResult:
         df.sort_index(axis=1, inplace=True)
         return df
 
+    def get_custom_states_probtraj(self):
+        raw_res = self.get_raw_custom_probtraj()
+        df = pandas.DataFrame(raw_res[0][:,], index=raw_res[1], columns=[int(x) for x in raw_res[2]])
+        df.sort_index(axis=1, inplace=True)
+        df.sort_index(axis=0, inplace=True)
+        return df
+        
+    def get_custom_states_probtraj_errors(self):
+        raw_res = self.get_raw_custom_probtraj()
+        df = pandas.DataFrame(raw_res[3][:,], index=raw_res[1], columns=[int(x) for x in raw_res[2]])
+        df.sort_index(axis=1, inplace=True)
+        df.sort_index(axis=0, inplace=True)
+        
+        return df
+        
+    def get_last_custom_states_probtraj(self, prob_cutoff=None, rescale=True):
+        raw_res = self.get_raw_custom_last_probtraj()
+        df = pandas.Series(raw_res[0][0], index=[int(x) for x in raw_res[2]], name=raw_res[1][0])
+        
+        if rescale:
+            df /= df.sum()
+        
+        if prob_cutoff is not None:
+            df = df[df > prob_cutoff]
+        
+        df.sort_index(inplace=True)
+        
+        return df
+    
     
     ########### Popsize
     
@@ -221,7 +250,10 @@ class PopMaBoSSResult:
         serie *= 1/serie.sum()
         return serie
 
-    def get_last_state_dist(self, networkstate):
+    def get_last_state_dist(self, networkstate=None, rescale=True):
+        if networkstate is None:
+            return self.get_last_states_probtraj()
+            
         dist_state = {}
         for raw_popstates, value in self.get_last_states_probtraj().items():
             popstates = parse_pop_state(raw_popstates)
@@ -230,11 +262,18 @@ class PopMaBoSSResult:
                     dist_state[popstates[networkstate]] += value
                 else:
                     dist_state[popstates[networkstate]] = value
-        return pandas.Series(dist_state).sort_index()
+                    
+        df = pandas.Series(dist_state).sort_index()
+        if rescale:
+            df /= df.sum()
+        return df
 
 
-    def plot_last_state_dist(self, networkstate, **args):
-        self.get_last_state_dist(networkstate).plot.bar(**args)
+    def plot_last_state_dist(self, networkstate=None, **args):
+        if networkstate is None:
+            self.get_last_state_dist().plot.pie(autopct='%1.1f%%', legend=False)
+        else:
+            self.get_last_state_dist(networkstate).plot.bar(**args)
         
     # def get_node_dist(self, node):
     #     dist_node = {}

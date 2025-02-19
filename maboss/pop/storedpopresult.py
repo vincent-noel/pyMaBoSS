@@ -35,6 +35,7 @@ class StoredPopResult(PopMaBoSSResult):
         self._raw_errors = None
         self._raw_entropy = None
         self._raw_last_data = None
+        self._raw_custom_last_data = None
 
         self.indexes = None
         self.states = None
@@ -140,7 +141,35 @@ class StoredPopResult(PopMaBoSSResult):
             self.raw_simple_probtraj = self.cmaboss_result.get_simple_probtraj()
         return self.raw_simple_probtraj
 
+    ########### Custom Probtraj
+    
+    def get_raw_custom_last_probtraj(self):
+        data, first_col, hexfloat = self._get_raw_custom_last_data()
 
+        time = data[0]
+        states = [s for s in data[first_col::3]]
+        if hexfloat:
+            probs = np.array([float.fromhex(v) for v in data[first_col+1::3]])
+        else:
+            probs = np.array([float(v) for v in data[first_col+1::3]])
+        
+        return ([probs], [time], states)
+
+    def _get_raw_custom_last_data(self):
+        if self._raw_custom_last_data is None:
+            with self._get_custom_probtraj_fd() as probtraj:
+
+                if self._first_state_index is None:
+                    first_line = probtraj.readline()
+                    self._first_state_index = next(i for i, col in enumerate(first_line.strip("\n").split("\t")) if col == "State")
+
+                last_line = probtraj.readlines()[-1]
+                self._raw_custom_last_data = last_line.strip("\n").split("\t")
+                self._hexfloat = self._raw_custom_last_data[self._first_state_index+1].startswith("0x")
+        
+        return self._raw_custom_last_data, self._first_state_index, self._hexfloat
+
+    
 
     def get_probtraj_file(self):
         return os.path.join(self._workdir, "%s_pop_probtraj.csv" % self._prefix)
@@ -148,8 +177,14 @@ class StoredPopResult(PopMaBoSSResult):
     def get_simple_probtraj_file(self):
         return os.path.join(self._workdir, "%s_simple_pop_probtraj.csv" % self._prefix)
     
+    def get_custom_probtraj_file(self):
+        return os.path.join(self._workdir, "%s_custom_pop_probtraj.csv" % self._prefix)
+    
     def _get_probtraj_fd(self):
         return open(self.get_probtraj_file(), 'r')
+
+    def _get_custom_probtraj_fd(self):
+        return open(self.get_custom_probtraj_file(), 'r')
 
     def _get_raw_data(self):
     

@@ -21,6 +21,9 @@ class cMaBoSSPopMaBoSSResult(PopMaBoSSResult):
         self.raw_simple_probtraj = None
         self.raw_simple_last_probtraj = None
 
+        self.raw_custom_probtraj = None
+        self.raw_custom_last_probtraj = None
+        
         self.workdir = workdir
 
         if workdir is not None and (not os.path.exists(os.path.join(workdir, "%s_run.txt" % prefix)) or overwrite):
@@ -58,3 +61,13 @@ class cMaBoSSPopMaBoSSResult(PopMaBoSSResult):
         if self.raw_simple_probtraj is None:
             self.raw_simple_probtraj = self.cmaboss_result.get_simple_probtraj()
         return self.raw_simple_probtraj
+        
+    def get_raw_custom_probtraj(self):
+        if self.raw_custom_probtraj is None:
+            self.raw_custom_probtraj = self.cmaboss_result.get_custom_probtraj()
+        return self.raw_custom_probtraj
+        
+    def get_raw_custom_last_probtraj(self):
+        if self.raw_custom_last_probtraj is None:
+            self.raw_custom_last_probtraj = self.cmaboss_result.get_custom_last_probtraj()
+        return self.raw_custom_last_probtraj

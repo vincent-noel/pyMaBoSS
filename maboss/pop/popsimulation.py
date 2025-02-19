@@ -51,14 +51,32 @@ class PopSimulation(object):
     def update_parameters(self, **kwargs):
         self.cmaboss_sim.update_parameters(**kwargs)
 
-    def get_nodes(self):
-        return self.cmaboss_sim.get_nodes()
+    def set_custom_pop_output(self, formula):
+        self.cmaboss_sim.set_custom_pop_output(formula)
+    
+    def copy(self):
+        return PopSimulation(cmaboss=self.cmaboss, cmaboss_sim=self.cmaboss_sim.copy())
+        
+    # def get_nodes(self):
+    #     return self.cmaboss_sim.get_nodes()
 
-    def run(self, workdir=None, prefix="res", overwrite=False, hexfloat=True):
+    def run(self, workdir=None, prefix="res", overwrite=False, hexfloat=True, cmaboss=True):
         if workdir is None or not os.path.exists(os.path.join(workdir, "%s_run.txt" % prefix)) or overwrite:
             return cMaBoSSPopMaBoSSResult(self, workdir, prefix, overwrite, hexfloat)
         else:
             return StoredPopResult(self, workdir, prefix, hexfloat)
 
+    def str_bnd(self):
+        return self.cmaboss_sim.str_bnd()
+        
+    def str_cfg(self):
+        return self.cmaboss_sim.str_cfg()
 
+    def print_bnd(self, out=sys.stdout):
+        """Produce the content of the bnd file associated to the simulation."""
+        print(self.str_bnd(), file=out)
+
+    def print_cfg(self, out=sys.stdout):
+        """Produce the content of the cfg file associated to the simulation."""
+        print(self.str_cfg(), file=out)
 __all__ = ["BNetSimulation"]
