@@ -308,6 +308,14 @@ class ProbTrajResult(object):
             
         return data
     
+    def get_observed_durations(self, prob_cutoff=None):
+        data = pd.read_csv(self.get_observed_durations_file(), sep="\t", index_col=0).astype(np.float64)
+            
+        if prob_cutoff is not None:
+            data[data < prob_cutoff] = 0
+            
+        return data
+        
     def _get_probtraj_fd(self):
         return open(self.get_probtraj_file(), 'r')
 

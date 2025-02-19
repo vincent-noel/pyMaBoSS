@@ -72,6 +72,9 @@ class Result(BaseResult):
     def get_observed_graph_file(self):
         return "{}/{}_observed_graph.csv".format(self._path, self.prefix)
     
+    def get_observed_durations_file(self):
+        return "{}/{}_observed_durations.csv".format(self._path, self.prefix)
+    
     def save(self, prefix, replace=False):
         """
         Write the cfg, bnd and all results in working dir.
