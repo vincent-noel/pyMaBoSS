@@ -160,6 +160,10 @@ class Simulation(object):
         else:
             maboss_cmd = "MaBoSS_1024n"
 
+        import platform
+        if platform.platform == "Windows":
+            maboss_cmd += ".exe"
+
         return maboss_cmd
 
     def get_cmaboss(self):
