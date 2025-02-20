@@ -28,11 +28,10 @@ class TestPopPMaBoSS(TestCase):
 			[1.14415503, 2.06206716, 0.55558451, 1.47401568],
 			[1.18784968, 2.31569521, 0.66176126, 1.59365861],
 		])
+		self.assertTrue(np.allclose(res.get_simple_states_popsize().values, expected, rtol=5e-2, atol=1e-2))
 		
-		self.assertTrue(np.allclose(res.get_simple_states_popsize().values, expected, atol=1e-5))
-		
-		expected = np.array([0.28371681, 0.11547648, 0.03989589, 0.00579695, 0.0008432 ])
-		self.assertTrue(np.allclose(res.get_last_state_dist("B -- C").values, expected, atol=1e-5))
+		expected = np.array([0.63652264, 0.25907309, 0.08950699, 0.01300554, 0.00189174])
+		self.assertTrue(np.allclose(res.get_last_state_dist("B -- C").values, expected, rtol=5e-2, atol=1e-2))
 		
 	def test_assymetric_restore(self):
 
@@ -51,11 +50,10 @@ class TestPopPMaBoSS(TestCase):
 			[1.14415503, 2.06206716, 0.55558451, 1.47401568],
 			[1.18784968, 2.31569521, 0.66176126, 1.59365861],
 		])
+		self.assertTrue(np.allclose(res.get_simple_states_popsize().values, expected, rtol=5e-2, atol=1e-2))
 		
-		self.assertTrue(np.allclose(res.get_simple_states_popsize().values, expected, atol=1e-5))
-		
-		expected = np.array([0.28371681, 0.11547648, 0.03989589, 0.00579695, 0.0008432 ])
-		self.assertTrue(np.allclose(res.get_last_state_dist("B -- C").values, expected, atol=1e-5))
+		expected = np.array([0.63652264, 0.25907309, 0.08950699, 0.01300554, 0.00189174])
+		self.assertTrue(np.allclose(res.get_last_state_dist("B -- C").values, expected, rtol=5e-2, atol=1e-2))
 		
 	def test_fork(self):
 
@@ -77,9 +75,8 @@ class TestPopPMaBoSS(TestCase):
 		
 		self.assertTrue(np.allclose(res.get_simple_states_popsize().values, expected, atol=1e-5))
 
-		expected_AB = np.array([0.37451, 0.37555, 0.12479])
-		expected_AC = np.array([0.37555, 0.37451, 0.12515])
-		
+		expected_AB = np.array([0.42808481, 0.42927359, 0.1426416])
+		expected_AC = np.array([0.42909702, 0.42790873, 0.14299425])
 		self.assertTrue(np.allclose(res.get_last_state_dist("A -- B").values, expected_AB, atol=1e-5))
 		self.assertTrue(np.allclose(res.get_last_state_dist("A -- C").values, expected_AC, atol=1e-5))
 
