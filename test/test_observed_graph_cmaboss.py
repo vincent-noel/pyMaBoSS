@@ -10,15 +10,16 @@ from maboss import load
 from os.path import dirname, join
 
 
-class TestObservedGraph(TestCase):
+class TestObservedGraphcMaBoSS(TestCase):
 
-	def test_cell_cycle(self):
+
+	def test_cell_cycle_cmaboss(self):
 
 		path = dirname(__file__)
 		sim = load(join(path, "cellcycle.bnd"), join(path, "cellcycle_runcfg.cfg"))
 		sim.update_parameters(use_physrandgen = False)
 		sim.network.set_observed_graph_nodes(["CycD", "CycA", "CycE"])
-		res = sim.run()
+		res = sim.run(cmaboss=True)
 
 		ref_observed_graph = numpy.array([
 			[0.        , 0.        , 0.        , 0.        , 0.        ,
@@ -42,4 +43,3 @@ class TestObservedGraph(TestCase):
 		self.assertTrue(numpy.isclose(
 			res.get_observed_graph().values, ref_observed_graph
 		).all())
-		
