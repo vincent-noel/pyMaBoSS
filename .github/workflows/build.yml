@@ -9,205 +9,162 @@ on:
     
 jobs:
   pymaboss_test:
-    name: Testing pyMaBoSS (Linux)
-    runs-on: ubuntu-22.04
+    name: Testing pyMaBoSS (${{matrix.os.runs-on}}, ${{matrix.python}}, ${{matrix.maboss_install}})
     strategy:
+      fail-fast: false
       matrix:
         python:
-          - "3.8"
           - "3.9"
           - "3.10"
           - "3.11"
           - "3.12"
-    
+          - "3.13"
+        os: 
+          - {runs-on: ubuntu-22.04, shell: "bash -el {0}"}
+          - {runs-on: macos-13, shell: "sh -l {0}"}
+          - {runs-on: macos-14, shell: "sh -l {0}"}
+          - {runs-on: windows-2022, shell: "pwsh -Command {0}"}
+        maboss_install: 
+          - "experimental"
+          - "conda"
+        exclude:
+          - os: {runs-on: windows-2022, shell: "pwsh -Command {0}"}
+            maboss_install: "conda"
+          
+    runs-on: ${{ matrix.os.runs-on }}
+          
     defaults:
       run:
-        shell: bash -el {0}            
+        shell: ${{ matrix.os.shell }}
           
     steps:
     - uses: actions/checkout@v4
-    - uses: conda-incubator/setup-miniconda@v3
+    - if: matrix.maboss_install == 'conda'
+      uses: conda-incubator/setup-miniconda@v3
       with:
         auto-update-conda: true
         channels: defaults
         python-version: ${{ matrix.python }}
         use-mamba: true
-
-    - name: Install MaBoSS
+    - if: matrix.maboss_install == 'experimental'
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ matrix.python }}
+        
+    - name: Install MaBoSS with Conda
+      if: matrix.maboss_install == 'conda'
       run: |
         conda install -c colomoto maboss
         
-    - name: Test MaBoSS
-      run: |
-        MaBoSS --version
-        
     - name: Install dependencies
       run: |
-        pip3 install pip coveralls --upgrade
-        
-    - name: Launch MaBoSS Server docker
-      run: |
-        docker run -p 7777:7777 --network host -d sysbiocurie/maboss
-        
+        pip3 install coveralls --upgrade
+            
     - name: Install pyMaBoSS
       run: |
         pip3 install .
+        
+    - name: Install MaBoSS with new script
+      if: matrix.maboss_install == 'experimental'
+      run: |
+        python -m maboss_setup_experimental
         
     - name: Test pyMaBoSS
       env: 
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
-        coverage run -m unittest discover -v
+        coverage run -m unittest test.test_conversion
+        coverage run -m unittest test.test_loadmodels
+        coverage run -m unittest test.test_observed_graph
+        coverage run -m unittest test.test_pipelines
+        coverage run -m unittest test.test_probtrajs
+        coverage run -m unittest test.test_statdist
+        coverage run -m unittest test.test_types
+        coverage run -m unittest test.test_uppmaboss
         coveralls --service=github
         
+    - name: Test pyMaBoSS with cMaBoSS
+      if: matrix.os.runs-on != 'windows-2022'
+      env: 
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        coverage run -m unittest test.test_popmaboss
+        coverage run -m unittest test.test_ensemble
+        coverage run -m unittest test.test_loadsbml
+        coverage run -m unittest test.test_probtrajs_cmaboss
+        coverage run -m unittest test.test_uppmaboss_cmaboss
+        coverage run -m unittest test.test_observed_graph_cmaboss
+        coveralls --service=github
+    
+    - name: Test MaBoSS Server with Docker
+      if: matrix.os.runs-on == 'ubuntu-22.04'
+      env: 
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        docker run -p 7777:7777 --network host -d sysbiocurie/maboss
+        coverage run -m unittest test.test_server
+        coveralls --service=github
+    
   pymaboss_scripts: 
-    name: Testing pyMaBoSS scripts (Linux)
-    runs-on: ubuntu-22.04
+    name: Testing pyMaBoSS scripts (${{matrix.os.runs-on}}, ${{matrix.python}}, ${{matrix.maboss_install}})
     strategy:
+      fail-fast: false
       matrix:
         python:
-          - "3.8"
           - "3.9"
           - "3.10"
           - "3.11"
           - "3.12"
+          - "3.13"
+        os: 
+          - {runs-on: ubuntu-22.04, shell: "bash -el {0}"}
+          - {runs-on: macos-13, shell: "sh -l {0}"}
+          - {runs-on: macos-14, shell: "sh -l {0}"}
+          - {runs-on: windows-2022, shell: "pwsh -Command {0}"}
+        maboss_install: 
+          - "experimental"
+          - "conda"
+        exclude:
+          - os: {runs-on: windows-2022, shell: "pwsh -Command {0}"}
+            maboss_install: "conda"
+            
+    runs-on: ${{ matrix.os.runs-on }}
 
     defaults:
       run:
-        shell: bash -el {0}
+        shell: ${{ matrix.os.shell }}
                 
     steps:
     - uses: actions/checkout@v4
-    - uses: conda-incubator/setup-miniconda@v3
+    - if: matrix.maboss_install == 'conda'
+      uses: conda-incubator/setup-miniconda@v3
       with:
         auto-update-conda: true
         channels: defaults
         python-version: ${{ matrix.python }}
         use-mamba: true
-        
-    - name: Install MaBoSS
-      run: |
-        conda install -c colomoto maboss
-        
-    - name: Test MaBoSS
-      run: |
-        MaBoSS --version
-        
-    - name: Install dependencies
-      run: |
-        pip3 install pip coveralls --upgrade
-        
-    - name: Launch MaBoSS Server docker
-      run: |
-        docker run -p 7777:7777 --network host -d sysbiocurie/maboss
-        
-    - name: Install pyMaBoSS
-      run: |
-        pip3 install .
-        
-    - name: Test pyMaBoSS
-      env: 
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      run: |
-        coverage run -a scripts/MBSS_FormatTable.py test/p53_Mdm2.bnd test/p53_Mdm2_runcfg.cfg
-        coverage run -a scripts/UpPMaBoSS.py test/CellFateModel.bnd test/CellFateModel_1h.cfg test/CellFate_1h.upp
-        coveralls --service=github
-        
-  pymaboss_test_macos:
-    name: Testing pyMaBoSS (MacOS)
-    runs-on: macos-13
-    strategy:
-      matrix:
-        python:
-          - "3.8"
-          - "3.9"
-          - "3.10"
-          - "3.11"
-          - "3.12"
-          
-    defaults:
-      run:
-        shell: sh -l {0}
-    steps:
-    - uses: actions/checkout@v4
-    - uses: conda-incubator/setup-miniconda@v3
+    - if: matrix.maboss_install == 'experimental'
+      uses: actions/setup-python@v5
       with:
-        auto-update-conda: true
-        channels: defaults
         python-version: ${{ matrix.python }}
-        use-mamba: true
-
-    - name: Install MaBoSS
+        
+    - name: Install MaBoSS with Conda
+      if: matrix.maboss_install == 'conda'
       run: |
         conda install -c colomoto maboss
-        
-    - name: Test MaBoSS
-      run: |
-        MaBoSS --version
-
-    - name: Install dependencies
-      run: |
-        pip3 install pip coveralls --upgrade
-        
-    - name: Install pyMaBoSS
-      run: |
-        pip3 install .
-        
-    - name: Test pyMaBoSS
-      env: 
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      run: |
-        coverage run -m unittest test.test_conversion
-        coverage run -m unittest test.test_ensemble
-        coverage run -m unittest test.test_loadmodels
-        coverage run -m unittest test.test_probtrajs
-        coverage run -m unittest test.test_statdist
-        coverage run -m unittest test.test_types
-        coverage run -m unittest test.test_uppmaboss
-        coverage run -m unittest test.test_pipelines
-        coverage run -m unittest test.test_observed_graph
-        coveralls --service=github
-        
-  pymaboss_scripts_macos:
-    name: Testing pyMaBoSS scripts (MacOS)
-    runs-on: macos-13
-    strategy:
-      matrix:
-        python:
-          - "3.8"
-          - "3.9"
-          - "3.10"
-          - "3.11"
-          - "3.12"
-
-    defaults:
-      run:
-        shell: sh -l {0}
-    
-    steps:
-    - uses: actions/checkout@v4
-    - uses: conda-incubator/setup-miniconda@v3
-      with:
-        auto-update-conda: true
-        channels: defaults
-        python-version: ${{ matrix.python }}
-        use-mamba: true
-
-    - name: Install MaBoSS
-      run: |
-        conda install -c colomoto maboss
-        
-    - name: Test MaBoSS
-      run: |
-        MaBoSS --version
       
     - name: Install dependencies
       run: |
-        pip3 install pip coveralls --upgrade
+        pip3 install coveralls --upgrade
         
     - name: Install pyMaBoSS
       run: |
         pip3 install .
+        
+    - name: Install MaBoSS with new script
+      if: matrix.maboss_install == 'experimental'
+      run: |
+        python -m maboss_setup_experimental
         
     - name: Test pyMaBoSS
       env: 
@@ -216,122 +173,24 @@ jobs:
         coverage run -a scripts/MBSS_FormatTable.py test/p53_Mdm2.bnd test/p53_Mdm2_runcfg.cfg
         coverage run -a scripts/UpPMaBoSS.py test/CellFateModel.bnd test/CellFateModel_1h.cfg test/CellFate_1h.upp
         coveralls --service=github
-              
-
-  pymaboss_test_macos_m1:
-    name: Testing pyMaBoSS (MacOS M1)
-    runs-on: macos-14
-    strategy:
-      matrix:
-        python:
-          - "3.8"
-          - "3.9"
-          - "3.10"
-          - "3.11"
-          - "3.12"
-    
-    defaults:
-      run:
-        shell: sh -l {0}
-    
-    steps:
-    - uses: actions/checkout@v4
-    - uses: conda-incubator/setup-miniconda@v3
-      with:
-        auto-update-conda: true
-        channels: defaults
-        python-version: ${{ matrix.python }}
-        use-mamba: true
-
-    - name: Install MaBoSS
-      run: |
-        conda install -c colomoto maboss
-        
-    - name: Test MaBoSS
-      run: |
-        MaBoSS --version
-
-    - name: Install dependencies
-      run: |
-        pip3 install pip coveralls --upgrade
-        
-    - name: Install pyMaBoSS
-      run: |
-        pip3 install .
-        
-    - name: Test pyMaBoSS
-      env: 
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      run: |
-        coverage run -m unittest test.test_conversion
-        coverage run -m unittest test.test_ensemble
-        coverage run -m unittest test.test_loadmodels
-        coverage run -m unittest test.test_probtrajs
-        coverage run -m unittest test.test_statdist
-        coverage run -m unittest test.test_types
-        coverage run -m unittest test.test_uppmaboss
-        coverage run -m unittest test.test_pipelines
-        coverage run -m unittest test.test_observed_graph
-        coveralls --service=github
-        
-  pymaboss_scripts_macos_m1:
-    name: Testing pyMaBoSS scripts (MacOS M1)
-    runs-on: macos-14
-    strategy:
-      matrix:
-        python:
-          - "3.8"
-          - "3.9"
-          - "3.10"
-          - "3.11"
-          - "3.12"
-          
-    defaults:
-      run:
-        shell: sh -l {0}
-    
-    steps:
-    - uses: actions/checkout@v4
-    - uses: conda-incubator/setup-miniconda@v3
-      with:
-        auto-update-conda: true
-        channels: defaults
-        python-version: ${{ matrix.python }}
-        use-mamba: true
-
-    - name: Install MaBoSS
-      run: |
-        conda install -c colomoto maboss
-        
-    - name: Test MaBoSS
-      run: |
-        MaBoSS --version
-      
-    - name: Install dependencies
-      run: |
-        pip3 install pip coveralls --upgrade
-        
-    - name: Install pyMaBoSS
-      run: |
-        pip3 install .
-        
-    - name: Test pyMaBoSS
-      env: 
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      run: |
-        coverage run -a scripts/MBSS_FormatTable.py test/p53_Mdm2.bnd test/p53_Mdm2_runcfg.cfg
-        coverage run -a scripts/UpPMaBoSS.py test/CellFateModel.bnd test/CellFateModel_1h.cfg test/CellFate_1h.upp
-        coveralls --service=github
-                  
+               
   conda_pymaboss:
     name: pyMaBoSS Conda package
     runs-on: ubuntu-20.04
-    needs: [pymaboss_test, pymaboss_scripts, pymaboss_test_macos, pymaboss_scripts_macos, pymaboss_test_macos_m1, pymaboss_scripts_macos_m1]
-
+    needs: [pymaboss_test, pymaboss_scripts]
+    defaults:
+      run:
+        shell: bash -el {0}
+    
     steps:
     - uses: actions/checkout@v4
-    - uses: s-weigand/setup-conda@v1
-    
+    - uses: conda-incubator/setup-miniconda@v3
+      with:
+        auto-update-conda: true
+        channels: defaults
+        python-version: "3.11"
+        use-mamba: true
+  
     - name: Install conda-build and anaconda-client
       run: conda install conda-build anaconda-client
       
@@ -339,22 +198,20 @@ jobs:
       run: |
         conda build conda -c colomoto
         
-        
     - name: Upload Anaconda package to colomoto's repo
       if: github.event_name == 'release' && github.event.action == 'created' && github.repository == 'colomoto/pyMaBoSS'
       run: |
-        anaconda -t ${{ secrets.ANACONDA_TOKEN }} upload -u colomoto /usr/share/miniconda/conda-bld/noarch/*.tar.bz2 --force;
+        anaconda -t ${{ secrets.ANACONDA_TOKEN }} upload -u colomoto /usr/share/miniconda/envs/test/conda-bld/noarch/*.conda --force;
         
     - name: Upload Anaconda package to vincent-noel's repo
       if: github.repository == 'vincent-noel/pyMaBoSS' && github.ref == 'refs/heads/master'
       run: |
-        anaconda -t ${{ secrets.ANACONDA_TOKEN }} upload -u vincent-noel /usr/share/miniconda/conda-bld/noarch/*.tar.bz2 --force;
+        anaconda -t ${{ secrets.ANACONDA_TOKEN }} upload -u vincent-noel /usr/share/miniconda/envs/test/conda-bld/noarch/*.conda --force;
       
   pypi_pymaboss:
     name: pyMaBoSS PyPi package
     runs-on: ubuntu-20.04
-    needs: [pymaboss_test, pymaboss_scripts, pymaboss_test_macos, pymaboss_scripts_macos, pymaboss_test_macos_m1, pymaboss_scripts_macos_m1]
-    if: github.event_name == 'release' && github.event.action == 'created' && github.repository == 'colomoto/pyMaBoSS'
+    needs: [pymaboss_test, pymaboss_scripts]
 
     steps:
     - uses: actions/checkout@v4
@@ -363,9 +220,13 @@ jobs:
       run: pip3 install twine
       
     - name: Build pyMaBoSS PyPi package
+      run: |
+        python3 setup.py sdist bdist_wheel
+      
+    - name: Upload pyMaBoSS PyPi package
+      if: github.event_name == 'release' && github.event.action == 'created' && github.repository == 'colomoto/pyMaBoSS'
       env:
         TWINE_USERNAME: __token__
         TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
       run: |
-        python3 setup.py sdist bdist_wheel
         python3 -m twine upload --skip-existing dist/*
