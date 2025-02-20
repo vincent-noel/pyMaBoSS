@@ -14,7 +14,7 @@ long_description = (this_directory / "description.rst").read_text()
 setup(name='maboss',
     version="0.8.9",
     packages=find_packages(exclude=["test"]),
-    py_modules = ["maboss_setup"],
+    py_modules = ["maboss_setup", "maboss_setup_experimental"],
     author="Vincent Noël, Loic Paulevé, Aurelien Naldi and Nicolas Levy",
     author_email="vincent.noel@curie.fr",
     description="A python and jupyter API for the MaBoSS software",
