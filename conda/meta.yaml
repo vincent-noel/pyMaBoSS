@@ -29,7 +29,7 @@ requirements:
     - scikit-learn
     - networkx
     - pygraphviz
-    - cmaboss >=1.0.0b25
+    - cmaboss >=1.0.0b27
 
 about:
   home: https://github.com/colomoto/pyMaBoSS
