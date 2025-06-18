@@ -84,7 +84,6 @@ jobs:
         coveralls --service=github
         
     - name: Test pyMaBoSS with cMaBoSS
-      if: matrix.os.runs-on != 'windows-2022'
       env: 
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
