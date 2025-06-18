@@ -83,6 +83,9 @@ jobs:
         coverage run -m unittest test.test_uppmaboss
         coveralls --service=github
         
+    - name: debugging with tmate
+      uses: mxschmitt/action-tmate@v3
+      
     - name: Test pyMaBoSS with cMaBoSS
       env: 
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
