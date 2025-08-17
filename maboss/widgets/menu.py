@@ -5,16 +5,16 @@ menu = [
 
     {'name': 'Network',
      'sub-menu': [
-         {'name': 'Set istate',
-          'snippet': ["maboss.wg_set_istate(masim)"]},
+         {'name': 'Set initial state probability',
+          'snippet': ["masim.network.set_istate('nodeA', [prob_OFF, prob_ON])"]},
          {'name': 'Get initial state',
           'snippet': ["masim.get_initial_state()"]}
      ]},
 
     {'name': 'Simulation',
      'sub-menu': [
-          {'name': 'Create mutant',
-           'snippet': ["maboss.wg_make_mutant(masim)"]},
+          {'name': 'Apply mutant',
+           'snippet': ["masim.mutate('nodeA', 'ON') #or 'OFF'"]},
 
           {'name': 'Run',
            'snippet': ["simres = masim.run()"]},
@@ -23,7 +23,7 @@ menu = [
            'snippet': ["masim.network.set_istate([\"mygenelist\"],{})"]},
 
           {'name': 'Set output',
-           'snippet': ["maboss.wg_set_output(masim)"]},
+           'snippet': ["masim.network.set_output(('nodeA', 'nodeB',))"]},
 
      ]},
 
