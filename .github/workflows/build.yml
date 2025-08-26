@@ -4,8 +4,8 @@ on:
   workflow_dispatch:
   push:
   pull_request:
-  release:
-    types: [created]
+#  release:
+#    types: [created]
     
 jobs:
   pymaboss_test:
