@@ -175,7 +175,7 @@ jobs:
                
   conda_pymaboss:
     name: pyMaBoSS Conda package
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     needs: [pymaboss_test, pymaboss_scripts]
     defaults:
       run:
@@ -209,7 +209,7 @@ jobs:
       
   pypi_pymaboss:
     name: pyMaBoSS PyPi package
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     needs: [pymaboss_test, pymaboss_scripts]
 
     steps:
