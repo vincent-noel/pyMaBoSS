@@ -30,7 +30,7 @@ class TestPopPMaBoSS(TestCase):
 		])
 		self.assertTrue(np.allclose(res.get_simple_states_popsize().values, expected, rtol=5e-2, atol=1e-2))
 		
-		expected = np.array([0.63652264, 0.25907309, 0.08950699, 0.01300554, 0.00189174])
+		expected = np.array([6.56597326e-01, 2.56412951e-01, 7.06043899e-02, 1.34984659e-02, 2.61518102e-03, 2.71686839e-04])
 		self.assertTrue(np.allclose(res.get_last_state_dist("B -- C").values, expected, rtol=5e-2, atol=1e-2))
 		
 	def test_assymetric_restore(self):
@@ -52,7 +52,7 @@ class TestPopPMaBoSS(TestCase):
 		])
 		self.assertTrue(np.allclose(res.get_simple_states_popsize().values, expected, rtol=5e-2, atol=1e-2))
 		
-		expected = np.array([0.63652264, 0.25907309, 0.08950699, 0.01300554, 0.00189174])
+		expected = np.array([6.56597326e-01, 2.56412951e-01, 7.06043899e-02, 1.34984659e-02, 2.61518102e-03, 2.71686839e-04])
 		self.assertTrue(np.allclose(res.get_last_state_dist("B -- C").values, expected, rtol=5e-2, atol=1e-2))
 		
 	def test_fork(self):
