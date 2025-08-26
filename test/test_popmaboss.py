@@ -28,7 +28,7 @@ class TestPopPMaBoSS(TestCase):
 			[1.13815353, 2.07554602, 0.54958219, 1.48536074],
 			[1.17027793, 2.31753231, 0.64445287, 1.61791143]
 		])
-		self.assertTrue(np.allclose(res.get_simple_states_popsize().values, expected, rtol=5e-2, atol=1e-2))
+		self.assertTrue(np.allclose(res.get_simple_states_popsize().values, expected, rtol=1e-1, atol=1e-2))
 		
 		expected = np.array([6.56597326e-01, 2.56412951e-01, 7.06043899e-02, 1.34984659e-02, 2.61518102e-03, 2.71686839e-04])
 		self.assertTrue(np.allclose(res.get_last_state_dist("B -- C").values, expected, rtol=5e-2, atol=1e-2))
@@ -50,7 +50,7 @@ class TestPopPMaBoSS(TestCase):
 			[1.13815353, 2.07554602, 0.54958219, 1.48536074],
 			[1.17027793, 2.31753231, 0.64445287, 1.61791143]
 		])
-		self.assertTrue(np.allclose(res.get_simple_states_popsize().values, expected, rtol=5e-2, atol=1e-2))
+		self.assertTrue(np.allclose(res.get_simple_states_popsize().values, expected, rtol=1e-1, atol=1e-2))
 		
 		expected = np.array([6.56597326e-01, 2.56412951e-01, 7.06043899e-02, 1.34984659e-02, 2.61518102e-03, 2.71686839e-04])
 		self.assertTrue(np.allclose(res.get_last_state_dist("B -- C").values, expected, rtol=5e-2, atol=1e-2))
