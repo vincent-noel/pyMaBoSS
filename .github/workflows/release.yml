@@ -1,0 +1,61 @@
+name: build
+
+on:
+  release:
+    types: [created]
+    
+jobs:
+  conda_pymaboss:
+    name: pyMaBoSS Conda package
+    runs-on: ubuntu-20.04
+    defaults:
+      run:
+        shell: bash -el {0}
+    
+    steps:
+    - uses: actions/checkout@v4
+    - uses: conda-incubator/setup-miniconda@v3
+      with:
+        auto-update-conda: true
+        channels: defaults
+        python-version: "3.11"
+        use-mamba: true
+  
+    - name: Install conda-build and anaconda-client
+      run: conda install conda-build anaconda-client
+      
+    - name: Build pyMaBoSS Anaconda package
+      run: |
+        conda build conda -c colomoto
+        
+    - name: Upload Anaconda package to colomoto's repo
+      if: github.event_name == 'release' && github.event.action == 'created' && github.repository == 'colomoto/pyMaBoSS'
+      run: |
+        anaconda -t ${{ secrets.ANACONDA_TOKEN }} upload -u colomoto /usr/share/miniconda/envs/test/conda-bld/noarch/*.conda --force;
+        
+    - name: Upload Anaconda package to vincent-noel's repo
+      if: github.repository == 'vincent-noel/pyMaBoSS' && github.ref == 'refs/heads/master'
+      run: |
+        anaconda -t ${{ secrets.ANACONDA_TOKEN }} upload -u vincent-noel /usr/share/miniconda/envs/test/conda-bld/noarch/*.conda --force;
+      
+  pypi_pymaboss:
+    name: pyMaBoSS PyPi package
+    runs-on: ubuntu-20.04
+
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Install twine
+      run: pip3 install twine
+      
+    - name: Build pyMaBoSS PyPi package
+      run: |
+        python3 setup.py sdist bdist_wheel
+      
+    - name: Upload pyMaBoSS PyPi package
+      if: github.event_name == 'release' && github.event.action == 'created' && github.repository == 'colomoto/pyMaBoSS'
+      env:
+        TWINE_USERNAME: __token__
+        TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
+      run: |
+        python3 -m twine upload --skip-existing dist/*
