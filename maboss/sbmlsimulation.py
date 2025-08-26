@@ -29,7 +29,7 @@ class SBMLSSimulation(object):
     def count_nodes(self):
         
         res = 0
-        with open(self.sbml, 'r') as f:
+        with open(self.sbml, 'r', encoding="utf-8") as f:
             lines = f.readlines()
             for line in lines:
                 if len(line) > 0 and "<qual:qualitativespecies " in line.lower():
