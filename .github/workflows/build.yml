@@ -23,17 +23,12 @@ jobs:
           - {runs-on: ubuntu-24.04, shell: "bash -el {0}"}
           - {runs-on: macos-13, shell: "sh -l {0}"}
           - {runs-on: macos-14, shell: "sh -l {0}"}
-          - {runs-on: windows-2022, shell: "pwsh -Command {0}"}
-          - {runs-on: windows-2025, shell: "pwsh -Command {0}"}
+          - {runs-on: windows-2022, shell: "pwsh -Command &'{0}'"}
+          - {runs-on: windows-2025, shell: "pwsh -Command &'{0}'"}
         maboss_install: 
           - "experimental"
           - "conda"
-        exclude:
-          - os: {runs-on: windows-2022, shell: "pwsh -Command {0}"}
-            maboss_install: "conda"
-          - os: {runs-on: windows-2025, shell: "pwsh -Command {0}"}
-            maboss_install: "conda"
-          
+        
     runs-on: ${{ matrix.os.runs-on }}
           
     defaults:
@@ -122,16 +117,11 @@ jobs:
           - {runs-on: ubuntu-24.04, shell: "bash -el {0}"}
           - {runs-on: macos-13, shell: "sh -l {0}"}
           - {runs-on: macos-14, shell: "sh -l {0}"}
-          - {runs-on: windows-2022, shell: "pwsh -Command {0}"}
-          - {runs-on: windows-2025, shell: "pwsh -Command {0}"}
+          - {runs-on: windows-2022, shell: "pwsh -Command &'{0}'"}
+          - {runs-on: windows-2025, shell: "pwsh -Command &'{0}'"}
         maboss_install: 
           - "experimental"
           - "conda"
-        exclude:
-          - os: {runs-on: windows-2022, shell: "pwsh -Command {0}"}
-            maboss_install: "conda"
-          - os: {runs-on: windows-2025, shell: "pwsh -Command {0}"}
-            maboss_install: "conda"
             
     runs-on: ${{ matrix.os.runs-on }}
 
