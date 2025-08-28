@@ -34,7 +34,7 @@ class Node(object):
     """
 
     def __init__(self, name, logExp=None, rt_up=1, rt_down=1,
-                 is_internal=False, internal_var={}, in_graph=False, is_mutant=False):
+                 is_internal=False, internal_var={}, in_graph=False, is_mutant=False, schedule=None):
         """
         Create a node not yet inserted in a network.
 
@@ -54,6 +54,7 @@ class Node(object):
         self.internal_var = internal_var.copy()
         self.in_graph = in_graph
         self.is_mutant=is_mutant
+        self.schedule = schedule
 
     def set_rate(self, rate_up, rate_down):
         """
@@ -95,9 +96,22 @@ class Node(object):
 
     def copy(self):
         return Node(self.name, self.logExp, self.rt_up, self.rt_down,
-                    self.is_internal, self.internal_var, self.in_graph, self.is_mutant)
+                    self.is_internal, self.internal_var, self.in_graph, self.is_mutant, self.schedule)
 
-
+    def set_schedule(self, schedule):
+        """Set the update schedule of the node.
+        
+        :param str schedule: the update schedule to be attributed to ``self.schedule``
+        """
+        self.schedule = schedule
+        
+    def get_schedule(self):
+        """Get the update schedule of the node.
+        
+        :return: the update schedule of the node
+        :rtype: str
+        """
+        return self.schedule
 class Network(collections.OrderedDict):
     """
     Represent a boolean network.

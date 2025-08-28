@@ -75,6 +75,8 @@ stateSet.setParseAction(lambda token: list(token))
 stateProb = pp.Word(pp.alphanums+' ()+-*/$._')('proba') + stateSet("states")
 stateProb.setParseAction(lambda token: (token.proba, token.states))
 
+schedule = pp.Group(pp.delimitedList(floatNum + pp.Suppress(':') + (floatNum | booleanStr)))
+
 istate_decl = pp.Group(pp.Suppress('[') + pp.delimitedList(varName)("nodes")
                        + pp.Suppress('].istate') + pp.Suppress('=')
                        + pp.delimitedList(stateProb)('attrib') + pp.Suppress(';'))
@@ -98,8 +100,13 @@ refstate_decl = pp.Group(varName("node") + ~pp.White()
                          + numOrBool("refstate_val")
                          + pp.Suppress(';'))
 
+schedule_decl = pp.Group(varName("node") + ~pp.White()
+                         + pp.Suppress(".schedule") + pp.Suppress('=')
+                         + schedule("schedule_val")
+                         + pp.Suppress(';'))
+
 cfg_decl = (var_decl | istate_decl | param_decl | internal_decl
-            | oneIstate_decl | refstate_decl)
+            | oneIstate_decl | refstate_decl | schedule_decl)
 cfg_grammar = pp.ZeroOrMore(cfg_decl)
 cfg_grammar.ignore('//' + pp.restOfLine)
 
@@ -178,8 +185,7 @@ def load(bnd_filename, *cfg_filenames, **extra_args):
             cfg_content += cfg_file.read()
 
         (variables, parameters, is_internal_list, in_graph_list,
-         istate_list, refstate_list) = _read_cfg(cfg_content)
-
+         istate_list, refstate_list, schedule_list) = _read_cfg(cfg_content)
         nodes, mutations = _read_bnd(bnd_content, is_internal_list, in_graph_list)
         mutationTypes = {}
         for mutation in mutations:
@@ -192,6 +198,8 @@ def load(bnd_filename, *cfg_filenames, **extra_args):
         mutations = list(mutationTypes.keys())
         
         net = Network(nodes)
+        for name in schedule_list.keys():
+            net[name].set_schedule(schedule_list[name])
         for istate in istate_list:
             net.set_istate(istate, istate_list[istate])
         for v in variables:
@@ -208,6 +216,7 @@ def _read_cfg(string):
         is_internal_list = {}
         in_graph_list = OrderedDict()
         istate_list = OrderedDict()
+        schedule_list = OrderedDict()
         
         refstate_list = {}
         parse_cfg = cfg_grammar.parseString(string)
@@ -220,6 +229,15 @@ def _read_cfg(string):
                 in_graph_list[token.node] = token.in_graph_val
             if token.refstate_val:
                 refstate_list[token.node] = token.refstate_val
+            if token.schedule_val:  
+                t_schedule = OrderedDict()
+                for i in range(0, len(token.schedule_val),2):
+                    try:
+                        t_schedule[float(token.schedule_val[i])] = float(token.schedule_val[i+1])
+                    except ValueError:
+                        t_schedule[float(token.schedule_val[i])] = str(token.schedule_val[i+1])
+                schedule_list[token.node] = t_schedule
+                
             if token.param:  # True if token is param_decl
                 parameters[token.param] = float(token.value)
             if token.nd_i:
@@ -249,7 +267,7 @@ def _read_cfg(string):
                     istate_list[nodes] = t_istate_list
 
         return (variables, parameters, is_internal_list, in_graph_list, istate_list,
-                refstate_list)
+                refstate_list, schedule_list)
 
 
 def _read_bnd(string, is_internal_list, in_graph_list):
