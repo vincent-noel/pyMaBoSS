@@ -69,30 +69,30 @@ jobs:
         
     - name: Test pyMaBoSS
       env: 
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        RUN_WITH: coverage run
       run: |
-        coverage run -m unittest test.test_conversion
-        coverage run -m unittest test.test_loadmodels
-        coverage run -m unittest test.test_observed_graph
-        coverage run -m unittest test.test_pipelines
-        coverage run -m unittest test.test_probtrajs
-        coverage run -m unittest test.test_statdist
-        coverage run -m unittest test.test_types
-        coverage run -m unittest test.test_uppmaboss
-        coveralls --service=github
+        if [ ${{ matrix.os.runs-on }} = 'windows-2022' ] || [ ${{ matrix.os.runs-on }} = 'windows-2025' ]; then
+          bash test/run_test.bat;
+        else
+          bash test/run_test.sh;
+        fi
         
     - name: Test pyMaBoSS with cMaBoSS
       env: 
+        RUN_WITH: coverage run
+      run: |
+        if [ ${{ matrix.os.runs-on }} = 'windows-2022' ] || [ ${{ matrix.os.runs-on }} = 'windows-2025' ]; then
+          bash test/run_test_cmaboss.bat;
+        else
+          bash test/run_test_cmaboss.sh;
+        fi
+    
+    - name: Submit results to Coveralls
+      env: 
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
-        coverage run -m unittest test.test_popmaboss
-        coverage run -m unittest test.test_ensemble
-        coverage run -m unittest test.test_loadsbml
-        coverage run -m unittest test.test_probtrajs_cmaboss
-        coverage run -m unittest test.test_uppmaboss_cmaboss
-        coverage run -m unittest test.test_observed_graph_cmaboss
         coveralls --service=github
-    
+        
     - name: Test MaBoSS Server with Docker
       if: matrix.os.runs-on == 'ubuntu-22.04' || matrix.os.runs-on == 'ubuntu-24.04'
       env: 
