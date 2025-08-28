@@ -1,4 +1,5 @@
 nbsphinx
+nbsphinx-link
 pyparsing
 colomoto_jupyter
 pandas
