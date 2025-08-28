@@ -222,6 +222,11 @@ class Simulation(object):
             if str(self.refstate[nd]) not in ["-1", "-1.0"]:
                res += "%s.refstate = %s;\n" % (nd, self.refstate[nd])
 
+        for name in self.network.names:
+            if self.network[name].get_schedule() is not None and len(self.network[name].get_schedule()) > 0:
+                schedule = ", ".join([f"{time}: {value}" for time, value in self.network[name].get_schedule().items()])
+                res += "%s.schedule = %s;\n" % (name, schedule)
+
         return res
 
     def get_logical_rules(self):
