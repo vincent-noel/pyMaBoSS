@@ -87,12 +87,6 @@ jobs:
           bash test/run_test_cmaboss.sh;
         fi
     
-    - name: Submit results to Coveralls
-      env: 
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      run: |
-        coveralls --service=github
-        
     - name: Test MaBoSS Server with Docker
       if: matrix.os.runs-on == 'ubuntu-22.04' || matrix.os.runs-on == 'ubuntu-24.04'
       env: 
@@ -100,7 +94,13 @@ jobs:
       run: |
         docker run -p 7777:7777 --network host -d sysbiocurie/maboss
         coverage run -m unittest test.test_server
+    
+    - name: Submit results to Coveralls
+      env: 
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
         coveralls --service=github
+        
     
   pymaboss_scripts: 
     name: Testing pyMaBoSS scripts (${{matrix.os.runs-on}}, ${{matrix.python}}, ${{matrix.maboss_install}})
