@@ -67,25 +67,29 @@ jobs:
       run: |
         python -m maboss_setup_experimental
         
-    - name: Test pyMaBoSS
+    - name: Test pyMaBoSS for Windows
+      if: matrix.os.runs-on == 'windows-2022' || matrix.os.runs-on == 'windows-2025'
       env: 
         RUN_WITH: coverage run
-      run: |
-        if [ ${{ matrix.os.runs-on }} = 'windows-2022' ] || [ ${{ matrix.os.runs-on }} = 'windows-2025' ]; then
-          bash test/run_test.bat;
-        else
-          bash test/run_test.sh;
-        fi
+      run: .\test\run_test.bat
+      
+    - name: Test pyMaBoSS for Unix
+      if: matrix.os.runs-on == 'ubuntu-22.04' || matrix.os.runs-on == 'ubuntu-24.04' || matrix.os.runs-on == 'macos-13' || matrix.os.runs-on == 'macos-14'
+      env: 
+        RUN_WITH: coverage run
+      run: bash test/run_test.sh
+    
+    - name: Test pyMaBoSS with cMaBoSS for Windows
+      if: matrix.os.runs-on == 'windows-2022' || matrix.os.runs-on == 'windows-2025'
+      env: 
+        RUN_WITH: coverage run
+      run: .\test\run_test_cmaboss.bat
         
-    - name: Test pyMaBoSS with cMaBoSS
+    - name: Test pyMaBoSS with cMaBoSS for Unix
+      if: matrix.os.runs-on == 'ubuntu-22.04' || matrix.os.runs-on == 'ubuntu-24.04' || matrix.os.runs-on == 'macos-13' || matrix.os.runs-on == 'macos-14' || matrix.os.runs-on == 'windows-2022' || matrix.os.runs-on == 'windows-2025'
       env: 
         RUN_WITH: coverage run
-      run: |
-        if [ ${{ matrix.os.runs-on }} = 'windows-2022' ] || [ ${{ matrix.os.runs-on }} = 'windows-2025' ]; then
-          bash test/run_test_cmaboss.bat;
-        else
-          bash test/run_test_cmaboss.sh;
-        fi
+      run: bash test/run_test_cmaboss.sh
     
     - name: Test MaBoSS Server with Docker
       if: matrix.os.runs-on == 'ubuntu-22.04' || matrix.os.runs-on == 'ubuntu-24.04'
