@@ -3,7 +3,9 @@ echo off
 if ($env:RUN_WITH) { $RUN_BINARY = $env:RUN_WITH } else { $RUN_BINARY = "python" };
 set /A FAIL=0
 
-$RUN_BINARY -m unittest test.test_popmaboss
+$RUN_BINARY -m unittest test.test_popmaboss.TestPopPMaBoSS.test_fork
+call:check
+$RUN_BINARY -m unittest test.test_popmaboss.TestPopPMaBoSS.test_log_growth
 call:check
 
 $RUN_BINARY -m unittest test.test_ensemble
