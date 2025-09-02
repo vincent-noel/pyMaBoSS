@@ -20,16 +20,15 @@ jobs:
           - "3.13"
         os: 
           - {runs-on: ubuntu-22.04, shell: "bash -el {0}"}
+          - {runs-on: ubuntu-24.04, shell: "bash -el {0}"}
           - {runs-on: macos-13, shell: "sh -l {0}"}
           - {runs-on: macos-14, shell: "sh -l {0}"}
-          - {runs-on: windows-2022, shell: "pwsh -Command {0}"}
+          - {runs-on: windows-2022, shell: "pwsh"}
+          - {runs-on: windows-2025, shell: "pwsh"}
         maboss_install: 
           - "experimental"
           - "conda"
-        exclude:
-          - os: {runs-on: windows-2022, shell: "pwsh -Command {0}"}
-            maboss_install: "conda"
-          
+        
     runs-on: ${{ matrix.os.runs-on }}
           
     defaults:
@@ -96,7 +95,7 @@ jobs:
         coveralls --service=github
     
     - name: Test MaBoSS Server with Docker
-      if: matrix.os.runs-on == 'ubuntu-22.04'
+      if: matrix.os.runs-on == 'ubuntu-22.04' || matrix.os.runs-on == 'ubuntu-24.04'
       env: 
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
@@ -110,22 +109,20 @@ jobs:
       fail-fast: false
       matrix:
         python:
-          - "3.9"
           - "3.10"
           - "3.11"
           - "3.12"
           - "3.13"
         os: 
           - {runs-on: ubuntu-22.04, shell: "bash -el {0}"}
+          - {runs-on: ubuntu-24.04, shell: "bash -el {0}"}
           - {runs-on: macos-13, shell: "sh -l {0}"}
           - {runs-on: macos-14, shell: "sh -l {0}"}
-          - {runs-on: windows-2022, shell: "pwsh -Command {0}"}
+          - {runs-on: windows-2022, shell: "pwsh"}
+          - {runs-on: windows-2025, shell: "pwsh"}
         maboss_install: 
           - "experimental"
           - "conda"
-        exclude:
-          - os: {runs-on: windows-2022, shell: "pwsh -Command {0}"}
-            maboss_install: "conda"
             
     runs-on: ${{ matrix.os.runs-on }}
 
