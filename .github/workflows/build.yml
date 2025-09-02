@@ -66,33 +66,30 @@ jobs:
       if: matrix.maboss_install == 'experimental'
       run: |
         python -m maboss_setup_experimental
-        
-    - name: Test pyMaBoSS
+
+    - name: Test pyMaBoSS for Windows
+      if: matrix.os.runs-on == 'windows-2022' || matrix.os.runs-on == 'windows-2025'
       env: 
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      run: |
-        coverage run -m unittest test.test_conversion
-        coverage run -m unittest test.test_loadmodels
-        coverage run -m unittest test.test_observed_graph
-        coverage run -m unittest test.test_pipelines
-        coverage run -m unittest test.test_probtrajs
-        coverage run -m unittest test.test_statdist
-        coverage run -m unittest test.test_types
-        coverage run -m unittest test.test_uppmaboss
-        coveralls --service=github
-        
-    - name: Test pyMaBoSS with cMaBoSS
-      if: matrix.os.runs-on != 'windows-2022'
+        RUN_WITH: coverage run
+      run: cmd.exe -/c ".\test\run_test.bat"
+      
+    - name: Test pyMaBoSS for Unix
+      if: matrix.os.runs-on == 'ubuntu-22.04' || matrix.os.runs-on == 'ubuntu-24.04' || matrix.os.runs-on == 'macos-13' || matrix.os.runs-on == 'macos-14'
       env: 
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      run: |
-        coverage run -m unittest test.test_popmaboss
-        coverage run -m unittest test.test_ensemble
-        coverage run -m unittest test.test_loadsbml
-        coverage run -m unittest test.test_probtrajs_cmaboss
-        coverage run -m unittest test.test_uppmaboss_cmaboss
-        coverage run -m unittest test.test_observed_graph_cmaboss
-        coveralls --service=github
+        RUN_WITH: coverage run
+      run: bash test/run_test.sh
+    
+    - name: Test pyMaBoSS with cMaBoSS for Windows
+      if: matrix.os.runs-on == 'windows-2022' || matrix.os.runs-on == 'windows-2025'
+      env: 
+        RUN_WITH: coverage run
+      run: cmd.exe -/c ".\test\run_test_cmaboss.bat"
+        
+    - name: Test pyMaBoSS with cMaBoSS for Unix
+      if: matrix.os.runs-on == 'ubuntu-22.04' || matrix.os.runs-on == 'ubuntu-24.04' || matrix.os.runs-on == 'macos-13' || matrix.os.runs-on == 'macos-14'
+      env: 
+        RUN_WITH: coverage run
+      run: bash test/run_test_cmaboss.sh
     
     - name: Test MaBoSS Server with Docker
       if: matrix.os.runs-on == 'ubuntu-22.04' || matrix.os.runs-on == 'ubuntu-24.04'
@@ -101,7 +98,13 @@ jobs:
       run: |
         docker run -p 7777:7777 --network host -d sysbiocurie/maboss
         coverage run -m unittest test.test_server
+    
+    - name: Submit results to Coveralls
+      env: 
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
         coveralls --service=github
+        
     
   pymaboss_scripts: 
     name: Testing pyMaBoSS scripts (${{matrix.os.runs-on}}, ${{matrix.python}}, ${{matrix.maboss_install}})
