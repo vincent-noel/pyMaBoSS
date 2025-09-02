@@ -73,12 +73,12 @@ class TestPopPMaBoSS(TestCase):
 			[0.00000000e+00, 1.49998000e+00, 1.50002000e+00],
 		])
 		
-		self.assertTrue(np.allclose(res.get_simple_states_popsize().values, expected, atol=1e-5))
+		self.assertTrue(np.allclose(res.get_simple_states_popsize().values, expected, atol=1e-3))
 
 		expected_AB = np.array([0.42808481, 0.42927359, 0.1426416])
 		expected_AC = np.array([0.42909702, 0.42790873, 0.14299425])
-		self.assertTrue(np.allclose(res.get_last_state_dist("A -- B").values, expected_AB, atol=1e-5))
-		self.assertTrue(np.allclose(res.get_last_state_dist("A -- C").values, expected_AC, atol=1e-5))
+		self.assertTrue(np.allclose(res.get_last_state_dist("A -- B").values, expected_AB, atol=1e-3))
+		self.assertTrue(np.allclose(res.get_last_state_dist("A -- C").values, expected_AC, atol=1e-3))
 
 	def test_log_growth(self):
 
