@@ -5,13 +5,11 @@ if not defined RUN_WITH (
 )
 set /A FAIL=0
 
-%RUN_WITH% -m unittest test.test_popmaboss
+%RUN_WITH% -m unittest test.test_popmaboss.TestPopPMaBoSS.test_fork
 call:check
-@REM %RUN_WITH% -m unittest test.test_popmaboss.TestPopPMaBoSS.test_fork
-@REM call:check
 
-@REM %RUN_WITH% -m unittest test.test_popmaboss.TestPopPMaBoSS.test_log_growth
-@REM call:check
+%RUN_WITH% -m unittest test.test_popmaboss.TestPopPMaBoSS.test_log_growth
+call:check
 
 %RUN_WITH% -m unittest test.test_ensemble
 call:check
