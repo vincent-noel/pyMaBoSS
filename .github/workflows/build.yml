@@ -52,7 +52,7 @@ jobs:
     - name: Install MaBoSS with Conda
       if: matrix.maboss_install == 'conda'
       run: |
-        conda install -c colomoto maboss>=2.6.5
+        conda install -c colomoto 'maboss>=2.6.5'
         
     - name: Install dependencies
       run: |
