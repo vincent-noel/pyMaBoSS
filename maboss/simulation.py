@@ -104,6 +104,7 @@ class Simulation(object):
     def copy(self):
         new_network = self.network.copy()
         result = Simulation(new_network, self.param, mutations=self.mutations.copy(), mutationsTypes=self.mutationTypes.copy(), palette=self.palette)
+        result.refstate = self.refstate.copy()
         return result
 
     def check(self, command=None):
