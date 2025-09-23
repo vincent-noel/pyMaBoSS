@@ -85,22 +85,22 @@ oneIstate_decl = pp.Group(varName("nd_i") + ~pp.White() + pp.Suppress('.istate')
                           + pp.Suppress('=') + booleanStr('istate_val')
                           + pp.Suppress(';'))
 
-internal_decl = pp.Group(varName("node") + ~pp.White()
+internal_decl = pp.Group(varName("internal") + ~pp.White()
                          + pp.Suppress(".is_internal") + pp.Suppress('=')
                          + booleanStr("is_internal_val")
                          + pp.Suppress(';'))
 
-ingraph_decl = pp.Group(varName("node") + ~pp.White()
+ingraph_decl = pp.Group(varName("ingraph") + ~pp.White()
                          + pp.Suppress(".is_graph") + pp.Suppress('=')
                          + booleanStr("is_graph_val")
                          + pp.Suppress(';'))
 
-refstate_decl = pp.Group(varName("node") + ~pp.White()
+refstate_decl = pp.Group(varName("refstate") + ~pp.White()
                          + pp.Suppress(".refstate") + pp.Suppress('=')
                          + numOrBool("refstate_val")
                          + pp.Suppress(';'))
 
-schedule_decl = pp.Group(varName("node") + ~pp.White()
+schedule_decl = pp.Group(varName("schedule") + ~pp.White()
                          + pp.Suppress(".schedule") + pp.Suppress('=')
                          + schedule("schedule_val")
                          + pp.Suppress(';'))
@@ -223,20 +223,20 @@ def _read_cfg(string):
         for token in parse_cfg:
             if token.lhs:  # True if token is var_decl
                 variables[token.lhs] = token.rhs
-            if token.is_internal_val:  # True if token is internal_decl
-                is_internal_list[token.node] = token.is_internal_val
-            if token.in_graph_val:  # True if token is internal_decl
-                in_graph_list[token.node] = token.in_graph_val
-            if token.refstate_val:
-                refstate_list[token.node] = token.refstate_val
-            if token.schedule_val:  
+            if token.get_name() == "internal":  # True if token is internal_decls
+                is_internal_list[token.internal] = token.is_internal_val
+            if token.get_name() == "ingraph":  # True if token is ingraph_decl
+                in_graph_list[token.ingraph] = token.in_graph_val
+            if token.get_name() == "refstate":  # True if token is refstate_decl
+                refstate_list[token.refstate] = token.refstate_val
+            if token.get_name() == "schedule":  # True if token is schedule_decl
                 t_schedule = OrderedDict()
                 for i in range(0, len(token.schedule_val),2):
                     try:
                         t_schedule[float(token.schedule_val[i])] = float(token.schedule_val[i+1])
                     except ValueError:
                         t_schedule[float(token.schedule_val[i])] = str(token.schedule_val[i+1])
-                schedule_list[token.node] = t_schedule
+                schedule_list[token.schedule] = t_schedule
                 
             if token.param:  # True if token is param_decl
                 parameters[token.param] = float(token.value)
