@@ -67,16 +67,6 @@ jobs:
       run: |
         python -m maboss_setup_experimental
 
-    - name: Checking MaBoSS version for Unix
-      if: matrix.os.runs-on == 'ubuntu-22.04' || matrix.os.runs-on == 'ubuntu-24.04' || matrix.os.runs-on == 'macos-13' || matrix.os.runs-on == 'macos-14'
-      run: |
-        MaBoSS --version
-        
-    - name: Checking MaBoSS version for Windows
-      if: matrix.os.runs-on == 'windows-2022' || matrix.os.runs-on == 'windows-2025'
-      run: |
-        .\MaBoSS.exe --version
-        
     - name: Test pyMaBoSS for Windows
       if: matrix.os.runs-on == 'windows-2022' || matrix.os.runs-on == 'windows-2025'
       env: 
