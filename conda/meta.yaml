@@ -20,7 +20,7 @@ requirements:
 
   run:
     - colomoto_jupyter >=0.4.10
-    - maboss >=2.6.0
+    - maboss >=2.6.5
     - pandas
     - pyparsing
     - python
