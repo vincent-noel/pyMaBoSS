@@ -52,7 +52,7 @@ jobs:
     - name: Install MaBoSS with Conda
       if: matrix.maboss_install == 'conda'
       run: |
-        conda install -c conda-forge -c colomoto 'maboss>=2.6.5'
+        conda install -c conda-forge -c colomoto 'maboss>=2.6.5' 'cmaboss>=1.0.0b30'
         
     - name: Install dependencies
       run: |
@@ -150,7 +150,7 @@ jobs:
     - name: Install MaBoSS with Conda
       if: matrix.maboss_install == 'conda'
       run: |
-        conda install -c conda-forge -c colomoto maboss
+        conda install -c conda-forge -c colomoto maboss cmaboss
       
     - name: Install dependencies
       run: |
