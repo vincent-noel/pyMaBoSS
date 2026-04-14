@@ -17,7 +17,7 @@ jobs:
     - uses: conda-incubator/setup-miniconda@v3
       with:
         auto-update-conda: true
-        channels: defaults
+        channels: conda-forge
         python-version: "3.11"
         use-mamba: true
   
@@ -26,7 +26,7 @@ jobs:
       
     - name: Build pyMaBoSS Anaconda package
       run: |
-        conda build conda -c colomoto
+        conda build conda -c conda-forge -c colomoto
         
     - name: Upload Anaconda package to colomoto's repo
       if: github.event_name == 'release' && github.event.action == 'created' && github.repository == 'colomoto/pyMaBoSS'
