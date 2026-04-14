@@ -9,6 +9,7 @@ from __future__ import print_function
 import sys
 from collections import OrderedDict
 from sys import stderr, version_info
+import tempfile
 if version_info[0] < 3:
     from contextlib2 import ExitStack
 else:
@@ -109,6 +110,33 @@ cfg_decl = (var_decl | istate_decl | param_decl | internal_decl
             | oneIstate_decl | refstate_decl | schedule_decl)
 cfg_grammar = pp.ZeroOrMore(cfg_decl)
 cfg_grammar.ignore('//' + pp.restOfLine)
+def loadTabularQual(tabularqual_filename, cmaboss=False):
+    """Loads a network from a TabularQual format file.
+    :param str tabularqual_filename: Network file
+    :keyword str simulation_name: name of the returned :py:class:`.Simulation` object
+    :rtype: :py:class:`.Simulation`
+    """
+    if "://" in tabularqual_filename:
+        from colomoto_jupyter.io import ensure_localfile
+        tabularqual_filename = ensure_localfile(tabularqual_filename)
+        
+    with tempfile.NamedTemporaryFile(suffix=".sbml", delete=True) as sbml_file:
+        sbml_file.close() # we only need the name of the file, it will be overwritten by the convert_spreadsheet_to_sbml function, but on Windows the file cannot be opened twice at the same time
+        try:
+            from tabularqual.convert_spreadsheet_to_sbml import convert_spreadsheet_to_sbml            
+            convert_spreadsheet_to_sbml(
+                tabularqual_filename,
+                sbml_file.name,
+                interactions_anno=False, # no existing interaction annotations
+                transitions_anno=True,
+                validate=False, # no validation
+                print_messages=False, # no messages,
+                use_name=False
+            )
+            return loadSBML(sbml_file.name, cmaboss=cmaboss)
+            
+        except ImportError:
+            raise ImportError("TabularQual is not installed. Install it with 'pip install tabularqual' to load TabularQual files.")
 
 def loadBNet(bnet_filename, cfg_filename=None, cmaboss=False):
     """Loads a network from a MaBoSS format file.
