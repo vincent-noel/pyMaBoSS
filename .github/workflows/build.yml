@@ -21,7 +21,7 @@ jobs:
         os: 
           - {runs-on: ubuntu-22.04, shell: "bash -el {0}"}
           - {runs-on: ubuntu-24.04, shell: "bash -el {0}"}
-          - {runs-on: macos-13, shell: "sh -l {0}"}
+          - {runs-on: mmacos-15-intel, shell: "sh -l {0}"}
           - {runs-on: macos-14, shell: "sh -l {0}"}
           - {runs-on: windows-2022, shell: "pwsh"}
           - {runs-on: windows-2025, shell: "pwsh"}
@@ -74,7 +74,7 @@ jobs:
       run: cmd.exe -/c ".\test\run_test.bat"
       
     - name: Test pyMaBoSS for Unix
-      if: matrix.os.runs-on == 'ubuntu-22.04' || matrix.os.runs-on == 'ubuntu-24.04' || matrix.os.runs-on == 'macos-13' || matrix.os.runs-on == 'macos-14'
+      if: matrix.os.runs-on == 'ubuntu-22.04' || matrix.os.runs-on == 'ubuntu-24.04' || matrix.os.runs-on == 'macos-15-intel' || matrix.os.runs-on == 'macos-14'
       env: 
         RUN_WITH: coverage run
       run: bash test/run_test.sh
@@ -86,7 +86,7 @@ jobs:
       run: cmd.exe -/c ".\test\run_test_cmaboss.bat"
         
     - name: Test pyMaBoSS with cMaBoSS for Unix
-      if: matrix.os.runs-on == 'ubuntu-22.04' || matrix.os.runs-on == 'ubuntu-24.04' || matrix.os.runs-on == 'macos-13' || matrix.os.runs-on == 'macos-14'
+      if: matrix.os.runs-on == 'ubuntu-22.04' || matrix.os.runs-on == 'ubuntu-24.04' || matrix.os.runs-on == 'macos-15-intel' || matrix.os.runs-on == 'macos-14'
       env: 
         RUN_WITH: coverage run
       run: bash test/run_test_cmaboss.sh
@@ -119,7 +119,7 @@ jobs:
         os: 
           - {runs-on: ubuntu-22.04, shell: "bash -el {0}"}
           - {runs-on: ubuntu-24.04, shell: "bash -el {0}"}
-          - {runs-on: macos-13, shell: "sh -l {0}"}
+          - {runs-on: macos-15-intel, shell: "sh -l {0}"}
           - {runs-on: macos-14, shell: "sh -l {0}"}
           - {runs-on: windows-2022, shell: "pwsh"}
           - {runs-on: windows-2025, shell: "pwsh"}
