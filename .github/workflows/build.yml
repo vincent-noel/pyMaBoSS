@@ -56,11 +56,11 @@ jobs:
         
     - name: Install dependencies
       run: |
-        pip3 install coveralls --upgrade
-            
+        pip3 install coveralls --upgrade --break-system-packages
+
     - name: Install pyMaBoSS
       run: |
-        pip3 install .
+        pip3 install . --break-system-packages
         
     - name: Install MaBoSS with new script
       if: matrix.maboss_install == 'experimental'
@@ -154,11 +154,11 @@ jobs:
       
     - name: Install dependencies
       run: |
-        pip3 install coveralls --upgrade
+        pip3 install coveralls --upgrade --break-system-packages
         
     - name: Install pyMaBoSS
       run: |
-        pip3 install .
+        pip3 install . --break-system-packages
         
     - name: Install MaBoSS with new script
       if: matrix.maboss_install == 'experimental'
