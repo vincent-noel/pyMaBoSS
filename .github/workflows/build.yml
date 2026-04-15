@@ -53,11 +53,16 @@ jobs:
     - name: Install MaBoSS with Conda
       if: matrix.maboss_install == 'conda'
       run: |
-        conda install -c conda-forge -c colomoto 'maboss>=2.6.5' 'cmaboss>=1.0.0b30'
+        conda install -c conda-forge -c colomoto 'maboss>=2.6.6'
         
     - name: Install dependencies
       run: |
         pip3 install coveralls --upgrade --break-system-packages
+        
+    - name: Install tabularqual
+      if: matrix.python == '3.11' || matrix.python == '3.12' || matrix.python == '3.13' || matrix.python == '3.14'
+      run: |
+        pip3 install tabularqual --upgrade --break-system-packages
 
     - name: Install pyMaBoSS
       run: |
@@ -100,6 +105,11 @@ jobs:
         docker run -p 7777:7777 --network host -d sysbiocurie/maboss
         coverage run -m unittest test.test_server
     
+    - name: Test tabularqual
+      if: matrix.python == '3.11' || matrix.python == '3.12' || matrix.python == '3.13' || matrix.python == '3.14'
+      run: |  
+        coverage run -m unittest test.test_tabularqual
+          
     - name: Submit results to Coveralls
       env: 
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -152,12 +162,12 @@ jobs:
     - name: Install MaBoSS with Conda
       if: matrix.maboss_install == 'conda'
       run: |
-        conda install -c conda-forge -c colomoto maboss cmaboss
+        conda install -c conda-forge -c colomoto maboss
       
     - name: Install dependencies
       run: |
         pip3 install coveralls --upgrade --break-system-packages
-        
+
     - name: Install pyMaBoSS
       run: |
         pip3 install . --break-system-packages
