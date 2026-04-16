@@ -1,8 +1,10 @@
-"""Function to import the ginsim out in Python.
+"""Function to import maboss models in Python.
 
-The ginsim output is a special case of MaBoSS format. This parser uses
-the very specific structure of the ginsim output and not able to parse every
-MaBoSS file.
+Multiple types are supported: 
+- MaBoSS format (bnd + cfg files)
+- SBML format (xml files)
+- BNet format (bnet files)
+- TabularQual format (xlsx files)
 """
 
 from __future__ import print_function
@@ -113,7 +115,6 @@ cfg_grammar.ignore('//' + pp.restOfLine)
 def loadTabularQual(tabularqual_filename, cmaboss=False):
     """Loads a network from a TabularQual format file.
     :param str tabularqual_filename: Network file
-    :keyword str simulation_name: name of the returned :py:class:`.Simulation` object
     :rtype: :py:class:`.Simulation`
     """
     if "://" in tabularqual_filename:
@@ -143,7 +144,6 @@ def loadBNet(bnet_filename, cfg_filename=None, cmaboss=False):
 
     :param str bnet_filename: Network file
     :param str cfg_filename: Configuration file
-    :keyword str simulation_name: name of the returned :py:class:`.Simulation` object
     :rtype: :py:class:`.Simulation`
     """
     assert bnet_filename.lower().endswith(".bnet"), "wrong extension for BNet file"
@@ -163,7 +163,6 @@ def loadSBML(sbml_filename, cfg_filename=None, use_sbml_names=False, cmaboss=Fal
     :param str sbml_filename: Network file
     :param str cfg_filename: Configuraton file
     :param bool use_sbml_names: Use SBML names instead of IDs to name nodes
-    :keyword str simulation_name: name of the returned :py:class:`.Simulation` object
     :rtype: :py:class:`.Simulation`
     """
     assert sbml_filename.lower().endswith(".xml") or sbml_filename.lower().endswith(".sbml")
@@ -182,7 +181,6 @@ def load(bnd_filename, *cfg_filenames, **extra_args):
 
     :param str bnd_filename: Network file
     :param str cfg_filename: Configuraton file
-    :keyword str simulation_name: name of the returned :py:class:`.Simulation` object
     :rtype: :py:class:`.Simulation`
     """
     assert bnd_filename.lower().endswith(".bnd"), "wrong extension for bnd file"
