@@ -37,7 +37,7 @@ jobs:
         shell: ${{ matrix.os.shell }}
           
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
     - if: matrix.maboss_install == 'conda'
       uses: conda-incubator/setup-miniconda@v3
       with:
@@ -46,7 +46,7 @@ jobs:
         python-version: ${{ matrix.python }}
         use-mamba: true
     - if: matrix.maboss_install == 'experimental'
-      uses: actions/setup-python@v5
+      uses: actions/setup-python@v6
       with:
         python-version: ${{ matrix.python }}
         
@@ -146,7 +146,7 @@ jobs:
         shell: ${{ matrix.os.shell }}
                 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
     - if: matrix.maboss_install == 'conda'
       uses: conda-incubator/setup-miniconda@v3
       with:
@@ -155,7 +155,7 @@ jobs:
         python-version: ${{ matrix.python }}
         use-mamba: true
     - if: matrix.maboss_install == 'experimental'
-      uses: actions/setup-python@v5
+      uses: actions/setup-python@v6
       with:
         python-version: ${{ matrix.python }}
         
@@ -194,7 +194,7 @@ jobs:
         shell: bash -el {0}
     
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
     - uses: conda-incubator/setup-miniconda@v3
       with:
         auto-update-conda: true
@@ -225,7 +225,7 @@ jobs:
     needs: [pymaboss_test, pymaboss_scripts]
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
     
     - name: Install twine
       run: pip3 install twine
