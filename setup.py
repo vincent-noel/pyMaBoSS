@@ -12,7 +12,7 @@ this_directory = Path(__file__).parent
 long_description = (this_directory / "description.rst").read_text()
 
 setup(name='maboss',
-    version="0.8.12",
+    version="0.8.13",
     packages=find_packages(exclude=["test"]),
     py_modules = ["maboss_setup", "maboss_setup_experimental"],
     author="Vincent Noël, Loic Paulevé, Aurelien Naldi and Nicolas Levy",
@@ -29,7 +29,7 @@ setup(name='maboss',
         "pandas",
         "scikit-learn",
         "networkx",
-        "cmaboss>=1.0.0b30"
+        "cmaboss>=1.0.0b32"
     ] + optional_contextlib,
     scripts=['scripts/MBSS_FormatTable.py', 'scripts/UpPMaBoSS.py']
 )

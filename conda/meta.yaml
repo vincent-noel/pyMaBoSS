@@ -1,5 +1,5 @@
 {% set name = "pyMaBoSS" %}
-{% set version = "0.8.12" %}
+{% set version = "0.8.13" %}
 package:
   name: '{{ name|lower }}'
   version: '{{ version }}'
@@ -29,7 +29,7 @@ requirements:
     - scikit-learn
     - networkx
     - pygraphviz
-    - cmaboss >=1.0.0b27
+    - cmaboss >=1.0.0b32
 
 about:
   home: https://github.com/colomoto/pyMaBoSS
