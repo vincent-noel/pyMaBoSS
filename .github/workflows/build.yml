@@ -55,6 +55,9 @@ jobs:
       run: |
         conda install -c conda-forge -c colomoto 'maboss>=2.6.6'
         
+    - name: Setup tmate session for debugging
+      uses: mxschmitt/action-tmate@v3
+        
     - name: Install dependencies
       run: |
         pip3 install coveralls --upgrade --break-system-packages
