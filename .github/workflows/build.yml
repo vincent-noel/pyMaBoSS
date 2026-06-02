@@ -53,7 +53,7 @@ jobs:
     - name: Install MaBoSS with Conda
       if: matrix.maboss_install == 'conda'
       run: |
-        conda install -c conda-forge -c colomoto 'maboss>=2.6.6'
+        conda install -c conda-forge -c colomoto 'maboss>=2.6.6' pip
         
     - name: Upgrading pip for ubuntu 22
       if: matrix.os.runs-on == 'ubuntu-22.04'
