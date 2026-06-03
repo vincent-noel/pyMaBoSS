@@ -212,14 +212,9 @@ jobs:
         python-version: "3.11"
         use-mamba: true
   
-    - name: Install conda-build and anaconda-client
-      run: conda install conda-build anaconda-client
-      
-    - name: Running tmate
-      uses: mxschmitt/action-tmate@v3
-    
     - name: Build pyMaBoSS Anaconda package
       run: |
+        conda install conda-build anaconda-client
         conda build conda -c conda-forge -c colomoto
         
     - name: Upload Anaconda package to colomoto's repo
