@@ -225,12 +225,12 @@ jobs:
     - name: Upload Anaconda package to colomoto's repo
       if: github.event_name == 'release' && github.event.action == 'created' && github.repository == 'colomoto/pyMaBoSS'
       run: |
-        anaconda -t ${{ secrets.ANACONDA_TOKEN }} upload -u colomoto /usr/share/miniconda/envs/test/conda-bld/noarch/*.conda --force;
+        conda run -n base anaconda -t ${{ secrets.ANACONDA_TOKEN }} upload -u colomoto /usr/share/miniconda/conda-bld/noarch/*.conda --force;
         
     - name: Upload Anaconda package to vincent-noel's repo
       if: github.repository == 'vincent-noel/pyMaBoSS' && github.ref == 'refs/heads/master'
       run: |
-        anaconda -t ${{ secrets.ANACONDA_TOKEN }} upload -u vincent-noel /usr/share/miniconda/envs/test/conda-bld/noarch/*.conda --force;
+        conda run -n base anaconda -t ${{ secrets.ANACONDA_TOKEN }} upload -u vincent-noel /usr/share/miniconda/conda-bld/noarch/*.conda --force;
       
   pypi_pymaboss:
     name: pyMaBoSS PyPi package

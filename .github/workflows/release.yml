@@ -17,13 +17,16 @@ jobs:
     - uses: conda-incubator/setup-miniconda@v4
       with:
         auto-update-conda: true
+        auto-activate-base: true
         channels: conda-forge
         python-version: "3.11"
         use-mamba: true
   
-    - name: Install conda-build and anaconda-client
-      run: conda install conda-build anaconda-client
-      
+    - name: Install conda-build and conda-verify
+      run: |
+        conda install -n base -y -c conda-forge conda-build conda-verify anaconda-client
+        conda build --version
+        
     - name: Build pyMaBoSS Anaconda package
       run: |
         conda build conda -c conda-forge -c colomoto
@@ -31,12 +34,12 @@ jobs:
     - name: Upload Anaconda package to colomoto's repo
       if: github.event_name == 'release' && github.event.action == 'created' && github.repository == 'colomoto/pyMaBoSS'
       run: |
-        anaconda -t ${{ secrets.ANACONDA_TOKEN }} upload -u colomoto /usr/share/miniconda/envs/test/conda-bld/noarch/*.conda --force;
+        conda run -n base anaconda -t ${{ secrets.ANACONDA_TOKEN }} upload -u colomoto /usr/share/miniconda/conda-bld/noarch/*.conda --force
         
     - name: Upload Anaconda package to vincent-noel's repo
       if: github.repository == 'vincent-noel/pyMaBoSS' && github.ref == 'refs/heads/master'
       run: |
-        anaconda -t ${{ secrets.ANACONDA_TOKEN }} upload -u vincent-noel /usr/share/miniconda/envs/test/conda-bld/noarch/*.conda --force;
+        conda run -n base anaconda -t ${{ secrets.ANACONDA_TOKEN }} upload -u vincent-noel /usr/share/miniconda/conda-bld/noarch/*.conda --force
       
   pypi_pymaboss:
     name: pyMaBoSS PyPi package
