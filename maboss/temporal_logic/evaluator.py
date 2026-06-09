@@ -299,8 +299,7 @@ class MaBoSSEvaluator:
                 MaBoSSEvaluator.combination = True
 
     @staticmethod
-    def querying(queries: list[str], sim_cfg=None, sim_bnd=None, initial_state: list[dict] = None,
-                 output_setting: list[str] = None):
+    def querying(queries: list[str], sim_cfg=None, sim_bnd=None, initial_state: list[dict] = None, output_setting: list[str] = None):
         """
         Interaction method between the user and the program.
         First it runs all the necessary simulations, a dictionary avoids two identical simulations to be run twice. It always
@@ -1382,17 +1381,17 @@ class MaBoSSEvaluator:
         # print("in transient")
 
         i_val_compare = df_compare_to[node].iloc[0].round(digits)
-        f_val_compare = df_compare_to[node].tail(10).mean().round(digits)
-        peak_compare = df_compare_to[node].max().round(
-            digits) if MaBoSSEvaluator.parsed_query.type == QueryType.INCREASE else df_compare_to[node].min().round(
+        f_val_compare = df_compare_to[node].tail(10).mean().__round__(digits)
+        peak_compare = df_compare_to[node].max().__round__(
+            digits) if MaBoSSEvaluator.parsed_query.type == QueryType.INCREASE else df_compare_to[node].min().__round__(
             digits)
         move_compare = abs(peak_compare - i_val_compare) > threshold  # checking it is moving enough
         return_to_normal_compare = abs(f_val_compare - i_val_compare) < threshold  # checking end of movement
 
         i_val_mut = df_mut[node].iloc[0].round(digits)
         f_val_mut = df_mut[node].tail(10).mean().round(digits)
-        peak_mut = df_mut[node].max().round(digits) if MaBoSSEvaluator.parsed_query.type == QueryType.INCREASE else \
-            df_mut[node].min().round(digits)
+        peak_mut = df_mut[node].max().__round__(digits) if MaBoSSEvaluator.parsed_query.type == QueryType.INCREASE else \
+            df_mut[node].min().__round__(digits)
         move_mut = abs(peak_mut - i_val_mut) > threshold
         return_to_normal_mut = abs(f_val_mut - i_val_mut) < threshold
 

@@ -899,3 +899,77 @@ class TestEvaluator(TestCase):
         print(f"Res:\n{res}\nExpected:\n{expected}")
 
         pd.testing.assert_frame_equal(res, expected, check_dtype=False, check_categorical=False, atol=1e-3, check_exact=False)
+
+    def test_transient(self):
+        master_result = load_fake_result('test_data.csv', 'test_data_states.csv', 'test_data_fp_master.csv', 'test_data_last_states_master.csv', 'test_data_last_nodes_master.csv')
+        mutant_result = load_fake_result('test_data_mut.csv', 'test_data_states_mut.csv', 'test_data_fp_mut.csv', 'test_data_last_states_mutation.csv', 'test_data_last_nodes_mutation.csv')
+
+        res_transient_incr = pd.DataFrame({
+            "Initial AKT1 value reference": [0.421],
+            "Initial AKT1 value mutation" : [0.33],
+            "Difference AKT1 initial value" : [True],
+            "Final value reference" : [0.4047], #mean of last 10 rows
+            "Final value mutation" : [0.2002], #mean of last 10 rows
+            "Difference AKT1 final value" : [False],
+            "Peak AKT1 reference value" : [0.678],
+            "Peak AKT1 mutation value" : [0.33],
+            "Difference AKT1 peak value" : [False],
+            "Movement AKT1 reference" : [True],
+            "Movement AKT1 mutation" : [False],
+            "Both simulation have moved" : [False],
+            "Return to normal AKT1 reference" : [True],
+            "Return to normal AKT1 mutation" : [False],
+            "Both simulation have returned to normal" : [False]
+        })
+        res_transient_decr = pd.DataFrame({
+            "Initial AKT2 value reference": [0.854],
+            "Initial AKT2 value mutation": [0.82],
+            "Difference AKT2 initial value": [True],
+            "Final value reference": [0.5843],  # mean of last 10 rows
+            "Final value mutation": [0.69],  # mean of last 10 rows
+            "Difference AKT2 final value": [False],
+            "Peak AKT2 reference value": [0.332],
+            "Peak AKT2 mutation value": [0.45],
+            "Difference AKT2 peak value": [False],
+            "Movement AKT2 reference": [True],
+            "Movement AKT2 mutation": [True],
+            "Both simulation have moved": [True],
+            "Return to normal AKT2 reference": [False],
+            "Return to normal AKT2 mutation": [False],
+            "Both simulation have returned to normal": [False]
+        })
+
+        MaBoSSEvaluator.reset_default_values()
+        MaBoSSEvaluator.parsed_query = Formula(
+            QueryType.INCREASE,
+            TargetType.NODE,
+            ['AKT1'],
+            Operators.NONE,
+            None,
+            [],
+            ['AKT1:ON'],
+            [],
+            "Inc(node:AKT1) / [ ] [ AKT1:ON ]"
+        )
+
+        res_compute_incr = MaBoSSEvaluator.check_transient(master_result.get_nodes_probtraj(), mutant_result.get_nodes_probtraj(), 'AKT1')
+        res_compute_incr_df = pd.DataFrame(res_compute_incr, index=[0])
+        res_compute_incr_df.to_csv("test/result_transient_incr.csv")
+
+        MaBoSSEvaluator.parsed_query = Formula(
+            QueryType.DECREASE,
+            TargetType.NODE,
+            ['AKT2'],
+            Operators.NONE,
+            None,
+            [],
+            ['AKT1:ON'],
+            [],
+            "Inc(node:AKT2) / [ ] [ AKT1:ON ]"
+        )
+        res_compute_decr = MaBoSSEvaluator.check_transient(master_result.get_nodes_probtraj(), mutant_result.get_nodes_probtraj(), 'AKT2')
+        res_compute_decr_df = pd.DataFrame(res_compute_decr, index=[0])
+        res_compute_decr_df.to_csv("test/result_transient_decr.csv")
+
+        pd.testing.assert_frame_equal(res_compute_incr_df, res_transient_incr, check_dtype=False, check_categorical=False, atol=1e-3, check_exact=False)
+        pd.testing.assert_frame_equal(res_compute_decr_df, res_transient_decr, check_dtype=False, check_categorical=False, atol=1e-3, check_exact=False)
