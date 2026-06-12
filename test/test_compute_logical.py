@@ -1,3 +1,5 @@
+from IPython.core.display_functions import display
+
 from maboss.temporal_logic import MaBoSSEvaluator
 from maboss.temporal_logic.extractors import Extractor
 from maboss.temporal_logic.logical_expression_compute import ComputeLogicalExpression
@@ -554,3 +556,18 @@ class TestLogicalCompute(TestCase):
         })
         print(f"res:\n{merged_df}\nexpected:\n{expected}")
         assert merged_df.equals(expected)
+
+    def test_merge_or(self):
+        df1 = pd.DataFrame({
+            'Time': [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
+            'AKT1': [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
+        })
+
+        df2 = pd.DataFrame({
+            'Time': [0, 1, 2, 3, 4],
+            'AKT1': [0, 0.1, 0.2, 0.3, 0.4],
+            'AKT2': [0, 0.1, 0.2, 0.3, 0.4]
+        })
+
+        res = ComputeLogicalExpression.merge_or(df1, df2,None,None)
+        display(res)
