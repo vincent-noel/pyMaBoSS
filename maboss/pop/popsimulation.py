@@ -68,8 +68,8 @@ class PopSimulation(object):
     def copy(self):
         return PopSimulation(cmaboss=self.cmaboss, cmaboss_sim=self.cmaboss_sim.copy())
         
-    # def get_nodes(self):
-    #     return self.cmaboss_sim.get_nodes()
+    def get_nodes(self):
+        return self.cmaboss_sim.get_nodes()
 
     def run(self, workdir=None, prefix="res", overwrite=False, hexfloat=True, cmaboss=True):
         if workdir is None or not os.path.exists(os.path.join(workdir, "%s_run.txt" % prefix)) or overwrite:
