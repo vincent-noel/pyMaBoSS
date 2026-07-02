@@ -164,15 +164,16 @@ class PopMaBoSSResult:
         #     _nodes = self.sim.get_nodes()
             
         raw_probas, indexes, states, _ = self.get_raw_states_probtraj()
-                
         self._popnodes = set()  #{"{%s:%s}" % (node,0) for node in _nodes}
         for t_state in states:
-            for subpopstates in t_state[1:-1].split(","):
-                state, pop = subpopstates[1:-1].split(":")
-                if state != "<nil>":
-                    for node in state.split(" -- "):
-                        self._popnodes.add("{%s:%s}" % (node, pop))
-                        
+            if len(t_state) > 2:
+                for subpopstates in t_state[1:-1].split(","):
+                    if len(subpopstates) > 2:
+                        state, pop = subpopstates[1:-1].split(":")
+                        if state != "<nil>":
+                            for node in state.split(" -- "):
+                                self._popnodes.add("{%s:%s}" % (node, pop))
+                            
                         
         def sort_popnodes(popnode):
             node, pop = popnode[1:-1].split(":")
@@ -189,11 +190,13 @@ class PopMaBoSSResult:
         new_probs = numpy.zeros((len(indexes), len(self._popnodes)))
         for i in range(len(indexes)):
             for j, state in enumerate(states):
-                for subpopstates in state[1:-1].split(","):
-                    state, pop = subpopstates[1:-1].split(":")
-                    if state != "<nil>":
-                        for node in state.split(" -- "):
-                            new_probs[i, self._popnodes_index["{%s:%s}" % (node, pop)]] += raw_probas[i][j]
+                if len(state) > 2:
+                    for subpopstates in state[1:-1].split(","):
+                        if len(subpopstates) > 2:
+                            state, pop = subpopstates[1:-1].split(":")
+                            if state != "<nil>":
+                                for node in state.split(" -- "):
+                                    new_probs[i, self._popnodes_index["{%s:%s}" % (node, pop)]] += raw_probas[i][j]
         
         self.nd_probtraj = pandas.DataFrame(new_probs, columns=self._popnodes, index=indexes)
         
