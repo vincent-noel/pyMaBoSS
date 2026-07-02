@@ -68,6 +68,9 @@ class CMaBoSSSimulation(object):
     def update_parameters(self, **kwargs):
         self.cmaboss_sim.update_parameters(**kwargs)
 
+    def mutate(self, node, mutant, simple=False):
+        self.cmaboss_sim.mutate(node_name=node, mutation=mutant, simple=simple)
+
     def run(self, workdir=None, only_final_state=False):
         return CMaBoSSResult2(self, workdir, only_final_state)
 
