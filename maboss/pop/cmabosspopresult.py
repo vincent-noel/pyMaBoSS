@@ -71,3 +71,8 @@ class cMaBoSSPopMaBoSSResult(PopMaBoSSResult):
         if self.raw_custom_last_probtraj is None:
             self.raw_custom_last_probtraj = self.cmaboss_result.get_custom_last_probtraj()
         return self.raw_custom_last_probtraj
+
+    def get_raw_states_probtraj_by_index(self, index):
+        raw_states_probtraj = self.get_raw_states_probtraj()
+        
+        return raw_states_probtraj[0][index, :], [index], raw_states_probtraj[2]
