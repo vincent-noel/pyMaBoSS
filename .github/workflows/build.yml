@@ -62,7 +62,7 @@ jobs:
         
     - name: Install dependencies
       run: |
-        pip3 install coveralls --upgrade --break-system-packages
+        pip3 install matplotlib numpy pandas ipython --upgrade --break-system-packages
         
     - name: Install tabularqual
       if: matrix.python == '3.11' || matrix.python == '3.12' || matrix.python == '3.13' || matrix.python == '3.14'
@@ -81,25 +81,25 @@ jobs:
     - name: Test pyMaBoSS for Windows
       if: matrix.os.runs-on == 'windows-2022' || matrix.os.runs-on == 'windows-2025'
       env: 
-        RUN_WITH: coverage run
+        RUN_WITH: python
       run: cmd.exe -/c ".\test\run_test.bat"
       
     - name: Test pyMaBoSS for Unix
       if: matrix.os.runs-on == 'ubuntu-22.04' || matrix.os.runs-on == 'ubuntu-24.04' || matrix.os.runs-on == 'macos-15-intel' || matrix.os.runs-on == 'macos-14'
       env: 
-        RUN_WITH: coverage run
+        RUN_WITH: python
       run: bash test/run_test.sh
     
     - name: Test pyMaBoSS with cMaBoSS for Windows
       if: matrix.os.runs-on == 'windows-2022' || matrix.os.runs-on == 'windows-2025'
       env: 
-        RUN_WITH: coverage run
+        RUN_WITH: python
       run: cmd.exe -/c ".\test\run_test_cmaboss.bat"
         
     - name: Test pyMaBoSS with cMaBoSS for Unix
       if: matrix.os.runs-on == 'ubuntu-22.04' || matrix.os.runs-on == 'ubuntu-24.04' || matrix.os.runs-on == 'macos-15-intel' || matrix.os.runs-on == 'macos-14'
       env: 
-        RUN_WITH: coverage run
+        RUN_WITH: python
       run: bash test/run_test_cmaboss.sh
     
     - name: Test MaBoSS Server with Docker
@@ -108,18 +108,18 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         docker run -p 7777:7777 --network host -d sysbiocurie/maboss
-        coverage run -m unittest test.test_server
+        python -m unittest test.test_server
     
     - name: Test tabularqual
       if: matrix.python == '3.11' || matrix.python == '3.12' || matrix.python == '3.13' || matrix.python == '3.14'
       run: |  
-        coverage run -m unittest test.test_tabularqual
+        python -m unittest test.test_tabularqual
           
-    - name: Submit results to Coveralls
-      env: 
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      run: |
-        coveralls --service=github
+    # - name: Submit results to Coveralls
+    #   env: 
+    #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    #   run: |
+    #     coveralls --service=github
         
     
   pymaboss_scripts: 
@@ -176,7 +176,7 @@ jobs:
       
     - name: Install dependencies
       run: |
-        pip3 install coveralls --upgrade --break-system-packages
+        pip3 install matplotlib numpy pandas ipython --upgrade --break-system-packages
 
     - name: Install pyMaBoSS
       run: |
@@ -191,9 +191,9 @@ jobs:
       env: 
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
-        coverage run -a scripts/MBSS_FormatTable.py test/p53_Mdm2.bnd test/p53_Mdm2_runcfg.cfg
-        coverage run -a scripts/UpPMaBoSS.py test/CellFateModel.bnd test/CellFateModel_1h.cfg test/CellFate_1h.upp
-        coveralls --service=github
+        python scripts/MBSS_FormatTable.py test/p53_Mdm2.bnd test/p53_Mdm2_runcfg.cfg
+        python scripts/UpPMaBoSS.py test/CellFateModel.bnd test/CellFateModel_1h.cfg test/CellFate_1h.upp
+        # coveralls --service=github
                
   conda_pymaboss:
     name: pyMaBoSS Conda package
