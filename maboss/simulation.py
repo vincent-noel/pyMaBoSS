@@ -261,7 +261,7 @@ class Simulation(object):
 
         return rules
 
-    def run(self, command=None, workdir=None, overwrite=False, prefix="res", cmaboss=False, only_final_state=False, steady_state=None):
+    def run(self, command=None, workdir=None, overwrite=False, prefix="res", cmaboss=False, only_final_state=False, steady_state=None, max_extension=100):
         """Run the simulation with MaBoSS and return a Result object.
 
         :param command: specify a MaBoSS command, default to None for automatic selection
@@ -269,7 +269,9 @@ class Simulation(object):
         """
 
         if cmaboss:
-            return CMaBoSSResult(self, workdir=workdir, overwrite=overwrite, only_final_state=only_final_state, steady_state=steady_state)
+            return CMaBoSSResult(self, workdir=workdir, overwrite=overwrite, only_final_state=only_final_state, 
+                                 steady_state=steady_state, max_extension=max_extension
+            )
 
         if workdir is not None:
             self.workdir = workdir

@@ -10,12 +10,13 @@ from contextlib import ExitStack
 
 class CMaBoSSResult(BaseResult):
 
-    def __init__(self, simul, workdir=None, overwrite=False, prefix="res", only_final_state=False, steady_state=None):
+    def __init__(self, simul, workdir=None, overwrite=False, prefix="res", only_final_state=False, steady_state=None, max_extension=100):
 
         self.simul = simul
         self.output_nodes = simul.network.get_output()
         self.only_final_state = only_final_state
         self.steady_state = steady_state
+        self.max_extension = max_extension
         BaseResult.__init__(self, simul, output_nodes=self.output_nodes)
         
         cmaboss_module = simul.get_cmaboss()
@@ -24,14 +25,20 @@ class CMaBoSSResult(BaseResult):
             config_str=simul.str_cfg()
         )
 
+        self.max_extension_time = self.max_extension * cmaboss_sim.param["max_time"]
+        
         self.cmaboss_result = cmaboss_sim.run(self.only_final_state)
 
         if steady_state is not None:
             while not self.test_steady_state():
-                cmaboss_sim.param["max_time"] *= 2
-                cmaboss_sim.param["time_tick"] *= 2
-                print("Steady state not reached, increasing simulation time to %f" % (cmaboss_sim.param["max_time"]))
-                self.cmaboss_result = cmaboss_sim.run(self.only_final_state)
+                if cmaboss_sim.param["max_time"]*2 < self.max_extension_time:
+                    cmaboss_sim.param["max_time"] *= 2
+                    cmaboss_sim.param["time_tick"] *= 2
+                    print("Steady state not reached, increasing simulation time to %f" % (cmaboss_sim.param["max_time"]))
+                    self.cmaboss_result = cmaboss_sim.run(self.only_final_state)
+                else:
+                    print("Steady state not reached, but maximum simulation time reached (%f), stopping simulation." % (self.max_extension_time))
+                    break
                 
         if workdir is not None:
             if not os.path.exists(workdir):
