@@ -48,22 +48,22 @@ class TestLogicalCompute(TestCase):
     def test_compute_logical_expression(self):
         parsed_logical = [n.strip() for n in QUERY_LOGICAL_SIMPLE.split(" ")]
         res = ComputeLogicalExpression.parse_logical_expression(parsed_logical)
-        assert res == EXPECTED_LOGICAL_SIMPLE
+        self.assertTrue(res == EXPECTED_LOGICAL_SIMPLE)
 
     def test_compute_logical_expression_one_intricate(self):
         parsed_logical = [n.strip() for n in QUERY_LOGICAL_ONE_INTRICATE.split(" ")]
         res = ComputeLogicalExpression.parse_logical_expression(parsed_logical)
-        assert res == EXPECTED_LOGICAL_ONE_INTRICATE
+        self.assertTrue(res == EXPECTED_LOGICAL_ONE_INTRICATE)
 
     def test_compute_logical_expression_multiple_intricate(self):
         parsed_logical = [n.strip() for n in QUERY_LOGICAL_MULTIPLE_INTRICATE.split(" ")]
         res = ComputeLogicalExpression.parse_logical_expression(parsed_logical)
-        assert res == EXPECTED_LOGICAL_MULTIPLE_INTRICATE
+        self.assertTrue(res == EXPECTED_LOGICAL_MULTIPLE_INTRICATE)
 
     def test_handling_non_closing_parenthesis(self):
         parsed_logical = [n.strip() for n in "A & ( B | ( C & D )".split(" ")]
         res = ComputeLogicalExpression.parse_logical_expression(parsed_logical)
-        assert res == ['A', '&', ['B', '|', ['C', '&', 'D']]]
+        self.assertTrue(res == ['A', '&', ['B', '|', ['C', '&', 'D']]])
 
     def test_handling_non_opening_parenthesis(self):
         pass  # todo
@@ -71,32 +71,32 @@ class TestLogicalCompute(TestCase):
     def test_parsing_with_numerical(self):
         parsed_logical = [n.strip() for n in "( A >= 0.5 ) | B".split(" ")]
         res = ComputeLogicalExpression.parse_logical_expression(parsed_logical)
-        assert res == [['A', '>=', '0.5'], '|', 'B']
+        self.assertTrue(res == [['A', '>=', '0.5'], '|', 'B'])
 
     def test_check_name_exist(self):
         df_nodes = pd.read_csv(get_test_path("test_data.csv"))
         df_states = pd.read_csv(get_test_path("test_data_states.csv"))
         NAME = 'AKT1'
         out = ComputeLogicalExpression.check_name_exist(NAME, df_nodes, df_states)
-        assert out[0] == True and out[1] == True
+        self.assertTrue(out[0] == True and out[1] == True)
 
     def test_check_name_exist_not_exist(self):
         df_nodes = pd.read_csv(get_test_path("test_data.csv"))
         df_states = pd.read_csv(get_test_path("test_data_states.csv"))
         NAME = 'AKT4'
         out = ComputeLogicalExpression.check_name_exist(NAME, df_nodes, df_states)
-        assert out[0] == False and out[1] == False
+        self.assertTrue(out[0] == False and out[1] == False)
 
     def test_check_name_with_no(self):
         df_nodes = pd.read_csv(get_test_path("test_data.csv"))
         df_states = pd.read_csv(get_test_path("test_data_states.csv"))
         NAME = '!AKT1'
         out = ComputeLogicalExpression.check_name_exist(NAME, df_nodes, df_states)
-        assert out[0] == True and out[1] == True
+        self.assertTrue(out[0] == True and out[1] == True)
 
     def test_check_logical_no(self):
         LOGICAL = '!AKT1'
-        assert ComputeLogicalExpression.check_logical_no(LOGICAL) == True
+        self.assertTrue(ComputeLogicalExpression.check_logical_no(LOGICAL) == True)
 
     def test_merge_and(self):
         nodes_df = pd.read_csv(get_test_path("test_data.csv"))
@@ -114,7 +114,7 @@ class TestLogicalCompute(TestCase):
         })
 
         res = ComputeLogicalExpression.merge_and(df1, df2, nodes_df, state_df)
-        print(f"Res : \n{res}\n")
+        # print(f"Res : \n{res}\n")
 
     def test_compute_logical_expression_return_df(self):
         df_nodes = pd.read_csv(get_test_path("test_data.csv"))
@@ -123,8 +123,8 @@ class TestLogicalCompute(TestCase):
         expected = pd.read_csv(get_test_path("expected_compute_data.csv"))
         fake = [df_nodes, df_states]
         results = ComputeLogicalExpression.compute_logical_expression(['AKT1', '&', 'AKT2'], fake)
-        print(f"Résultats : \n{results}\n Expected : \n{expected}")
-        assert results.equals(expected)
+        # print(f"Résultats : \n{results}\n Expected : \n{expected}")
+        self.assertTrue(results.equals(expected))
 
     def test_compute_with_no(self):
         df_nodes = pd.read_csv(get_test_path("test_data.csv"))
@@ -138,9 +138,9 @@ class TestLogicalCompute(TestCase):
         fake = [df_nodes, df_states]
         results = ComputeLogicalExpression.compute_logical_expression(['AKT1', '&', '!AKT2'], fake)
 
-        results.to_csv("test/compute_with_no.csv")
-        print(f"Résultats : \n{results}")
-        assert results.round(5).equals(expected.round(5))
+        # results.to_csv("test/compute_with_no.csv")
+        # print(f"Résultats : \n{results}")
+        self.assertTrue(results.round(5).equals(expected.round(5)))
 
     def test_compute_with_no_and(self):
         df_nodes = pd.read_csv(get_test_path("test_data.csv"))
@@ -154,9 +154,9 @@ class TestLogicalCompute(TestCase):
         fake = [df_nodes, df_states]
         results = ComputeLogicalExpression.compute_logical_expression(['AKT2', '&', '!AKT3'], fake)
 
-        results.to_csv("test/compute_with_no.csv")
-        print(f"Résultats : \n{results}")
-        assert results.equals(expected)
+        # results.to_csv("test/compute_with_no.csv")
+        # print(f"Résultats : \n{results}")
+        self.assertTrue(results.equals(expected))
 
     def test_compute_with_no_and_2(self):
         df_nodes = pd.read_csv(get_test_path("test_data.csv"))
@@ -168,9 +168,9 @@ class TestLogicalCompute(TestCase):
         fake = [df_nodes, df_states]
         results = ComputeLogicalExpression.compute_logical_expression(['AKT1', '&', '!AKT3'], fake)
 
-        results.to_csv("test/compute_with_no.csv")
-        print(f"Résultats : \n{results}")
-        assert results.equals(expected)
+        # results.to_csv("test/compute_with_no.csv")
+        # print(f"Résultats : \n{results}")
+        self.assertTrue(results.equals(expected))
 
     def test_compute_with_or(self):
         df_nodes = pd.read_csv(get_test_path("test_data.csv"))
@@ -187,8 +187,8 @@ class TestLogicalCompute(TestCase):
         fake = [df_nodes, df_states]
         results = ComputeLogicalExpression.compute_logical_expression(['AKT1', '|', 'AKT2'], fake)
         # results.to_csv("compute_with_or.csv")
-        print(f"Res:{results}\nExpected : \n{expected}")
-        assert results.equals(expected)
+        # print(f"Res:{results}\nExpected : \n{expected}")
+        self.assertTrue(results.equals(expected))
 
     def test_compute_with_no_or(self):
         df_nodes = pd.read_csv(get_test_path("test_data.csv"))
@@ -203,8 +203,8 @@ class TestLogicalCompute(TestCase):
         })
         fake = [df_nodes, df_states]
         results = ComputeLogicalExpression.compute_logical_expression(['!AKT2', '|', 'AKT1'], fake)
-        results.to_csv("compute_with_or_not.csv")
-        assert results.equals(expected)
+        # results.to_csv("compute_with_or_not.csv")
+        self.assertTrue(results.equals(expected))
 
     def test_compute_intrication(self):
         df_nodes = pd.read_csv(get_test_path("test_data.csv"))
@@ -220,8 +220,8 @@ class TestLogicalCompute(TestCase):
         })
         fake = [df_nodes, df_states]
         results = ComputeLogicalExpression.compute_logical_expression(['AKT1', '|', ['AKT2', '&', 'AKT3']], fake)
-        results.to_csv("test/compute_intrication.csv")
-        assert results.equals(expected)
+        # results.to_csv("test/compute_intrication.csv")
+        self.assertTrue(results.equals(expected))
 
     def test_compute_full_process_simple_and(self):
         df_nodes = pd.read_csv(get_test_path("test_data.csv"))
@@ -234,14 +234,14 @@ class TestLogicalCompute(TestCase):
         })
 
         res = ComputeLogicalExpression.compute_logical_expression(['AKT1', '&', 'AKT2'], [df_nodes, df_states])
-        res.to_csv("test/compute_full_process_simple_and.csv")
-        print(f"Results : \n{res}\n Expected : \n{expected}")
-        assert res.equals(expected)
+        # res.to_csv("test/compute_full_process_simple_and.csv")
+        # print(f"Results : \n{res}\n Expected : \n{expected}")
+        self.assertTrue(res.equals(expected))
 
     def test_compute_full_process_simple_or(self):
         df_nodes = pd.read_csv(get_test_path("test_data.csv"))
         df_states = pd.read_csv(get_test_path("test_data_states.csv"))
-        print(df_states)
+        # print(df_states)
         #df_states.rename(columns={c: f"{c}_state" for c in df_states.columns if c != 'Time'}, inplace=True)
         expected = pd.DataFrame({
             'Time': [0.0, 1.0, 2.0],
@@ -253,9 +253,9 @@ class TestLogicalCompute(TestCase):
         })
 
         res = ComputeLogicalExpression.compute_logical_expression(['AKT1', '|', 'AKT2'], [df_nodes, df_states])
-        res.to_csv("test/res_compute_full_process_simple_or.csv")
-        print(f"Results : \n{res}\n Expected : \n{expected}")
-        assert res.equals(expected)
+        # res.to_csv("test/res_compute_full_process_simple_or.csv")
+        # print(f"Results : \n{res}\n Expected : \n{expected}")
+        self.assertTrue(res.equals(expected))
 
     def test_simple_value_numerical(self):
         df_nodes = pd.read_csv(get_test_path("test_data.csv"))
@@ -270,7 +270,7 @@ class TestLogicalCompute(TestCase):
 
         res = ComputeLogicalExpression.compute_logical_expression(['AKT1', '>', '0.4'], [df_nodes, df_states])
         # print(res)
-        assert res.equals(expected)
+        self.assertTrue(res.equals(expected))
 
     def test_simple_value_numerical_with_no(self):
         df_nodes = pd.read_csv(get_test_path("test_data.csv"))
@@ -282,8 +282,8 @@ class TestLogicalCompute(TestCase):
             'AKT2_state': [0.00479, 0.11],
         })
         res = ComputeLogicalExpression.compute_logical_expression([['!AKT1', '>', '0.4']], [df_nodes, df_states])
-        print(f"Results : \n{res}\n Expected : \n{expected}")
-        assert expected.equals(res)
+        # print(f"Results : \n{res}\n Expected : \n{expected}")
+        self.assertTrue(expected.equals(res))
 
     def test_simple_value_numerical_with_or(self):
         df_nodes = pd.read_csv(get_test_path("test_data.csv"))
@@ -299,7 +299,7 @@ class TestLogicalCompute(TestCase):
         })
         log_exp = [['AKT1', '>', '0.4'], '|', 'AKT2']
         res = ComputeLogicalExpression.compute_logical_expression(log_exp, [df_nodes, df_states])
-        assert expected.equals(res)
+        self.assertTrue(expected.equals(res))
 
     def test_expression_more_complex(self):
         df_nodes = pd.read_csv(get_test_path("test_data.csv"))
@@ -314,8 +314,8 @@ class TestLogicalCompute(TestCase):
         })
         log_exp = [['AKT1', '>', '0.4'], '|', ['AKT2', '&', 'AKT3']]
         res = ComputeLogicalExpression.compute_logical_expression(log_exp, [df_nodes, df_states])
-        res.to_csv("test/test_expression_more_complex.csv")
-        assert expected.equals(res)
+        # res.to_csv("test/test_expression_more_complex.csv")
+        self.assertTrue(expected.equals(res))
 
     def test_expression_more_complex_with_no(self):
         df_nodes = pd.read_csv(get_test_path("test_data.csv"))
@@ -333,7 +333,7 @@ class TestLogicalCompute(TestCase):
         log_exp = [['!AKT1', '>', '0.4'], '|', ['AKT2', '&', 'AKT3']]
         res = ComputeLogicalExpression.compute_logical_expression(log_exp, [df_nodes, df_states])
         # print(f"Results : \n{res}\n Expected : \n{expected}")
-        assert expected.equals(res)
+        self.assertTrue(expected.equals(res))
 
     def test_akt2_and_akt3(self):
         df_nodes = pd.read_csv(get_test_path("test_data.csv"))
@@ -347,9 +347,9 @@ class TestLogicalCompute(TestCase):
 
         log_exp = [['AKT2', '&', 'AKT3']]
         res = ComputeLogicalExpression.compute_logical_expression(log_exp, [df_nodes, df_states])
-        res.to_csv("test/test_akt2_and_akt3.csv")
-        print(f"Results : \n{res}\n Expected : \n{expected}")
-        assert expected.equals(res)
+        # res.to_csv("test/test_akt2_and_akt3.csv")
+        # print(f"Results : \n{res}\n Expected : \n{expected}")
+        self.assertTrue(expected.equals(res))
 
     def test_check_logical_expression_numerical(self):
         exp = ['AKT1', '>', '0.4']
@@ -362,14 +362,14 @@ class TestLogicalCompute(TestCase):
     def test_check_handling_symb(self):
         symbols = ['&', '|', '>', '<', '==', '>=', '<=', '=']
         for s in symbols:
-            print(s)
-            assert True == ComputeLogicalExpression.is_any_symb_check(s)
+            # print(s)
+            self.assertTrue(True == ComputeLogicalExpression.is_any_symb_check(s))
 
     def test_operator_map(self):
         symbol = '>'
         # print(Operators(symbol))
         # print(ComputeLogicalExpression.OPERATOR_MAP.get(Operators(symbol)))
-        assert ComputeLogicalExpression.OPERATOR_MAP.get(Operators(symbol)) == operator.gt
+        self.assertTrue(ComputeLogicalExpression.OPERATOR_MAP.get(Operators(symbol)) == operator.gt)
 
     def test_logical_with_state(self):
         df_nodes = pd.read_csv(get_test_path("test_data.csv"))
@@ -381,8 +381,8 @@ class TestLogicalCompute(TestCase):
             'Time': [2.0],
             'AKT2_state': [0.11],
         })
-        print(f"Result : \n{res} \n Expected : \n{expected}")
-        assert res.equals(expected)
+        # print(f"Result : \n{res} \n Expected : \n{expected}")
+        self.assertTrue(res.equals(expected))
 
     def test_logical_check_fixpoint(self):
         log_exp = ['AKT', '>', '3']
@@ -413,8 +413,8 @@ class TestLogicalCompute(TestCase):
             "Col 2": [123, 456, 789],
             "Col 3": [False, True, False]
         })
-        print(f"\nResult : \n{df_out} \n Expected : \n{expected}")
-        assert df_out.equals(expected)
+        # print(f"\nResult : \n{df_out} \n Expected : \n{expected}")
+        self.assertTrue(df_out.equals(expected))
 
     def test_merge_and_on_lines(self):
         df1 = pd.DataFrame({
@@ -435,8 +435,8 @@ class TestLogicalCompute(TestCase):
             "Col 2": [123],
             "Col 3": [False]
         })
-        print(f"\nResult : \n{res} \n Expected : \n{expected}")
-        assert res.equals(expected)
+        # print(f"\nResult : \n{res} \n Expected : \n{expected}")
+        self.assertTrue(res.equals(expected))
 
     def test_check_name_fp(self):
         fp_df = pd.DataFrame({
@@ -471,8 +471,8 @@ class TestLogicalCompute(TestCase):
         })
 
         res = ComputeLogicalExpression.merge_or_last_states(df1, df2)
-        print(f"Res:\n{res}\nExpected:\n{expected}")
-        assert res.equals(expected)
+        # print(f"Res:\n{res}\nExpected:\n{expected}")
+        self.assertTrue(res.equals(expected))
 
     def test_merge_and_last_states(self):
         df1 = pd.DataFrame({
@@ -490,8 +490,8 @@ class TestLogicalCompute(TestCase):
         })
 
         res = ComputeLogicalExpression.merge_and_last_states(df1, df2)
-        print(f"Res:\n{res}\nExpected:\n{expected}")
-        assert res.equals(expected)
+        # print(f"Res:\n{res}\nExpected:\n{expected}")
+        self.assertTrue(res.equals(expected))
 
     def test_compute_last_states(self):
         df_last_states = pd.DataFrame({
@@ -514,8 +514,8 @@ class TestLogicalCompute(TestCase):
         })
 
         res = ComputeLogicalExpression.compute_last_states(expression, df_last_states)
-        print(f"Results:\n{res}\nExpected:\n{expected}")
-        assert res.equals(expected)
+        # print(f"Results:\n{res}\nExpected:\n{expected}")
+        self.assertTrue(res.equals(expected))
 
     def test_compute_last_and_merge_or(self):
         df_last_states = pd.DataFrame({
@@ -535,7 +535,7 @@ class TestLogicalCompute(TestCase):
             'A--F--G--E': [0.5],
         })
 
-        assert df_A.equals(df_A_expected)
+        self.assertTrue(df_A.equals(df_A_expected))
 
         df_C = Extractor.extract_column_last_states(df_last_states, 'C')
         df_C_expected = pd.DataFrame({
@@ -544,7 +544,7 @@ class TestLogicalCompute(TestCase):
             'C--D--E--F': [0.4],
         })
 
-        assert df_C.equals(df_C_expected)
+        self.assertTrue(df_C.equals(df_C_expected))
 
         merged_df = ComputeLogicalExpression.merge_or_last_states(df_A, df_C)
         expected = pd.DataFrame({
@@ -554,8 +554,8 @@ class TestLogicalCompute(TestCase):
             'A--F--G--E': [0.5],
             'C--D--E--F': [0.4],
         })
-        print(f"res:\n{merged_df}\nexpected:\n{expected}")
-        assert merged_df.equals(expected)
+        # print(f"res:\n{merged_df}\nexpected:\n{expected}")
+        self.assertTrue(merged_df.equals(expected))
 
     def test_merge_or(self):
         df1 = pd.DataFrame({
