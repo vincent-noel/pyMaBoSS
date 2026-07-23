@@ -245,7 +245,7 @@ def _read_cfg(string):
         schedule_list = OrderedDict()
         
         refstate_list = {}
-        parse_cfg = cfg_grammar.parse_string(string)
+        parse_cfg = cfg_grammar.parse_string(string, parse_all=True)
         for token in parse_cfg:
             if token.lhs:  # True if token is var_decl
                 variables[token.lhs] = token.rhs
@@ -298,7 +298,7 @@ def _read_cfg(string):
 
 def _read_bnd(string, is_internal_list, in_graph_list):
         nodes = []
-        parse_bnd = bnd_grammar.parse_string(string)
+        parse_bnd = bnd_grammar.parse_string(string, parse_all=True)
         mutations = []
         for token in parse_bnd:
             interns = {v.lhs: v.rhs for v in token.interns}
