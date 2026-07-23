@@ -85,7 +85,7 @@ istate_decl = pp.Group(pp.Suppress('[') + pp.delimitedList(varName)("nodes")
                        + pp.delimitedList(stateProb)('attrib') + pp.Suppress(';'))
 
 oneIstate_decl = pp.Group(varName("nd_i") + ~pp.White() + pp.Suppress('.istate')
-                          + pp.Suppress('=') + booleanStr('istate_val')
+                          + pp.Suppress('=') + numOrBool('istate_val')
                           + pp.Suppress(';'))
 
 internal_decl = pp.Group(varName("internal") + ~pp.White()
@@ -267,8 +267,8 @@ def _read_cfg(string):
             if token.param:  # True if token is param_decl
                 parameters[token.param] = float(token.value)
             if token.nd_i:
-                istate_list[token.nd_i] = {0: 1 - int(token.istate_val),
-                                           1: int(token.istate_val)}
+                istate_list[token.nd_i] = {0: not bool(token.istate_val),
+                                           1: bool(token.istate_val)}
             if token.attrib:  # True if token is istate_decl
                 # TODO check if lens are consistent
                 if len(token.nodes) == 1:
