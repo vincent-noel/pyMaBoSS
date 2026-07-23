@@ -10,11 +10,12 @@ from contextlib import ExitStack
 
 class CMaBoSSResult(BaseResult):
 
-    def __init__(self, simul, workdir=None, overwrite=False, prefix="res", only_final_state=False):
+    def __init__(self, simul, workdir=None, overwrite=False, prefix="res", only_final_state=False, steady_state=None):
 
         self.simul = simul
         self.output_nodes = simul.network.get_output()
         self.only_final_state = only_final_state
+        self.steady_state = steady_state
         BaseResult.__init__(self, simul, output_nodes=self.output_nodes)
         
         cmaboss_module = simul.get_cmaboss()
@@ -25,6 +26,13 @@ class CMaBoSSResult(BaseResult):
 
         self.cmaboss_result = cmaboss_sim.run(self.only_final_state)
 
+        if steady_state is not None:
+            while not self.test_steady_state():
+                cmaboss_sim.param["max_time"] *= 2
+                cmaboss_sim.param["time_tick"] *= 2
+                print("Steady state not reached, increasing simulation time to %f" % (cmaboss_sim.param["max_time"]))
+                self.cmaboss_result = cmaboss_sim.run(self.only_final_state)
+                
         if workdir is not None:
             if not os.path.exists(workdir):
                 os.makedirs(workdir)
@@ -39,7 +47,13 @@ class CMaBoSSResult(BaseResult):
                 self.cmaboss_result.display_statdist(os.path.join(workdir, "%s_statdist.csv" % prefix))
 
 
-
+    def test_steady_state(self):
+        data, _, _, _ = self.cmaboss_result.get_probtraj()
+        diff = data[-1,:] - data[-2,:]
+        if not all(abs(diff) < self.steady_state):
+            return False
+        return True
+    
     def get_last_states_probtraj(self, as_series=False):
         
         raw_res = self.cmaboss_result.get_last_probtraj()
