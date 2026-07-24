@@ -1,0 +1,19 @@
+Node A {
+    logic = 1;
+}
+
+Node B {
+    logic = 1;
+}
+
+Node C {
+    logic = 1;
+}
+
+Node D {
+    logic = 1;
+}
+
+Node E {
+    logic = 1;
+}

@@ -38,5 +38,7 @@ $RUN_BINARY -m unittest test.test_extractor
 check "extractor"
 $RUN_BINARY -m unittest test.test_parser
 check "parser"
+$RUN_BINARY -m unittest test.test_istates
+check "istates"
 
 exit $return_code

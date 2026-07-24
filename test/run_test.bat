@@ -41,6 +41,9 @@ call:check
 %RUN_WITH% -m unittest test.test_parser
 call:check
 
+%RUN_WITH% -m unittest test.test_istates
+call:check
+
 exit /b %FAIL%
 
 
