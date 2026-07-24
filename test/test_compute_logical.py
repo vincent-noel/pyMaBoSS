@@ -1,5 +1,3 @@
-from IPython.core.display_functions import display
-
 from maboss.temporal_logic import MaBoSSEvaluator
 from maboss.temporal_logic.extractors import Extractor
 from maboss.temporal_logic.logical_expression_compute import ComputeLogicalExpression
@@ -570,4 +568,3 @@ class TestLogicalCompute(TestCase):
         })
 
         res = ComputeLogicalExpression.merge_or(df1, df2,None,None)
-        display(res)

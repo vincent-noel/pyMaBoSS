@@ -804,7 +804,7 @@ class MaBoSSEvaluator:
             case _:
                 raise ValueError("Query type is not supported, try P, Pmin, Pmax or T, Tmin, Tmax, Inc or Dec")
 
-        print(f"DF after value selection : \n {filtered_data}")
+        # print(f"DF after value selection : \n {filtered_data}")
 
         if query_input.type == QueryType.P or query_input.type == QueryType.T:
             # print(f"DF in treatment for P or T type\n Filtered_data columns : \n{filtered_data.columns}\n")
@@ -814,7 +814,7 @@ class MaBoSSEvaluator:
         # print(f"DF after name selection : \n {filtered_data}")
 
         if query_input.logical_equation:
-            print(f"DF in treatment for logical equation")
+            # print(f"DF in treatment for logical equation")
             log_df = ComputeLogicalExpression.compute_logical_expression(query_input.logical_equation,
                                                                          MaBoSSEvaluator.simulation_results)
             # print(f"DF after logical equation : \n {log_df} \n Will be merged with :\n {filtered_data}\n")

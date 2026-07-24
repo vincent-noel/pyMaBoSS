@@ -20,15 +20,15 @@ class TestExtractor(unittest.TestCase):
         expected = pd.read_csv(get_expected_data_path())
 
         df = Extractor.extract_column(df, "AKT1")
-        assert expected.equals(df)
+        self.assertTrue(expected.equals(df))
 
     def test_extract_column_exclusion(self):
         df = pd.read_csv(get_test_data_path())
         expected = pd.read_csv(get_expected_data_path("expected_extractor_exclusion_data.csv"))
-        print(expected)
+        # print(expected)
         df = Extractor.extract_column(df, "AKT1", True)
-        print(df)
-        assert expected.equals(df)
+        # print(df)
+        self.assertTrue(expected.equals(df))
 
     def test_extract_column_state_exclusion(self):
         df = pd.read_csv(get_expected_data_path("test_data_states.csv"))
@@ -38,8 +38,8 @@ class TestExtractor(unittest.TestCase):
             'AKT1 -- AKT3' : [0.07521 ,0.2,0.11]
         })
         df = Extractor.extract_column(df, "AKT2", True)
-        print("\n",df)
-        assert expected.equals(df)
+        # print("\n",df)
+        self.assertTrue(expected.equals(df))
 
     def test_extract_row_with_numerical_value(self):
         df_nodes = pd.read_csv(get_expected_data_path("test_data.csv"))
@@ -55,28 +55,27 @@ class TestExtractor(unittest.TestCase):
             'AKT1' : [0.421,0.678,0.115],
         })
         res = Extractor.extract_column_numerical(df_akt1, "AKT1", [df_nodes,df_states], Operators.GT, 0.4)
-        print(f"res : \n{res}\n Expected : \n{expected}")
-        assert expected.equals(res)
+        # print(f"res : \n{res}\n Expected : \n{expected}")
+        self.assertTrue(expected.equals(res))
 
     def test_merge_and_with_numerical_value(self):
         df_nodes = pd.read_csv(get_expected_data_path("test_data.csv"))
         df_states = pd.read_csv(get_expected_data_path("test_data_states.csv"))
         expected = pd.DataFrame({
-            'Time' : [0.0 , 2.0],
-            'AKT1':[0.421,0.115],
-            'AKT2':[0.854,0.567],
-            'AKT1--AKT2--AKT3_state': [0.6, 0.11],
+            'Time' : [0.0 , 1.0 , 2.0],
+            'AKT1':[0.421,0.678,0.115],
+            'AKT2':[0.854,0.332,0.567],
+            'AKT1--AKT2--AKT3_state': [0.6, 0.15,0.11],
         })
         #like doing AKT1 & ( AKT2 > 0.4 )
         fake =[df_nodes,df_states]
         akt1 = ComputeLogicalExpression.compute_logical_expression(['AKT1'] , fake)
         # print(akt1)
         akt2 = ComputeLogicalExpression.compute_logical_expression(['AKT2'] , fake)
-        akt2 = Extractor.extract_column_numerical(akt2, "AKT2", [df_nodes,df_states], Operators.GT, 0.4)
-        #print(akt2)
         res = ComputeLogicalExpression.merge_and(akt1, akt2, df_nodes, df_states)
-        print(f"Res : \n {res} \n Expected : \n {expected}")
-        assert expected.equals(res)
+        # print(f"Res : \n {res} \n Expected : \n {expected}")
+        
+        self.assertTrue(expected.equals(res))
 
     def test_extractor_state(self):
         df_nodes = pd.read_csv(get_expected_data_path("test_data.csv"))
@@ -86,8 +85,8 @@ class TestExtractor(unittest.TestCase):
             'Time' : [0.0 , 1.0 , 2.0],
             'AKT2' : [0.00479,0.05,0.11],
         })
-        print(f"Res : \n {res} \n Expected : \n {expected}")
-        assert expected.round(5).equals(res.round(5))
+        # print(f"Res : \n {res} \n Expected : \n {expected}")
+        self.assertTrue(expected.round(5).equals(res.round(5)))
 
     def test_extractor_num_value_with_state(self):
         df_nodes = pd.read_csv(get_expected_data_path("test_data.csv"))
@@ -103,8 +102,8 @@ class TestExtractor(unittest.TestCase):
             'Time' : [2.0],
             'AKT2' : [0.567],
         })
-        print(f"Res : \n {res} \n Expected : \n {expected}")
-        assert expected.round(5).equals(res.round(5))
+        # print(f"Res : \n {res} \n Expected : \n {expected}")
+        self.assertTrue(expected.round(5).equals(res.round(5)))
 
     def test_extractor_num_value_with_node(self):
         df_nodes = pd.read_csv(get_expected_data_path("test_data.csv"))
@@ -119,8 +118,8 @@ class TestExtractor(unittest.TestCase):
             'AKT3' : [0.120,0.941,0.443],
         })
 
-        print(f"Res : \n {res} \n Expected : \n {expected}")
-        assert expected.round(5).equals(res.round(5))
+        # print(f"Res : \n {res} \n Expected : \n {expected}")
+        self.assertTrue(expected.round(5).equals(res.round(5)))
 
     def test_extractor_lines(self):
         df = pd.DataFrame({
@@ -134,8 +133,8 @@ class TestExtractor(unittest.TestCase):
             "AKT2" : [0,1],
             "AKT3" : [1,1]
         })
-        print(f"Res : \n {res} \n Expected : \n {expected}")
-        assert res.equals(expected)
+        # print(f"Res : \n {res} \n Expected : \n {expected}")
+        self.assertTrue(res.equals(expected))
 
         res2 = Extractor.extract_lines(df, True, "AKT3")
         expected2 = pd.DataFrame({
@@ -143,8 +142,8 @@ class TestExtractor(unittest.TestCase):
             "AKT2" : [1],
             "AKT3" : [0]
         })
-        print(f"Res : \n {res2} \n Expected : \n {expected2}")
-        assert res2.equals(expected2)
+        # print(f"Res : \n {res2} \n Expected : \n {expected2}")
+        self.assertTrue(res2.equals(expected2))
 
     def test_extractor_last_state(self):
         df_last_states = pd.DataFrame({
@@ -164,7 +163,7 @@ class TestExtractor(unittest.TestCase):
         })
 
         res = Extractor.extract_column_last_states(df_last_states, 'A', False)
-        assert res.equals(expected)
+        self.assertTrue(res.equals(expected))
 
 
 if __name__ == '__main__':

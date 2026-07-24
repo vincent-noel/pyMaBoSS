@@ -82,7 +82,7 @@ class Extractor(object):
         :param is_state: the column is related to a state
         :return: a dataframe containing the rows that meet the condition on the column
         """
-        print("Entering extract_column_numerical")
+        # print("Entering extract_column_numerical")
         #print(f"df : \n {df}\n")
         #print("col name:", column_name)
         #print(f"is_state : {is_state}")

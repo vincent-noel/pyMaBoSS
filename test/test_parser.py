@@ -65,59 +65,59 @@ LOGICAL_EXPRESSION_ERROR_NODES_INTRICATE = ['A','|', ['B','&','C','D']]
 class TestParser(TestCase):
     def test_parse_simple_query(self):
         formula1 = Parser.parse_query(QUERY)
-        assert formula1.type == QueryType.P
-        assert formula1.operator == Operators.LE
-        assert formula1.value == str(0.623)
-        assert formula1.target_name == ['name']
-        assert formula1.logical_equation == []
-        assert formula1.mutation_constraint == []
+        self.assertTrue(formula1.type == QueryType.P)
+        self.assertTrue(formula1.operator == Operators.LE)
+        self.assertTrue(formula1.value == str(0.623))
+        self.assertTrue(formula1.target_name == ['name'])
+        self.assertTrue(formula1.logical_equation == [])
+        self.assertTrue(formula1.mutation_constraint == [])
 
     def test_parse_interrogation_query_one_name(self):
         formula2 = Parser.parse_query(QUERY_INTERROGATION)
         #print(formula2)
-        assert formula2.type == QueryType.T
-        assert formula2.target == TargetType.STATE
-        assert formula2.operator == Operators.EQ
-        assert formula2.value == "?"
-        assert formula2.target_name == ['name']
-        assert formula2.logical_equation == ['!A', '&', 'B', '|', 'C']
-        assert formula2.mutation_constraint == []
+        self.assertTrue(formula2.type == QueryType.T)
+        self.assertTrue(formula2.target == TargetType.STATE)
+        self.assertTrue(formula2.operator == Operators.EQ)
+        self.assertTrue(formula2.value == "?")
+        self.assertTrue(formula2.target_name == ['name'])
+        self.assertTrue(formula2.logical_equation == ['!A', '&', 'B', '|', 'C'])
+        self.assertTrue(formula2.mutation_constraint == [])
 
     def test_parse_multiple_names(self):
         formula3 = Parser.parse_query(QUERY_MULTIPLE_NAMES)
-        assert formula3.type == QueryType.P
-        assert formula3.operator == Operators.LE
-        assert formula3.value == str(0.5)
-        assert formula3.target_name == ['name', 'name2', 'name3']
-        assert formula3.logical_equation == []
-        assert formula3.mutation_constraint == []
+        self.assertTrue(formula3.type == QueryType.P)
+        self.assertTrue(formula3.operator == Operators.LE)
+        self.assertTrue(formula3.value == str(0.5))
+        self.assertTrue(formula3.target_name == ['name', 'name2', 'name3'])
+        self.assertTrue(formula3.logical_equation == [])
+        self.assertTrue(formula3.mutation_constraint == [])
 
     def test_parse_intricate_condition(self):
         formula4 = Parser.parse_query(QUERY_INTRICATE_CONDITION)
-        assert formula4.type == QueryType.P
-        assert formula4.operator == Operators.GT
-        assert formula4.value == str(0.5)
-        assert formula4.target_name == ['name']
-        assert formula4.logical_equation == ['B', '|', ['C', '&', 'D']]
-        assert formula4.mutation_constraint == []
+        self.assertTrue(formula4.type == QueryType.P)
+        self.assertTrue(formula4.operator == Operators.GT)
+        self.assertTrue(formula4.value == str(0.5))
+        self.assertTrue(formula4.target_name == ['name'])
+        self.assertTrue(formula4.logical_equation == ['B', '|', ['C', '&', 'D']])
+        self.assertTrue(formula4.mutation_constraint == [])
 
     def test_parse_multiple_names_and_condition(self):
         formula5 = Parser.parse_query(QUERY_MULTIPLE_NAMES_AND_CONDITION)
-        assert formula5.type == QueryType.P
-        assert formula5.operator == Operators.LE
-        assert formula5.value == str(0.4)
-        assert formula5.target_name == ['A', 'B', 'C']
-        assert formula5.logical_equation == ['A', '|', '!B', '&', 'C']
-        assert formula5.mutation_constraint == []
+        self.assertTrue(formula5.type == QueryType.P)
+        self.assertTrue(formula5.operator == Operators.LE)
+        self.assertTrue(formula5.value == str(0.4))
+        self.assertTrue(formula5.target_name == ['A', 'B', 'C'])
+        self.assertTrue(formula5.logical_equation == ['A', '|', '!B', '&', 'C'])
+        self.assertTrue(formula5.mutation_constraint == [])
 
     def test_parse_multiple_names_and_intricate_condition(self):
         formula6 = Parser.parse_query(QUERY_MULTIPLE_NAMES_AND_INTRICATE_CONDITION)
-        assert formula6.type == QueryType.P
-        assert formula6.operator == Operators.GE
-        assert formula6.value == str(0.5)
-        assert formula6.target_name == ['A', 'B', 'C']
-        assert formula6.logical_equation == ['B', '|', ['C', '&', 'D']]
-        assert formula6.mutation_constraint == []
+        self.assertTrue(formula6.type == QueryType.P)
+        self.assertTrue(formula6.operator == Operators.GE)
+        self.assertTrue(formula6.value == str(0.5))
+        self.assertTrue(formula6.target_name == ['A', 'B', 'C'])
+        self.assertTrue(formula6.logical_equation == ['B', '|', ['C', '&', 'D']])
+        self.assertTrue(formula6.mutation_constraint == [])
 
     def test_main_query_parser_check_values(self):
         self.assertRaises(ValueError, Parser.parse_query, QUERY_ERROR_TYPE)
@@ -126,30 +126,30 @@ class TestParser(TestCase):
 
     def test_increase_parser(self):
         formula7 = Parser.parse_query(QUERY_INCREASE)
-        assert formula7.type == QueryType.INCREASE
-        assert formula7.operator == Operators.NONE
-        assert formula7.value == ""
-        assert formula7.target_name == ['name']
-        assert formula7.logical_equation == ['A', '&', 'B']
-        assert formula7.mutation_constraint == [['AKT', 'ON']]
+        self.assertTrue(formula7.type == QueryType.INCREASE)
+        self.assertTrue(formula7.operator == Operators.NONE)
+        self.assertTrue(formula7.value == "")
+        self.assertTrue(formula7.target_name == ['name'])
+        self.assertTrue(formula7.logical_equation == ['A', '&', 'B'])
+        self.assertTrue(formula7.mutation_constraint == [['AKT', 'ON']])
 
     def test_increase_parser_no_logical(self):
         formula8 = Parser.parse_query(QUERY_INCREASE_NO_LOGICAL)
-        assert formula8.type == QueryType.INCREASE
-        assert formula8.operator == Operators.NONE
-        assert formula8.value == ""
-        assert formula8.target_name == ['name']
-        assert formula8.logical_equation == []
-        assert formula8.mutation_constraint == [['AKT', 'ON']]
+        self.assertTrue(formula8.type == QueryType.INCREASE)
+        self.assertTrue(formula8.operator == Operators.NONE)
+        self.assertTrue(formula8.value == "")
+        self.assertTrue(formula8.target_name == ['name'])
+        self.assertTrue(formula8.logical_equation == [])
+        self.assertTrue(formula8.mutation_constraint == [['AKT', 'ON']])
 
     def test_multiple_mutations(self):
         formula9 = Parser.parse_query(QUERY_DECREASE_MULTIPLE_MUTATIONS)
-        assert formula9.type == QueryType.DECREASE
-        assert formula9.operator == Operators.NONE
-        assert formula9.value == ""
-        assert formula9.target_name == ['name']
-        assert formula9.logical_equation == ['A', '&', 'B']
-        assert formula9.mutation_constraint == [['AKT', 'ON'], ['AKT2', 'OFF'], ['BRAF', 'ON']]
+        self.assertTrue(formula9.type == QueryType.DECREASE)
+        self.assertTrue(formula9.operator == Operators.NONE)
+        self.assertTrue(formula9.value == "")
+        self.assertTrue(formula9.target_name == ['name'])
+        self.assertTrue(formula9.logical_equation == ['A', '&', 'B'])
+        self.assertTrue(formula9.mutation_constraint == [['AKT', 'ON'], ['AKT2', 'OFF'], ['BRAF', 'ON']])
 # -------------------------------- FORMULA CHECKER TESTS -------------------------------------
     def test_formula_checker_no_error(self):
         try:
@@ -220,10 +220,10 @@ class TestParser(TestCase):
         self.assertRaises(ErrorInLogicalExpression, ComputeLogicalExpression.check_logical_expression, LOGICAL_EXPRESSION_ERROR_NODES_INTRICATE)
 
     def test_counting_members_logical_query(self):
-        assert Parser.counting_members_logical_query(LOGICAL_EXPRESSION_SIMPLE_NO_ERROR) == 3
-        assert Parser.counting_members_logical_query(LOGICAL_EXPRESSION_INTRICATE_NO_ERROR) == 5
-        assert Parser.counting_members_logical_query(['B', '|', ['C', '&', 'D']]) == 5
-        assert Parser.counting_members_logical_query([['AKT2','>=','0.2'],'|','AKT3']) == 5
+        self.assertTrue(Parser.counting_members_logical_query(LOGICAL_EXPRESSION_SIMPLE_NO_ERROR) == 3)
+        self.assertTrue(Parser.counting_members_logical_query(LOGICAL_EXPRESSION_INTRICATE_NO_ERROR) == 5)
+        self.assertTrue(Parser.counting_members_logical_query(['B', '|', ['C', '&', 'D']]) == 5)
+        self.assertTrue(Parser.counting_members_logical_query([['AKT2', '>=', '0.2'], '|', 'AKT3']) == 5)
 
     def test_decrease_increase_with_logical_check_raise(self):
         query = Parser.parse_query("Dec(node:AKT1) / [ A & B ] [ AKT:ON ]")
