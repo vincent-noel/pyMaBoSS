@@ -20,7 +20,7 @@ requirements:
 
   run:
     - colomoto_jupyter >=0.4.10
-    - maboss >=2.6.5
+    - maboss >=2.6.8
     - pandas
     - pyparsing
     - python
@@ -29,7 +29,7 @@ requirements:
     - scikit-learn
     - networkx
     - pygraphviz
-    - cmaboss >=1.0.0b32
+    - cmaboss >=1.0.0b34
 
 about:
   home: https://github.com/colomoto/pyMaBoSS
