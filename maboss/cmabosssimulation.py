@@ -14,13 +14,13 @@ class CMaBoSSSimulation(object):
             self.network = self.cmaboss_sim.network
         else:
             self.bnd = bnd
-            self.cfgs = cfgs
+            self.cfgs = [cfgs] if isinstance(cfgs, str) else cfgs
 
             self.nb_nodes = self.count_nodes()
             self.cmaboss = self.get_cmaboss()
 
             self.cmaboss_net = self.cmaboss.MaBoSSNet(self.bnd)
-            self.cmaboss_cfg = self.cmaboss.MaBoSSCfg(self.cmaboss_net, self.cfgs)
+            self.cmaboss_cfg = self.cmaboss.MaBoSSCfg(self.cmaboss_net, config_files=self.cfgs)
             
             self.cmaboss_sim = self.cmaboss.MaBoSSSim(net=self.cmaboss_net, cfg=self.cmaboss_cfg)
             self.network = self.cmaboss_net    
@@ -71,11 +71,20 @@ class CMaBoSSSimulation(object):
     def mutate(self, node, mutant, simple=True):
         self.cmaboss_sim.mutate(node_name=node, mutation=mutant, simple=simple)
 
-    def run(self, workdir=None, only_final_state=False):
-        return CMaBoSSResult2(self, workdir, only_final_state)
+    def run(self, workdir=None, only_final_state=False, prefix="res", cmaboss=True):
+        """Run the simulation with cMaBoSS and return a result object.
+
+        The cmaboss argument is ignored, and only kept for compatibility with Simulation.run.
+        """
+        return CMaBoSSResult2(self, workdir, only_final_state, prefix)
 
     def check(self):
-        return self.cmaboss.MaBoSSSim(net=self.cmaboss_net, cfg=self.cmaboss_cfg)
+        """Check the model, and return the list of error messages (empty if the model is valid)."""
+        try:
+            self.cmaboss_sim.check()
+        except self.cmaboss.BNException as e:
+            return [str(e).strip()]
+        return []
 
     def str_bnd(self):
         return self.cmaboss_sim.str_bnd()
