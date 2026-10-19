@@ -5,32 +5,75 @@ Class that contains the results of a MaBoSS simulation.
 import pandas
 import tempfile
 import os
+import shutil
+from sys import stderr
 from .results.baseresult import BaseResult
 from contextlib import ExitStack
 from time import time
 class CMaBoSSResult2(BaseResult):
 
-    def __init__(self, sim, workdir=None, only_final_state=False):
+    def __init__(self, sim, workdir=None, only_final_state=False, prefix="res"):
 
         BaseResult.__init__(self, "some_path")
+        self.simul = sim
         self.cmaboss_simulation = sim.cmaboss_sim
         self.cmaboss_result = self.cmaboss_simulation.run(only_last_state=only_final_state)
 
         self.workdir = workdir
+        self.prefix = prefix
         self.only_final_state = only_final_state
 
         if workdir is not None:
             if not os.path.exists(workdir):
                 os.makedirs(workdir)
 
-            self.cmaboss_result.display_run(os.path.join(workdir, "%s_run.txt" % prefix))
+            self._write_results(workdir, prefix)
 
-            if self.only_final_state:
-                self.cmaboss_result.display_final_states(os.path.join(workdir, "%s_finalprob.csv" % prefix))
+    def _write_results(self, path, prefix):
+
+        self.cmaboss_result.display_run(os.path.join(path, "%s_run.txt" % prefix))
+
+        if self.only_final_state:
+            self.cmaboss_result.display_final_states(os.path.join(path, "%s_finalprob.csv" % prefix))
+        else:
+            self.cmaboss_result.display_probtraj(os.path.join(path, "%s_probtraj.csv" % prefix))
+            self.cmaboss_result.display_fp(os.path.join(path, "%s_fp.csv" % prefix))
+            self.cmaboss_result.display_statdist(os.path.join(path, "%s_statdist.csv" % prefix))
+
+    def save(self, prefix, replace=False):
+        """
+        Write the cfg, bnd and all results in working dir.
+
+        prefix is a string that will determine the name of the created files.
+        If there is a conflict with existing files, the existing files will be
+        replaced or not, depending on the value of the replace argument.
+        """
+        if type(prefix) is not str:
+            print('Error save method expected string')
+            return
+
+        # Create the results directory
+        try:
+            os.makedirs(prefix)
+        except OSError:
+            if not replace:
+                print('Error directory already exists: %s' % prefix,
+                      file=stderr)
+                return
+            elif prefix.startswith('rpl_'):
+                shutil.rmtree(prefix)
+                os.makedirs(prefix)
             else:
-                self.cmaboss_result.display_probtraj(os.path.join(workdir, "%s_probtraj.csv" % prefix))
-                self.cmaboss_result.display_fp(os.path.join(workdir, "%s_fp.csv" % prefix))
-                self.cmaboss_result.display_statdist(os.path.join(workdir, "%s_statdist.csv" % prefix))
+                print('Error only directries begining with "rpl_" can be'
+                      'replaced', file=stderr)
+                return
+
+        with open(os.path.join(prefix, "%s.bnd" % os.path.basename(prefix)), "w") as bnd_file:
+            self.simul.print_bnd(out=bnd_file)
+        with open(os.path.join(prefix, "%s.cfg" % os.path.basename(prefix)), "w") as cfg_file:
+            self.simul.print_cfg(out=cfg_file)
+
+        self._write_results(prefix, self.prefix)
 
 
     def get_last_states_probtraj(self, as_series=False):
@@ -81,7 +124,7 @@ class CMaBoSSResult2(BaseResult):
         return df
 
     def get_observed_graph(self, prob_cutoff=None):
-        raw_res = self.cmaboss_result.observed_graph()
+        raw_res = self.cmaboss_result.get_observed_graph()
         if raw_res is not None:
             graph = pandas.DataFrame(raw_res[0], columns=raw_res[1], index=raw_res[1])
             for state, values in graph.iterrows():
@@ -94,7 +137,7 @@ class CMaBoSSResult2(BaseResult):
             return graph
         
     def get_observed_durations(self, prob_cutoff=None):
-        raw_res = self.cmaboss_result.observed_durations()
+        raw_res = self.cmaboss_result.get_observed_durations()
         if raw_res is not None:
             graph = pandas.DataFrame(raw_res[0], columns=raw_res[1], index=raw_res[1])
             # for state, values in graph.iterrows():
