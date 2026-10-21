@@ -94,8 +94,8 @@ internal_decl = pp.Group(varName("internal") + ~pp.White()
                          + pp.Suppress(';'))
 
 ingraph_decl = pp.Group(varName("ingraph") + ~pp.White()
-                         + pp.Suppress(".is_graph") + pp.Suppress('=')
-                         + booleanStr("is_graph_val")
+                         + pp.Suppress(".in_graph") + pp.Suppress('=')
+                         + booleanStr("in_graph_val")
                          + pp.Suppress(';'))
 
 refstate_decl = pp.Group(varName("refstate") + ~pp.White()
@@ -108,7 +108,7 @@ schedule_decl = pp.Group(varName("schedule") + ~pp.White()
                          + schedule("schedule_val")
                          + pp.Suppress(';'))
 
-cfg_decl = (var_decl | istate_decl | param_decl | internal_decl
+cfg_decl = (var_decl | istate_decl | param_decl | internal_decl | ingraph_decl
             | oneIstate_decl | refstate_decl | schedule_decl)
 cfg_grammar = pp.ZeroOrMore(cfg_decl)
 cfg_grammar.ignore('//' + pp.restOfLine)
