@@ -94,8 +94,8 @@ internal_decl = pp.Group(varName("internal") + ~pp.White()
                          + pp.Suppress(';'))
 
 ingraph_decl = pp.Group(varName("ingraph") + ~pp.White()
-                         + pp.Suppress(".is_graph") + pp.Suppress('=')
-                         + booleanStr("is_graph_val")
+                         + pp.Suppress(".in_graph") + pp.Suppress('=')
+                         + booleanStr("in_graph_val")
                          + pp.Suppress(';'))
 
 refstate_decl = pp.Group(varName("refstate") + ~pp.White()
