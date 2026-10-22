@@ -26,6 +26,7 @@ class CMaBoSSSimulation(object):
             self.network = self.cmaboss_net    
             
         self.param = self.cmaboss_sim.param
+        self.palette = {}
         
 
     def count_nodes(self):
@@ -93,7 +94,7 @@ class CMaBoSSSimulation(object):
         return self.cmaboss_sim.str_cfg()
 
     def copy(self):
-        return CMaBoSSSimulation(cmaboss=self.cmaboss, cmaboss_sim=self.cmaboss_sim.copy())
+        return type(self)(cmaboss=self.cmaboss, cmaboss_sim=self.cmaboss_sim.copy())
         
     def print_bnd(self, out=stdout):
         """Produce the content of the bnd file associated to the simulation."""
