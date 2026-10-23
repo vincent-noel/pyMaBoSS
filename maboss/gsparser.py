@@ -108,7 +108,7 @@ schedule_decl = pp.Group(varName("schedule") + ~pp.White()
                          + schedule("schedule_val")
                          + pp.Suppress(';'))
 
-cfg_decl = (var_decl | istate_decl | param_decl | internal_decl
+cfg_decl = (var_decl | istate_decl | param_decl | internal_decl | ingraph_decl
             | oneIstate_decl | refstate_decl | schedule_decl)
 cfg_grammar = pp.ZeroOrMore(cfg_decl)
 cfg_grammar.ignore('//' + pp.restOfLine)
