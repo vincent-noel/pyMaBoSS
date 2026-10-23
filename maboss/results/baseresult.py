@@ -157,8 +157,15 @@ class BaseResult(ProbTrajResult, StatDistResult):
         table.plot(ax=axes)
         self._etraj = axes.get_figure()
 
-    def plot_observed_graph(self, prob_cutoff=None, axes=None, prune=True):
-        
+    def plot_observed_graph(self, prob_cutoff=None, axes=None, prune=True, show_probas=True, layout="neato"):
+        """Plot the observed state transition graph.
+
+        :param float prob_cutoff: leave out the transitions under this probability
+        :param axes: the axes to draw on (a new figure if None)
+        :param bool prune: leave out the states without any transition
+        :param bool show_probas: write the probability of each transition on its arrow
+        :param str layout: graphviz program used to place the states, or "spring"
+        """
         if self._err:
             print("Error maboss previously returned non 0 value",
                   file=stderr)
@@ -167,7 +174,7 @@ class BaseResult(ProbTrajResult, StatDistResult):
             _, axes = plt.subplots(1,1)
         table = self.get_observed_graph(prob_cutoff)
         
-        plot_observed_graph(table, axes, prune)
+        plot_observed_graph(table, axes, prune, show_probas=show_probas, layout=layout)
         self._observed_graph = axes.get_figure()
         
     def get_fptable(self): 
